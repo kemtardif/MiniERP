@@ -96,6 +96,7 @@ public class ArticlesController : ControllerBase
         if (article is null)
         {
             return NotFound();
+            
         }
 
         try
