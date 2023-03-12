@@ -7,6 +7,10 @@ using System.Net.Mime;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration
+    .AddJsonFile("secrets/appsettings.secrets.json", optional: true)
+    .AddEnvironmentVariables();
+
 builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
 builder.Services.AddScoped<IUnitRepository, UnitRepository>();
 builder.Services.AddDbContext<AppDbContext>(opts =>
@@ -46,7 +50,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Handles by Ingress K8s
+//app.UseHttpsRedirection();
+
 
 app.UseAuthorization();
 

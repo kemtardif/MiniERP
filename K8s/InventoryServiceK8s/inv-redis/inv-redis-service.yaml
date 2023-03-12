@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: inv-redis-srv
+  labels:
+    app: inv-redis
+spec:
+  selector:
+    app: inv-redis
+  clusterIP: None
+  ports:
+  - name: inv-redis
+    protocol: TCP
+    port: 6379
+    targetPort: 6379
+  
+
+

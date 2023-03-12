@@ -11,7 +11,7 @@ using System.Net;
 namespace MiniERP.ArticleService.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/catalogue/[controller]")]
 public class ArticlesController : ControllerBase
 {
     private readonly ILogger<ArticlesController> _logger;

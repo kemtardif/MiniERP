@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: inv-redis-config
+data: 
+  inv-redis.conf: |
+    maxmemory 150Mb
+    maxmemory-policy allkeys-lru
+    maxclients 150
+    timeout 300
+    appendonly no
+    masterauth invredismstrpw
+    requirepass invredispass
+    dbfilename dimp.rdb
+    dir /data
+
+
+  
+
+

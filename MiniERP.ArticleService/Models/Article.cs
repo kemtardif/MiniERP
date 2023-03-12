@@ -6,6 +6,7 @@
         public long EAN { get; set;}
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public bool IsInventory { get; set; }
         public ArticleType Type { get; set; }
         public ArticleStatus Status { get; set; }
         public double  BasePrice { get; set; }

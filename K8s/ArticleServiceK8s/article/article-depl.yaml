@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: articles-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: articleservice
+  template:
+    metadata:
+      labels:
+        app: articleservice
+    spec:
+      containers:
+        - name: articleservice
+          image: kemtardif/articleservice:latest
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          envFrom:
+            - configMapRef:
+                name: article-config
+          volumeMounts:
+          - name: secrets
+            mountPath: /app/secrets
+            readOnly: true
+      volumes:
+      - name: secrets
+        secret:
+          secretName: article-appsettings-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: articles-cluserip-srv
+spec:
+  type: ClusterIP
+  selector:
+    app: articleservice
+  ports: 
+    - name: articleservice
+      protocol: TCP
+      port: 80
+      targetPort: 80
+
+

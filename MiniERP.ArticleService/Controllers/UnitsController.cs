@@ -7,7 +7,7 @@ using MiniERP.ArticleService.Models;
 
 namespace MiniERP.ArticleService.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/catalogue/[controller]")]
     [ApiController]
     public class UnitsController : ControllerBase
     {
@@ -39,7 +39,7 @@ namespace MiniERP.ArticleService.Controllers
             return Ok(_mapper.Map<UnitReadDto>(unit));
         }
         [HttpPost]
-        public ActionResult<UnitReadDto> CreateArticle(UnitWriteDto writeDto)
+        public ActionResult<UnitReadDto> CreateUnit(UnitWriteDto writeDto)
         {
             Unit unit = _mapper.Map<Unit>(writeDto);
             unit.CreatedAt = unit.UpdatedAt = DateTime.UtcNow;

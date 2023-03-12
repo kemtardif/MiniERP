@@ -1,13 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32106.194
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniERP.ArticleService", "MiniERP.ArticleService\MiniERP.ArticleService.csproj", "{4FEB3D94-A7FB-4927-A306-77181BA6C9B9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniERP.InventoryService", "MiniERP.InventoryService\MiniERP.InventoryService.csproj", "{3AEEDEED-81B2-4587-BCB6-9A77DA6F7F24}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "K8s", "K8s", "{E1A1BD18-753F-47AB-BBBF-651C65EF8BD9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

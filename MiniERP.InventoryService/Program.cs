@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MiniERP.InventoryService.Data;
@@ -21,12 +22,21 @@ builder.Services.AddControllers()
         };
     });
 
-
 builder.Services.AddAutoMapper(typeof(Program));
+
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+
+
 builder.Services.AddDbContext<AppDbContext>(opts =>
 {
-    opts.UseNpgsql(builder.Configuration.GetConnectionString("articleservicePGSQL"));
+    opts.UseNpgsql(builder.Configuration.GetConnectionString("inventoryservicePGSQL"));
+});
+
+
+builder.Services.AddDistributedRedisCache(opts =>
+{
+    opts.InstanceName = "invsrv_";
+    opts.Configuration = builder.Configuration.GetConnectionString("inventoryserviceRedis");
 });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -41,10 +51,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//Handled via Ingress K8
+//app.UseHttpsRedirection();
+
+
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+Migration.ApplyMigration(app);
 
 app.Run();
