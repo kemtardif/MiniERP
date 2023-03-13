@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +11,7 @@ using System.Net;
 
 namespace MiniERP.ArticleService.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/catalogue/[controller]")]
 public class ArticlesController : ControllerBase

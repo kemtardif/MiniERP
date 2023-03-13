@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MiniERP.ArticleService.Data;
@@ -18,6 +19,15 @@ builder.Services.AddDbContext<AppDbContext>(opts =>
     opts.UseNpgsql(builder.Configuration.GetConnectionString("articleservicePGSQL"));
 });
 builder.Services.AddAutoMapper(typeof(Program));
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(opts => 
+                {
+                    opts.Audience = builder.Configuration["AAD:ApplicationId"];
+                    opts.Authority = string.Format("{0}{1}", builder.Configuration["AAD:Tenant"],
+                                                             builder.Configuration["AAD:TenantId"]);
+
+                });
 
 // Add services to the container.
 
@@ -53,6 +63,7 @@ if (app.Environment.IsDevelopment())
 // Handles by Ingress K8s
 //app.UseHttpsRedirection();
 
+app.UseAuthentication();
 
 app.UseAuthorization();
 

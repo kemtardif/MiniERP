@@ -15,6 +15,7 @@ spec:
       containers:
         - name: articleservice
           image: kemtardif/articleservice:latest
+          imagePullPolicy: "Always"
           resources:
             requests:
               memory: "64Mi"
@@ -32,18 +33,18 @@ spec:
       volumes:
       - name: secrets
         secret:
-          secretName: article-appsettings-secret
+          secretName: article-secret
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: articles-cluserip-srv
+  name: article-clusterip-srv
 spec:
   type: ClusterIP
   selector:
     app: articleservice
   ports: 
-    - name: articleservice
+    - name: articleservice-clusterip-p
       protocol: TCP
       port: 80
       targetPort: 80

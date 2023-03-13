@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MiniERP.ArticleService.Data;
 using MiniERP.ArticleService.Dtos;
@@ -7,8 +8,10 @@ using MiniERP.ArticleService.Models;
 
 namespace MiniERP.ArticleService.Controllers
 {
-    [Route("api/catalogue/[controller]")]
+
+    [Authorize]
     [ApiController]
+    [Route("api/catalogue/[controller]")]
     public class UnitsController : ControllerBase
     {
         private readonly ILogger<UnitsController> _logger;
