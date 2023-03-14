@@ -5,11 +5,15 @@ using MiniERP.InventoryService.Data;
 using MiniERP.InventoryService.Dtos;
 using MiniERP.InventoryService.Models;
 using MiniERP.InventoryService.Extensions;
+using MiniERP.InventoryService.Exceptions;
+using Microsoft.AspNetCore.Authorization;
+using System.Data;
 
 namespace MiniERP.InventoryService.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Authorize(Roles = "ApplicationHTTPRequestInvSrv")]
+[Route("/api/inv-srv/[controller]")]
 public class StocksController : ControllerBase
 {
 
@@ -43,7 +47,17 @@ public class StocksController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<StockReadDto>> GetItemById(int id)
     {
-        Stock? stock = await _cache.GetRecordAsync<Stock>(id.ToString());
+        Stock? stock = null;
+        try
+        {
+            stock = await _cache.GetRecordAsync<Stock>(id.ToString());
+        } 
+        catch(DistributedCacheException ex)
+        {
+            _logger.LogError(ex.Message);
+            return Problem(ex.Message);
+        }
+
         if(stock is not null)
         {
             return Ok(_mapper.Map<StockReadDto>(stock));

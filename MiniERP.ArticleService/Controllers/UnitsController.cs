@@ -9,9 +9,9 @@ using MiniERP.ArticleService.Models;
 namespace MiniERP.ArticleService.Controllers
 {
 
-    [Authorize]
+    [Authorize(Roles = "ApplicationHTTPRequestArtSrv")]
     [ApiController]
-    [Route("api/catalogue/[controller]")]
+    [Route("api/art-srv/[controller]")]
     public class UnitsController : ControllerBase
     {
         private readonly ILogger<UnitsController> _logger;

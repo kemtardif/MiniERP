@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -5,6 +6,10 @@ using MiniERP.InventoryService.Data;
 using System.Net.Mime;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration
+    .AddJsonFile("secrets/inventory.appsettings.secrets.json", optional: true)
+    .AddEnvironmentVariables();
 
 // Add services to the container.
 
@@ -22,10 +27,20 @@ builder.Services.AddControllers()
         };
     });
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(opts =>
+                {
+                    opts.Audience = builder.Configuration["AAD:ApplicationId"];
+                    opts.Authority = string.Format("{0}{1}", builder.Configuration["AAD:Tenant"],
+                                                             builder.Configuration["AAD:TenantId"]);
+
+                });
+
 builder.Services.AddAutoMapper(typeof(Program));
 
-builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 
+
+builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 
 builder.Services.AddDbContext<AppDbContext>(opts =>
 {
@@ -55,7 +70,7 @@ if (app.Environment.IsDevelopment())
 //app.UseHttpsRedirection();
 
 
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

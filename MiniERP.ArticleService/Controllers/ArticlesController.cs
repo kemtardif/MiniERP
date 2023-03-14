@@ -11,9 +11,9 @@ using System.Net;
 
 namespace MiniERP.ArticleService.Controllers;
 
-[Authorize]
+[Authorize(Roles = "ApplicationHTTPRequestArtSrv")]
 [ApiController]
-[Route("api/catalogue/[controller]")]
+[Route("api/art-srv/[controller]")]
 public class ArticlesController : ControllerBase
 {
     private readonly ILogger<ArticlesController> _logger;

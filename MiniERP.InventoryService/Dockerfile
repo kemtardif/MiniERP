@@ -7,10 +7,10 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
-COPY ["MiniERP.InventoryService/MiniERP.InventoryService.csproj", "MiniERP.InventoryService/"]
-RUN dotnet restore "MiniERP.InventoryService/MiniERP.InventoryService.csproj"
+COPY ["MiniERP.InventoryService.csproj", "."]
+RUN dotnet restore "./MiniERP.InventoryService.csproj"
 COPY . .
-WORKDIR "/src/MiniERP.InventoryService"
+WORKDIR "/src/."
 RUN dotnet build "MiniERP.InventoryService.csproj" -c Release -o /app/build
 
 FROM build AS publish

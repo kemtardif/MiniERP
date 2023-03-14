@@ -16,13 +16,6 @@ spec:
         - name: inv-psql
           image: postgres:latest
           imagePullPolicy: "IfNotPresent"
-          resources:
-            requests:
-              memory: "64Mi"
-              cpu: "250m"
-            limits:
-              memory: "128Mi"
-              cpu: "500m"
           ports:
             - containerPort: 5432
           envFrom:
@@ -45,7 +38,7 @@ spec:
   selector:
     app: inv-psql
   ports:
-  - name: inv-psql
+  - name: inv-psql-p
     protocol: TCP
     port: 5432
     targetPort: 5432
