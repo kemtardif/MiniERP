@@ -1,12 +1,23 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Console;
 using MiniERP.ArticleService.Data;
 using MiniERP.ArticleService.Formatters;
+using MiniERP.ArticleService.MessageBus;
 using MiniERP.ArticleService.Models;
 using System.Net.Mime;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
+builder.Logging.AddSimpleConsole(opts => 
+{
+    opts.ColorBehavior = LoggerColorBehavior.Enabled;
+    opts.TimestampFormat = "HH:mm:ss";
+});
+
+
 
 builder.Configuration
     .AddJsonFile("secrets/appsettings.secrets.json", optional: true)
@@ -14,6 +25,8 @@ builder.Configuration
 
 builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
 builder.Services.AddScoped<IUnitRepository, UnitRepository>();
+builder.Services.AddSingleton<IMessageBusClient, RabbitMQClient>();
+
 builder.Services.AddDbContext<AppDbContext>(opts =>
 {
     opts.UseNpgsql(builder.Configuration.GetConnectionString("articleservicePGSQL"));

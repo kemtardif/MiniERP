@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using MiniERP.ArticleService.Data;
 using MiniERP.ArticleService.Dtos;
 using MiniERP.ArticleService.Exceptions;
+using MiniERP.ArticleService.MessageBus;
 using MiniERP.ArticleService.Models;
 using System.Net;
 
@@ -19,12 +20,17 @@ public class ArticlesController : ControllerBase
     private readonly ILogger<ArticlesController> _logger;
     private readonly IArticleRepository _repository;
     private readonly IMapper _mapper;
+    private readonly IMessageBusClient _messageBus;
 
-    public ArticlesController(ILogger<ArticlesController> logger, IArticleRepository repository, IMapper mapper)
+    public ArticlesController(ILogger<ArticlesController> logger, 
+                                IArticleRepository repository, 
+                                IMapper mapper,
+                                IMessageBusClient messageBus)
     {
         _logger = logger;
         _repository = repository;
         _mapper = mapper;
+        _messageBus = messageBus;
     }
 
     [HttpGet]
@@ -39,7 +45,7 @@ public class ArticlesController : ControllerBase
     {
         Article? article = _repository.GetArticleById(id);
         if(article is null)
-        {
+        {            
             return NotFound();
         }
         return Ok(_mapper.Map<ArticleReadDto>(article));
@@ -55,16 +61,27 @@ public class ArticlesController : ControllerBase
         article.CreatedAt = article.UpdatedAt = DateTime.UtcNow;
 
         _repository.AddArticle(article);
+
         try
         {
             _repository.SaveChanges();
         }
         catch (SaveChangesException ex)
         {
-            _logger.LogError(ex.Message);
+            _logger.LogError("POST {methodName} : {exName} : {ex} : {date}", nameof(SaveChangesException), nameof(CreateArticle), ex.Message, DateTime.UtcNow);
             return Problem(ex.Message);
         }
+        _logger.LogInformation("POST {methodName} : Article Created : {id} : {date}", nameof(CreateArticle), article.Id, DateTime.UtcNow);
+
         ArticleReadDto readDto = _mapper.Map<ArticleReadDto>(article);
+
+        if(article.IsInventory)
+        {
+            InventoryPublishDto publish = _mapper.Map<InventoryPublishDto>(article);
+            publish.EventName = "Article_created";
+
+            _messageBus.PublishNewArticle(publish, "inventory");
+        }
         return CreatedAtRoute(nameof(GetArticleById), new { id = readDto.Id }, readDto);
     }
     [HttpDelete("{id}")]
@@ -85,10 +102,10 @@ public class ArticlesController : ControllerBase
         }
         catch(SaveChangesException ex)
         {
-            _logger.LogError(ex.Message);
+            _logger.LogError("DELETE {methodName} SaveChangesException : {ex} -- {date}", nameof(RemoveArticle), ex.Message, DateTime.UtcNow);
             return Problem(ex.Message);
         }
-
+        _logger.LogInformation("DELETE {methodName} Article Created : {id} -- {date}", nameof(RemoveArticle), article.Id, DateTime.UtcNow);
         return NoContent();
     }
     [HttpPatch("{id}")]
@@ -120,19 +137,21 @@ public class ArticlesController : ControllerBase
         }
         catch(JsonPatchException jsonex)
         {
-            _logger.LogError(jsonex.Message);
+            _logger.LogError("PATCH {methodName} JsonPatchException : {ex} -- {date}", nameof(UpdateArticle), jsonex.Message, DateTime.UtcNow);
             return UnprocessableEntity(jsonex.FailedOperation.path);
         }
         catch (SaveChangesException ex)
         {
-            _logger.LogError(ex.Message);
+            _logger.LogError("PATCH {methodName} SaveChangesException : {ex} -- {date}", nameof(UpdateArticle), ex.Message, DateTime.UtcNow);
             return Problem(ex.Message);
         }
         catch(ArgumentNullException nullEx)
         {
-            _logger.LogError(nullEx.Message);
+            _logger.LogError("PATCH {methodName} ArgumentNullException : {ex} -- {date}", nameof(UpdateArticle), nullEx.Message, DateTime.UtcNow);
             return Problem(nullEx.Message);
         }
+        _logger.LogInformation("PATCH {methodName} Article Created : {id} -- {date}", nameof(UpdateArticle), article.Id, DateTime.UtcNow);
+
         ArticleReadDto readDto = _mapper.Map<ArticleReadDto>(article);
         return CreatedAtRoute(nameof(GetArticleById), new { id = readDto.Id }, readDto);
     }

@@ -47,7 +47,7 @@ public class StocksController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<StockReadDto>> GetItemById(int id)
     {
-        Stock? stock = null;
+        Stock? stock;
         try
         {
             stock = await _cache.GetRecordAsync<Stock>(id.ToString());

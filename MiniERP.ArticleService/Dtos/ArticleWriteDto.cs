@@ -18,8 +18,13 @@ namespace MiniERP.ArticleService.Dtos
         public ArticleType Type { get; set; }
         [EnumDataType(typeof(ArticleStatus))]
         public ArticleStatus Status { get; set; }
+        public bool IsInventory { get; set; }
         public double BasePrice { get; set; }
         [Required]
         public int BaseUnitId { get; set; }
+        public double MaxQuantity { get; set; }
+        public bool AutoOrder { get; set; }
+        public double AutoTreshold { get; set; }
+        public double AutoQuantity { get; set; }
     }
 }
