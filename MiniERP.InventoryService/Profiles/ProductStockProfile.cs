@@ -9,6 +9,9 @@ namespace MiniERP.InventoryService.Profiles
         public ProductStockProfile()
         {
             CreateMap<Stock, StockReadDto>();
+            CreateMap<StockEventDto, Stock>()
+                .ForMember(dest => dest.ProductId,
+                            opt =>opt.MapFrom(src => src.Id));
         }
     }
 }

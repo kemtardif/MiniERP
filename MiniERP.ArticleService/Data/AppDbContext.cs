@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using MiniERP.ArticleService.Models;
 
 namespace MiniERP.ArticleService.Data

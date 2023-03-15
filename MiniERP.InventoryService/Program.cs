@@ -1,11 +1,20 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Console;
 using MiniERP.InventoryService.Data;
+using MiniERP.InventoryService.MessageBus;
 using System.Net.Mime;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
+builder.Logging.AddSimpleConsole(opts =>
+{
+    opts.ColorBehavior = LoggerColorBehavior.Enabled;
+    opts.TimestampFormat = "HH:mm:ss";
+});
+
 
 builder.Configuration
     .AddJsonFile("secrets/inventory.appsettings.secrets.json", optional: true)
@@ -38,9 +47,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAutoMapper(typeof(Program));
 
-
-
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+builder.Services.AddSingleton<IMessageProcessor, RabbitMQProcessor>();
+builder.Services.AddHostedService<RabbitMQSubscriber>();
 
 builder.Services.AddDbContext<AppDbContext>(opts =>
 {

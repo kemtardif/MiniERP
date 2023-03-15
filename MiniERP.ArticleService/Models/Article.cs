@@ -22,8 +22,7 @@
     public enum ArticleStatus
     {
         Open = 1,
-        Closed = 2,
-        Parked = 3
+        Closed = 2
     }
     public enum ArticleType
     {

@@ -8,7 +8,6 @@ using MiniERP.ArticleService.Dtos;
 using MiniERP.ArticleService.Exceptions;
 using MiniERP.ArticleService.MessageBus;
 using MiniERP.ArticleService.Models;
-using System.Net;
 
 namespace MiniERP.ArticleService.Controllers;
 
@@ -20,17 +19,17 @@ public class ArticlesController : ControllerBase
     private readonly ILogger<ArticlesController> _logger;
     private readonly IArticleRepository _repository;
     private readonly IMapper _mapper;
-    private readonly IMessageBusClient _messageBus;
+    private readonly IMessageBusSender<Article> _sender;
 
     public ArticlesController(ILogger<ArticlesController> logger, 
                                 IArticleRepository repository, 
                                 IMapper mapper,
-                                IMessageBusClient messageBus)
+                                IMessageBusSender<Article> sender)
     {
         _logger = logger;
         _repository = repository;
         _mapper = mapper;
-        _messageBus = messageBus;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -54,10 +53,6 @@ public class ArticlesController : ControllerBase
     public ActionResult<ArticleReadDto> CreateArticle(ArticleWriteDto writeDto)
     {
         Article article = _mapper.Map<Article>(writeDto);
-        if(!_repository.HasValidUnits(article.BaseUnitId))
-        {
-            return new UnprocessableEntityObjectResult(nameof(Unit));
-        }
         article.CreatedAt = article.UpdatedAt = DateTime.UtcNow;
 
         _repository.AddArticle(article);
@@ -73,15 +68,9 @@ public class ArticlesController : ControllerBase
         }
         _logger.LogInformation("POST {methodName} : Article Created : {id} : {date}", nameof(CreateArticle), article.Id, DateTime.UtcNow);
 
+        _sender.RequestForPublish(RequestType.Created, article);
+
         ArticleReadDto readDto = _mapper.Map<ArticleReadDto>(article);
-
-        if(article.IsInventory)
-        {
-            InventoryPublishDto publish = _mapper.Map<InventoryPublishDto>(article);
-            publish.EventName = "Article_created";
-
-            _messageBus.PublishNewArticle(publish, "inventory");
-        }
         return CreatedAtRoute(nameof(GetArticleById), new { id = readDto.Id }, readDto);
     }
     [HttpDelete("{id}")]
@@ -105,7 +94,9 @@ public class ArticlesController : ControllerBase
             _logger.LogError("DELETE {methodName} SaveChangesException : {ex} -- {date}", nameof(RemoveArticle), ex.Message, DateTime.UtcNow);
             return Problem(ex.Message);
         }
-        _logger.LogInformation("DELETE {methodName} Article Created : {id} -- {date}", nameof(RemoveArticle), article.Id, DateTime.UtcNow);
+        _logger.LogInformation("DELETE Article : {id} -- {date}", article.Id, DateTime.UtcNow);
+
+        _sender.RequestForPublish(RequestType.Deleted, article);
         return NoContent();
     }
     [HttpPatch("{id}")]

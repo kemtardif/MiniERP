@@ -4,6 +4,6 @@ namespace MiniERP.ArticleService.MessageBus
 {
     public interface IMessageBusClient
     {
-        void PublishNewArticle(ArticlePublishDto dto, string routingKey);
+        void PublishNewArticle(GenericPublishDto dto, string routingKey);
     }
 }

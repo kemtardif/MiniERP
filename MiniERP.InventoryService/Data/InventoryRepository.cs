@@ -56,5 +56,18 @@ namespace MiniERP.InventoryService.Data
                 throw new SaveChangesException(typeof(Stock), updEx.Message);
             }
         }
+        public void SetAsDiscontinued(Stock item)
+        {
+            if(item is null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            item.AutoQuantity = 0;
+            item.MaxQuantity = 0;
+            item.AutoTreshold = 0;
+            item.AutoOrder = false;
+            item.Discontinued = true;
+        }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using MiniERP.ArticleService.Models;
-using System.Net.Http.Headers;
 
 namespace MiniERP.ArticleService.Data
 {

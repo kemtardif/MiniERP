@@ -1,6 +1,5 @@
 ﻿using MiniERP.ArticleService.Models;
 using System.ComponentModel.DataAnnotations;
-using System.Drawing;
 
 namespace MiniERP.ArticleService.Dtos
 {
@@ -16,8 +15,6 @@ namespace MiniERP.ArticleService.Dtos
         [Required]
         [EnumDataType(typeof(ArticleType))]
         public ArticleType Type { get; set; }
-        [EnumDataType(typeof(ArticleStatus))]
-        public ArticleStatus Status { get; set; }
         public bool IsInventory { get; set; }
         public double BasePrice { get; set; }
         [Required]

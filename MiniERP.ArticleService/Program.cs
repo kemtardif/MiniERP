@@ -25,7 +25,9 @@ builder.Configuration
 
 builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
 builder.Services.AddScoped<IUnitRepository, UnitRepository>();
+
 builder.Services.AddSingleton<IMessageBusClient, RabbitMQClient>();
+builder.Services.AddSingleton<IMessageBusSender<Article>, RabbitMQArticleSender>();
 
 builder.Services.AddDbContext<AppDbContext>(opts =>
 {

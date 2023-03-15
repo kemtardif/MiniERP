@@ -10,5 +10,6 @@ namespace MiniERP.InventoryService.Data
         Stock? GetItemByArticleId(int srticleId);
         void AddItem(Stock item);
         void RemoveItem(Stock item);
+        void SetAsDiscontinued(Stock item);
     }
 }

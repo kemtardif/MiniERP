@@ -7,7 +7,6 @@ using MiniERP.InventoryService.Models;
 using MiniERP.InventoryService.Extensions;
 using MiniERP.InventoryService.Exceptions;
 using Microsoft.AspNetCore.Authorization;
-using System.Data;
 
 namespace MiniERP.InventoryService.Controllers;
 
