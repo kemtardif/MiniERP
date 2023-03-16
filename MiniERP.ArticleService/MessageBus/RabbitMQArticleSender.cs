@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using MiniERP.ArticleService.Dtos;
+using CommonLib.Dtos;
 using MiniERP.ArticleService.Models;
 
 namespace MiniERP.ArticleService.MessageBus
@@ -23,36 +23,25 @@ namespace MiniERP.ArticleService.MessageBus
             switch(type)
             {
                 case RequestType.Created:
-                    RequestForCreated(article);
+                    InternalRequestForPublish(article, MessageBusEventType.ArticleCreated);
                     break;
                 case RequestType.Deleted:
-                    RequestForDeleted(article);
+                    InternalRequestForPublish(article, MessageBusEventType.ArticleDeleted);
+                    break;
+                case RequestType.Updated:
+                    InternalRequestForPublish(article, MessageBusEventType.ArticleUpdated);
                     break;
                 default:
                     throw new ArgumentNullException(nameof(type));
             }
         }
      
-        private void RequestForCreated(Article article)
+        private void InternalRequestForPublish(Article article, string eventName)
         {
-            if (article.IsInventory)
-            {
-                InventoryPublishDto publish = _mapper.Map<InventoryPublishDto>(article);
-                publish.EventName = "Article_created";
+            ArticleEventDto publish = _mapper.Map<ArticleEventDto>(article);
+            publish.EventName = eventName;
 
-                _messageBus.PublishNewArticle(publish, "inventory");
-            }
-        }
-
-        private void RequestForDeleted(Article article)
-        {
-            if(article.IsInventory)
-            {
-                InventoryPublishDto publish = _mapper.Map<InventoryPublishDto>(article);
-                publish.EventName = "Article_Deleted";
-
-                _messageBus.PublishNewArticle(publish, "inventory");
-            }
+            _messageBus.PublishNewArticle(publish);
         }
     }
 }

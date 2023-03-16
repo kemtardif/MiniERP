@@ -1,4 +1,6 @@
-﻿namespace MiniERP.ArticleService.Models
+﻿using CommonLib.Enums;
+
+namespace MiniERP.ArticleService.Models
 {
     public class Article
     {
@@ -22,16 +24,5 @@
         public void SetDatesToNow() => UpdatedAt = CreatedAt = DateTime.UtcNow;
         public void OpenStatus() => Status = ArticleStatus.Open;
 
-    }
-    public enum ArticleStatus
-    {
-        Open = 1,
-        Closed = 2
-    }
-    public enum ArticleType
-    {
-        Sale = 1,
-        Purchase = 2,
-        SalePurchase = 3
     }
 }

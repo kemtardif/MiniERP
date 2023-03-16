@@ -1,7 +1,6 @@
 ﻿using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
-using System;
 using System.Text;
 
 namespace MiniERP.InventoryService.MessageBus
@@ -56,42 +55,46 @@ namespace MiniERP.InventoryService.MessageBus
 
             var consumer = new EventingBasicConsumer(_channel);
 
-            consumer.Received += (model, ea) =>
-            {
-                _logger.LogInformation("----> RabbitMQ : Message Received : {key} : {tag} :{date}", 
-                                        ea.RoutingKey,
-                                        ea.DeliveryTag,
-                                        DateTime.UtcNow);
-                string data = string.Empty;
-                try
-                {
-                    data = Encoding.UTF8.GetString(ea.Body.ToArray());
-                } 
-                catch(DecoderFallbackException ex)
-                {
-                    _logger.LogError("---> RabbitMQ Exception: {name} : {ex} : {tag} :{date}",
-                                        nameof(DecoderFallbackException),
-                                        ex.Message,
-                                        ea.DeliveryTag,
-                                        DateTime.UtcNow);
-                    return;
-                }
-                if(string.IsNullOrEmpty(data))
-                {
-                    _logger.LogInformation("---> RabbitMQ : No received data : {tag} : {date}", 
-                                            ea.DeliveryTag, 
-                                            DateTime.UtcNow);
-                    return;
-                }
-                _processor.ProcessMessage(data);
+            consumer.Received += ReceivedHandler;
 
-                _channel?.BasicAck(ea.DeliveryTag, false);
-                _logger.LogInformation("---> RabbitMQ : MEssage Processed : {tag} : {date}",
-                                            ea.DeliveryTag,
-                                            DateTime.UtcNow);
-            };
             _channel?.BasicConsume(queue: _queueName, autoAck: false, consumer: consumer);
             return Task.CompletedTask;
+        }
+        private void ReceivedHandler(object? consumer, BasicDeliverEventArgs args)
+        {
+            _logger.LogInformation("----> RabbitMQ : Message Received : {key} : {tag} :{date}",
+                                        args.RoutingKey,
+                                        args.DeliveryTag,
+                                        DateTime.UtcNow);
+
+            string data = string.Empty;
+            try
+            {
+                data = Encoding.UTF8.GetString(args.Body.ToArray());
+            }
+            catch (DecoderFallbackException ex)
+            {
+                _logger.LogError("---> RabbitMQ Exception: {name} : {ex} : {tag} :{date}",
+                                    nameof(DecoderFallbackException),
+                                    ex.Message,
+                                    args.DeliveryTag,
+                                    DateTime.UtcNow);
+                return;
+            }
+            if (string.IsNullOrEmpty(data))
+            {
+                _logger.LogInformation("---> RabbitMQ : No received data : {tag} : {date}",
+                                        args.DeliveryTag,
+                                        DateTime.UtcNow);
+                _channel?.BasicAck(args.DeliveryTag, false);
+                return;
+            }
+            _processor.ProcessMessage(data);
+
+            _channel?.BasicAck(args.DeliveryTag, false);
+            _logger.LogInformation("---> RabbitMQ : MEssage Processed : {tag} : {date}",
+                                        args.DeliveryTag,
+                                        DateTime.UtcNow);
         }
 
         public override void Dispose()

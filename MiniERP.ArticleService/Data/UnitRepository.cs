@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using MiniERP.ArticleService.Models;
+﻿using MiniERP.ArticleService.Models;
 
 namespace MiniERP.ArticleService.Data
 {

@@ -3,7 +3,6 @@ using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using MiniERP.ArticleService.Data;
 using MiniERP.ArticleService.Dtos;
@@ -119,6 +118,8 @@ public class ArticlesController : ControllerBase
         _repository.SaveChanges();       
 
         _logger.LogInformation("PATCH : Article Updated : {id} -- {date}",  article.Id, DateTime.UtcNow);
+
+        _sender.RequestForPublish(RequestType.Updated, article);
 
         ArticleReadDto readDto = _mapper.Map<ArticleReadDto>(article);
         return Ok(readDto);

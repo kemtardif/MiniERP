@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace MiniERP.ArticleService.Dtos
+﻿namespace MiniERP.ArticleService.Dtos
 {
     public class UnitWriteDto
     {

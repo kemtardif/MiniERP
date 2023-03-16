@@ -74,6 +74,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+else
+{
+    app.UseExceptionHandler(new ExceptionHandlerOptions()
+    {
+        AllowStatusCode404Response = true,
+        ExceptionHandlingPath = "/error"
+    });
+}
 
 //Handled via Ingress K8
 //app.UseHttpsRedirection();

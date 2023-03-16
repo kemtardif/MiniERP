@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CommonLib.Dtos;
 using MiniERP.InventoryService.Dtos;
 using MiniERP.InventoryService.Models;
 
@@ -9,7 +10,7 @@ namespace MiniERP.InventoryService.Profiles
         public ProductStockProfile()
         {
             CreateMap<Stock, StockReadDto>();
-            CreateMap<StockEventDto, Stock>()
+            CreateMap<ArticleEventDto, Stock>()
                 .ForMember(dest => dest.ProductId,
                             opt =>opt.MapFrom(src => src.Id));
         }

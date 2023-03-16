@@ -1,6 +1,4 @@
-﻿using MiniERP.InventoryService.Models;
-
-namespace MiniERP.InventoryService.Dtos
+﻿namespace MiniERP.InventoryService.Dtos
 {
     public class StockReadDto
     {

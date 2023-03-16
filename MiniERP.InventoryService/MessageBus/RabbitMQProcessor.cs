@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
+using CommonLib.Dtos;
 using MiniERP.InventoryService.Data;
-using MiniERP.InventoryService.Dtos;
 using MiniERP.InventoryService.Exceptions;
 using MiniERP.InventoryService.Models;
 using System.Text.Json;
@@ -51,7 +51,7 @@ namespace MiniERP.InventoryService.MessageBus
 
                 try
                 {
-                    StockEventDto? dto = JsonSerializer.Deserialize<StockEventDto>(message);
+                    ArticleEventDto? dto = JsonSerializer.Deserialize<ArticleEventDto>(message);
                     if(dto is null)
                     {
                         _logger.LogInformation("---> RabbitMQ : Deserialized dto is null : {date}",
@@ -96,7 +96,7 @@ namespace MiniERP.InventoryService.MessageBus
 
                 try
                 {
-                    StockEventDto? dto = JsonSerializer.Deserialize<StockEventDto>(message);
+                    ArticleEventDto? dto = JsonSerializer.Deserialize<ArticleEventDto>(message);
                     if (dto is null)
                     {
                         _logger.LogInformation("---> RabbitMQ : Deserialized dto is null : {date}",

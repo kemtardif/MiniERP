@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CommonLib.Enums;
 using MiniERP.ArticleService.Models;
 
 namespace MiniERP.ArticleService.Data

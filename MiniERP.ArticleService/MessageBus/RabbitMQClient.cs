@@ -1,9 +1,8 @@
-﻿using MiniERP.ArticleService.Dtos;
-using System.Text.Json;
+﻿using System.Text.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
 using System.Text;
-using System.IO;
+using CommonLib.Dtos;
 
 namespace MiniERP.ArticleService.MessageBus
 {
@@ -40,7 +39,7 @@ namespace MiniERP.ArticleService.MessageBus
 
             _channel = _connection.CreateModel();
 
-            _channel.ExchangeDeclare(exchange: "article", type: ExchangeType.Direct);
+            _channel.ExchangeDeclare(exchange: "article", type: ExchangeType.Fanout);
 
             _logger.LogInformation("---> Connected to RabbitMQ Message Bus : {date}", DateTime.UtcNow);
         }
@@ -62,7 +61,7 @@ namespace MiniERP.ArticleService.MessageBus
             }          
         }
 
-        public void PublishNewArticle(GenericPublishDto dto, string routingKey)
+        public void PublishNewArticle(GenericEventDto dto)
         {
             if(dto is null)
             {
@@ -78,22 +77,21 @@ namespace MiniERP.ArticleService.MessageBus
                     DateTime.UtcNow);
                 return;
             }
-            //Not empty or null
+
             string message = JsonSerializer.Serialize(dto);
   
-            PublishMessage(message, routingKey, dto.EventName);
+            PublishMessage(message, dto.EventName);
 
         }
-        private void PublishMessage(string message, string routingKey, string eventName)
+        private void PublishMessage(string message, string eventName)
         {
             byte[] body = Encoding.UTF8.GetBytes(message);
 
             _channel?.BasicPublish(exchange: "article",
-                            routingKey: routingKey,
+                            routingKey: string.Empty,
                             basicProperties: null,
                             body: body);
-            _logger.LogInformation("RabbitMQ : {method} : Message Published : {route} :  {event}:{date}", nameof(PublishMessage), 
-                                                                                        routingKey, 
+            _logger.LogInformation("RabbitMQ : {method} : Message Published :  {event}:{date}", nameof(PublishMessage), 
                                                                                         eventName,
                                                                                         DateTime.UtcNow);
         }

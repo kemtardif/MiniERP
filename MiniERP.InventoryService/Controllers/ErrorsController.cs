@@ -1,11 +1,10 @@
 ﻿using CommonLib.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
-namespace MiniERP.ArticleService.Controllers
+namespace MiniERP.InventoryService.Controllers
 {
     [AllowAnonymous]
     [ApiExplorerSettings(IgnoreApi = true)]
@@ -22,7 +21,7 @@ namespace MiniERP.ArticleService.Controllers
             var context = HttpContext.Features.Get<IExceptionHandlerFeature>();
             if (context == null)
             {
-                _logger.LogCritical("---> {name} : {iexcetion} error : {date}",
+                _logger.LogCritical("---> {name} : {excetion} error : {date}",
                                     nameof(ErrorsController),
                                     nameof(IExceptionHandlerFeature),
                                     DateTime.UtcNow);
@@ -34,7 +33,6 @@ namespace MiniERP.ArticleService.Controllers
 
             int code = exception switch
             {
-                JsonPatchException json => (int)HttpStatusCode.UnprocessableEntity,
                 _ => (int)HttpStatusCode.InternalServerError,
             };
 

@@ -1,5 +1,4 @@
-﻿using MiniERP.ArticleService.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using CommonLib.Enums;
 
 namespace MiniERP.ArticleService.Dtos
 {
