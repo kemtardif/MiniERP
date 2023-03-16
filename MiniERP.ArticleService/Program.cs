@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,7 @@ using MiniERP.ArticleService.Data;
 using MiniERP.ArticleService.Formatters;
 using MiniERP.ArticleService.MessageBus;
 using MiniERP.ArticleService.Models;
+using MiniERP.ArticleService.Validators;
 using System.Net.Mime;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +27,8 @@ builder.Configuration
 
 builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
 builder.Services.AddScoped<IUnitRepository, UnitRepository>();
+builder.Services.AddScoped<IValidator<Article>, ArticleValidator>();
+builder.Services.AddScoped<IValidator<Unit>, UnitValidator>();
 
 builder.Services.AddSingleton<IMessageBusClient, RabbitMQClient>();
 builder.Services.AddSingleton<IMessageBusSender<Article>, RabbitMQArticleSender>();
@@ -57,22 +61,27 @@ builder.Services.AddControllers(opts =>
                         var result = new UnprocessableEntityObjectResult(context.ModelState);
 
                         result.ContentTypes.Add(MediaTypeNames.Application.Json);
-                        result.ContentTypes.Add(MediaTypeNames.Application.Xml);
 
                         return result;
                     };
                 });
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    builder.Services.AddSwaggerGen();
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseDeveloperExceptionPage();
+}
+else
+{
+    app.UseExceptionHandler(new ExceptionHandlerOptions()
+    {
+        AllowStatusCode404Response = true, 
+        ExceptionHandlingPath = "/error"
+    });
 }
 
 // Handles by Ingress K8s

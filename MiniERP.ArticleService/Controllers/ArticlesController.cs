@@ -1,11 +1,12 @@
 using AutoMapper;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using MiniERP.ArticleService.Data;
 using MiniERP.ArticleService.Dtos;
-using MiniERP.ArticleService.Exceptions;
 using MiniERP.ArticleService.MessageBus;
 using MiniERP.ArticleService.Models;
 
@@ -20,16 +21,19 @@ public class ArticlesController : ControllerBase
     private readonly IArticleRepository _repository;
     private readonly IMapper _mapper;
     private readonly IMessageBusSender<Article> _sender;
+    private readonly IValidator<Article> _validator;
 
     public ArticlesController(ILogger<ArticlesController> logger, 
                                 IArticleRepository repository, 
                                 IMapper mapper,
-                                IMessageBusSender<Article> sender)
+                                IMessageBusSender<Article> sender,
+                                IValidator<Article> validator)
     {
         _logger = logger;
         _repository = repository;
         _mapper = mapper;
         _sender = sender;
+        _validator = validator;
     }
 
     [HttpGet]
@@ -44,29 +48,28 @@ public class ArticlesController : ControllerBase
     {
         Article? article = _repository.GetArticleById(id);
         if(article is null)
-        {            
+        {
             return NotFound();
         }
         return Ok(_mapper.Map<ArticleReadDto>(article));
     }
     [HttpPost]
-    public ActionResult<ArticleReadDto> CreateArticle(ArticleWriteDto writeDto)
+    public ActionResult<ArticleReadDto> CreateArticle(ArticleCreateDto writeDto)
     {
         Article article = _mapper.Map<Article>(writeDto);
-        article.CreatedAt = article.UpdatedAt = DateTime.UtcNow;
+        article.OpenStatus();
+
+        if(!Validate(article))
+        {
+            return UnprocessableEntity(ModelState);
+        }
 
         _repository.AddArticle(article);
 
-        try
-        {
-            _repository.SaveChanges();
-        }
-        catch (SaveChangesException ex)
-        {
-            _logger.LogError("POST {methodName} : {exName} : {ex} : {date}", nameof(SaveChangesException), nameof(CreateArticle), ex.Message, DateTime.UtcNow);
-            return Problem(ex.Message);
-        }
-        _logger.LogInformation("POST {methodName} : Article Created : {id} : {date}", nameof(CreateArticle), article.Id, DateTime.UtcNow);
+        article.SetDatesToNow();
+        _repository.SaveChanges();
+
+        _logger.LogInformation("POST : Article Created : {id} : {date}", article.Id, DateTime.UtcNow);
 
         _sender.RequestForPublish(RequestType.Created, article);
 
@@ -77,73 +80,61 @@ public class ArticlesController : ControllerBase
     public ActionResult<ArticleReadDto> RemoveArticle(int id)
     {
         Article? article = _repository.GetArticleById(id);
-        if(article is  null)
+        if (article is null)
         {
             return NotFound();
         }
 
         _repository.RemoveArticle(article);
-        article.UpdatedAt = DateTime.UtcNow;
 
-        try
-        {
-            _repository.SaveChanges();
-        }
-        catch(SaveChangesException ex)
-        {
-            _logger.LogError("DELETE {methodName} SaveChangesException : {ex} -- {date}", nameof(RemoveArticle), ex.Message, DateTime.UtcNow);
-            return Problem(ex.Message);
-        }
+        article.SetUpdatedAtToNow();
+        _repository.SaveChanges();
+
         _logger.LogInformation("DELETE Article : {id} -- {date}", article.Id, DateTime.UtcNow);
 
         _sender.RequestForPublish(RequestType.Deleted, article);
+
         return NoContent();
     }
     [HttpPatch("{id}")]
-    public ActionResult<ArticleReadDto> UpdateArticle(int id, JsonPatchDocument<ArticleWriteDto> patchDoc )
+    public ActionResult<ArticleReadDto> UpdateArticle(int id, JsonPatchDocument<ArticleUpdateDto> patchDoc )
     {
         Article? article = _repository.GetArticleById(id);
         if (article is null)
         {
             return NotFound();
-            
         }
 
-        try
-        {
-            var articleToWrite = _mapper.Map<ArticleWriteDto>(article);
-            patchDoc.ApplyTo(articleToWrite);
+        var articleToWrite = _mapper.Map<ArticleUpdateDto>(article);
+        patchDoc.ApplyTo(articleToWrite);
 
-            if(!TryValidateModel(articleToWrite))
-            {
-                return UnprocessableEntity();
-            }
-            if(!_repository.HasValidUnits(articleToWrite.BaseUnitId))
-            {
-                return UnprocessableEntity(nameof(articleToWrite.BaseUnitId));
-            }
-            _mapper.Map(articleToWrite, article);
-            article.UpdatedAt = DateTime.UtcNow;
-            _repository.SaveChanges();       
-        }
-        catch(JsonPatchException jsonex)
+        _mapper.Map(articleToWrite, article);
+
+        if(!Validate(article))
         {
-            _logger.LogError("PATCH {methodName} JsonPatchException : {ex} -- {date}", nameof(UpdateArticle), jsonex.Message, DateTime.UtcNow);
-            return UnprocessableEntity(jsonex.FailedOperation.path);
+            return UnprocessableEntity(ModelState);
         }
-        catch (SaveChangesException ex)
-        {
-            _logger.LogError("PATCH {methodName} SaveChangesException : {ex} -- {date}", nameof(UpdateArticle), ex.Message, DateTime.UtcNow);
-            return Problem(ex.Message);
-        }
-        catch(ArgumentNullException nullEx)
-        {
-            _logger.LogError("PATCH {methodName} ArgumentNullException : {ex} -- {date}", nameof(UpdateArticle), nullEx.Message, DateTime.UtcNow);
-            return Problem(nullEx.Message);
-        }
-        _logger.LogInformation("PATCH {methodName} Article Created : {id} -- {date}", nameof(UpdateArticle), article.Id, DateTime.UtcNow);
+
+        article.SetUpdatedAtToNow();
+        _repository.SaveChanges();       
+
+        _logger.LogInformation("PATCH : Article Updated : {id} -- {date}",  article.Id, DateTime.UtcNow);
 
         ArticleReadDto readDto = _mapper.Map<ArticleReadDto>(article);
-        return CreatedAtRoute(nameof(GetArticleById), new { id = readDto.Id }, readDto);
+        return Ok(readDto);
+    }
+
+    private bool Validate(Article article)
+    {
+        ValidationResult result = _validator.Validate(article);
+        if(result.IsValid)
+        {
+            return true;
+        }
+        foreach(ValidationFailure failure in result.Errors)
+        {
+            ModelState.AddModelError(failure.PropertyName, failure.ErrorMessage);
+        }
+        return false;
     }
 }

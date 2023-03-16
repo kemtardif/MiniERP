@@ -18,6 +18,10 @@
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 
+        public void SetUpdatedAtToNow() => UpdatedAt = DateTime.UtcNow;
+        public void SetDatesToNow() => UpdatedAt = CreatedAt = DateTime.UtcNow;
+        public void OpenStatus() => Status = ArticleStatus.Open;
+
     }
     public enum ArticleStatus
     {

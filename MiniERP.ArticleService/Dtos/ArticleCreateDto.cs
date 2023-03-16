@@ -3,21 +3,14 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MiniERP.ArticleService.Dtos
 {
-    public class ArticleWriteDto
+    public class ArticleCreateDto
     {
-        [Required]
-        [StringLength(255, MinimumLength = 5)]   
         public string Name { get; set; } = string.Empty;
-        [Required]
         public long EAN { get; set; }
-        [StringLength(255)]
         public string Description { get; set; } = string.Empty;
-        [Required]
-        [EnumDataType(typeof(ArticleType))]
         public ArticleType Type { get; set; }
         public bool IsInventory { get; set; }
         public double BasePrice { get; set; }
-        [Required]
         public int BaseUnitId { get; set; }
         public double MaxQuantity { get; set; }
         public bool AutoOrder { get; set; }

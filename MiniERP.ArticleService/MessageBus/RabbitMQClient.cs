@@ -26,6 +26,7 @@ namespace MiniERP.ArticleService.MessageBus
                 VirtualHost = "/",
                
             };
+
             try
             {
                 _connection = factory.CreateConnection();
@@ -53,7 +54,7 @@ namespace MiniERP.ArticleService.MessageBus
             }
             catch(IOException ex)
             {
-                _logger.LogError("----> RabbitMQ Exception: {name} : {exName} : {ex} : {date}",
+                _logger.LogCritical("----> RabbitMQ Exception: {name} : {exName} : {ex} : {date}",
                                     nameof(Dispose),
                                     nameof(IOException),
                                     ex.Message,
@@ -63,62 +64,31 @@ namespace MiniERP.ArticleService.MessageBus
 
         public void PublishNewArticle(GenericPublishDto dto, string routingKey)
         {
-            if(_connection is null)
+            if(dto is null)
             {
-                _logger.LogError("----> RabbitMQ : {method} : Invalid connection : {date}", nameof(PublishNewArticle), DateTime.UtcNow);
+                throw new ArgumentNullException(nameof(dto));
+            }
+
+            if(_connection is null || !_connection.IsOpen)
+            {
+                _logger.LogError("----> RabbitMQ : {method} : Invalid connection : Is null {null} : {isOpen} : {date}", 
+                    nameof(PublishNewArticle),
+                    _connection is null,
+                    _connection?.IsOpen,
+                    DateTime.UtcNow);
                 return;
             }
-            if(!_connection.IsOpen)
-            {
-                _logger.LogError("----> RabbitMQ : {method} : Closed connection : {date}", nameof(PublishNewArticle), DateTime.UtcNow);
-                return;
-            }
-            string message = string.Empty;
-            try
-            {
-                message = JsonSerializer.Serialize(dto);
-            } 
-            catch(NotSupportedException ex)
-            {
-                _logger.LogError("----> RabbitMQ Exception : {name}  : {ex} : {date}", nameof(NotSupportedException),
-                                                                                ex.Message, 
-                                                                                DateTime.UtcNow);
-                return;
-            }
-            if(string.IsNullOrEmpty(message))
-            {
-                _logger.LogInformation("RabbitMQ : {method} : Empty Publish message : {date}", nameof(PublishNewArticle), DateTime.UtcNow);
-                return;
-            }
+            //Not empty or null
+            string message = JsonSerializer.Serialize(dto);
+  
             PublishMessage(message, routingKey, dto.EventName);
 
         }
         private void PublishMessage(string message, string routingKey, string eventName)
         {
-            if (_channel is null)
-            {
-                _logger.LogError("----> RabbitMQ : {method} : Invalid chaneel : {date}", nameof(PublishMessage), DateTime.UtcNow);
-                return;
-            }
-            byte[]? body = null;
-            try
-            {
-                body = Encoding.UTF8.GetBytes(message);
-            } 
-            catch(EncoderFallbackException ex)
-            {
-                _logger.LogError("----> RabbitMQ Exception : {name}  : {ex} : {date}", nameof(EncoderFallbackException),
-                                                                                ex.Message, 
-                                                                                DateTime.UtcNow
-                                                                                );
-                return;
-            }
-            if(body is null || body.Length == 0)
-            {
-                _logger.LogInformation("RabbitMQ : {method} : Empty Byte body : {date}", nameof(PublishMessage), DateTime.UtcNow);
-                return;
-            }
-            _channel.BasicPublish(exchange: "article",
+            byte[] body = Encoding.UTF8.GetBytes(message);
+
+            _channel?.BasicPublish(exchange: "article",
                             routingKey: routingKey,
                             basicProperties: null,
                             body: body);

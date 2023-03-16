@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using MiniERP.ArticleService.Exceptions;
 using MiniERP.ArticleService.Models;
 
 namespace MiniERP.ArticleService.Data
@@ -38,14 +37,7 @@ namespace MiniERP.ArticleService.Data
 
         public bool SaveChanges()
         {
-            try
-            {
-                return _context.SaveChanges() >= 0;
-            }
-            catch (DbUpdateException updEx)
-            {
-                throw new SaveChangesException(typeof(Unit), updEx.Message);
-            }
+            return _context.SaveChanges() >= 0;
         }
     }
 }
