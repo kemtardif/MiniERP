@@ -1,28 +1,38 @@
 using AutoMapper;
+using FluentValidation;
+using FluentValidation.Results;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using MiniERP.ArticleService.Data;
 using MiniERP.ArticleService.Dtos;
-using MiniERP.ArticleService.Exceptions;
+using MiniERP.ArticleService.MessageBus;
 using MiniERP.ArticleService.Models;
-using System.Net;
 
 namespace MiniERP.ArticleService.Controllers;
 
+[Authorize(Roles = "ApplicationHTTPRequestArtSrv")]
 [ApiController]
-[Route("[controller]")]
+[Route("api/art-srv/[controller]")]
 public class ArticlesController : ControllerBase
 {
     private readonly ILogger<ArticlesController> _logger;
     private readonly IArticleRepository _repository;
     private readonly IMapper _mapper;
+    private readonly IMessageBusSender<Article> _sender;
+    private readonly IValidator<Article> _validator;
 
-    public ArticlesController(ILogger<ArticlesController> logger, IArticleRepository repository, IMapper mapper)
+    public ArticlesController(ILogger<ArticlesController> logger, 
+                                IArticleRepository repository, 
+                                IMapper mapper,
+                                IMessageBusSender<Article> sender,
+                                IValidator<Article> validator)
     {
         _logger = logger;
         _repository = repository;
         _mapper = mapper;
+        _sender = sender;
+        _validator = validator;
     }
 
     [HttpGet]
@@ -43,25 +53,23 @@ public class ArticlesController : ControllerBase
         return Ok(_mapper.Map<ArticleReadDto>(article));
     }
     [HttpPost]
-    public ActionResult<ArticleReadDto> CreateArticle(ArticleWriteDto writeDto)
+    public ActionResult<ArticleReadDto> CreateArticle(ArticleCreateDto writeDto)
     {
         Article article = _mapper.Map<Article>(writeDto);
-        if(!_repository.HasValidUnits(article.BaseUnitId))
+
+        if(!Validate(article))
         {
-            return new UnprocessableEntityObjectResult(nameof(Unit));
+            return UnprocessableEntity(ModelState);
         }
-        article.CreatedAt = article.UpdatedAt = DateTime.UtcNow;
 
         _repository.AddArticle(article);
-        try
-        {
-            _repository.SaveChanges();
-        }
-        catch (SaveChangesException ex)
-        {
-            _logger.LogError(ex.Message);
-            return Problem(ex.Message);
-        }
+
+        _repository.SaveChanges();
+
+        _logger.LogInformation("POST : Article Created : {id} : {date}", article.Id, DateTime.UtcNow);
+
+        _sender.RequestForPublish(RequestType.Created, article, ChangeType.All);
+
         ArticleReadDto readDto = _mapper.Map<ArticleReadDto>(article);
         return CreatedAtRoute(nameof(GetArticleById), new { id = readDto.Id }, readDto);
     }
@@ -69,28 +77,23 @@ public class ArticlesController : ControllerBase
     public ActionResult<ArticleReadDto> RemoveArticle(int id)
     {
         Article? article = _repository.GetArticleById(id);
-        if(article is  null)
+        if (article is null)
         {
             return NotFound();
         }
 
         _repository.RemoveArticle(article);
-        article.UpdatedAt = DateTime.UtcNow;
 
-        try
-        {
-            _repository.SaveChanges();
-        }
-        catch(SaveChangesException ex)
-        {
-            _logger.LogError(ex.Message);
-            return Problem(ex.Message);
-        }
+        _repository.SaveChanges();
+
+        _logger.LogInformation("DELETE Article : {id} -- {date}", article.Id, DateTime.UtcNow);
+
+        _sender.RequestForPublish(RequestType.Deleted, article, ChangeType.All);
 
         return NoContent();
     }
     [HttpPatch("{id}")]
-    public ActionResult<ArticleReadDto> UpdateArticle(int id, JsonPatchDocument<ArticleWriteDto> patchDoc )
+    public ActionResult<ArticleReadDto> UpdateArticle(int id, JsonPatchDocument<ArticleUpdateDto> json )
     {
         Article? article = _repository.GetArticleById(id);
         if (article is null)
@@ -98,39 +101,37 @@ public class ArticlesController : ControllerBase
             return NotFound();
         }
 
-        try
-        {
-            var articleToWrite = _mapper.Map<ArticleWriteDto>(article);
-            patchDoc.ApplyTo(articleToWrite);
+        _repository.UpdateArticle(article, json);
 
-            if(!TryValidateModel(articleToWrite))
-            {
-                return UnprocessableEntity();
-            }
-            if(!_repository.HasValidUnits(articleToWrite.BaseUnitId))
-            {
-                return UnprocessableEntity(nameof(articleToWrite.BaseUnitId));
-            }
-            _mapper.Map(articleToWrite, article);
-            article.UpdatedAt = DateTime.UtcNow;
-            _repository.SaveChanges();       
-        }
-        catch(JsonPatchException jsonex)
+        if(!Validate(article))
         {
-            _logger.LogError(jsonex.Message);
-            return UnprocessableEntity(jsonex.FailedOperation.path);
+            return UnprocessableEntity(ModelState);
         }
-        catch (SaveChangesException ex)
-        {
-            _logger.LogError(ex.Message);
-            return Problem(ex.Message);
-        }
-        catch(ArgumentNullException nullEx)
-        {
-            _logger.LogError(nullEx.Message);
-            return Problem(nullEx.Message);
-        }
+
+
+        ChangeType changed = _repository.TrackChanges(article);
+
+        _repository.SaveChanges();
+
+        _logger.LogInformation("PATCH : Article Updated : {id} -- {date}", article.Id, DateTime.UtcNow);
+
+        _sender.RequestForPublish(RequestType.Updated, article, changed);
+
         ArticleReadDto readDto = _mapper.Map<ArticleReadDto>(article);
-        return CreatedAtRoute(nameof(GetArticleById), new { id = readDto.Id }, readDto);
+        return Ok(readDto);
+    }
+
+    private bool Validate(Article article)
+    {
+        ValidationResult result = _validator.Validate(article);
+        if(result.IsValid)
+        {
+            return true;
+        }
+        foreach(ValidationFailure failure in result.Errors)
+        {
+            ModelState.AddModelError(failure.PropertyName, failure.ErrorMessage);
+        }
+        return false;
     }
 }

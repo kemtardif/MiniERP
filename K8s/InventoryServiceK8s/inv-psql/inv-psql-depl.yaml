@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inv-psql-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inv-psql
+  template:
+    metadata:
+      labels:
+        app: inv-psql
+    spec:      
+      containers:
+        - name: inv-psql
+          image: postgres:latest
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: inv-psql-secret      
+          volumeMounts:
+              - mountPath: /var/lib/postgresql/data
+                name: inv-psql-pv-storage
+      volumes:
+        - name: inv-psql-pv-storage
+          persistentVolumeClaim:
+            claimName: inv-psql-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inv-psql-clusterip-srv
+spec:
+  type: ClusterIP
+  selector:
+    app: inv-psql
+  ports:
+  - name: inv-psql-p
+    protocol: TCP
+    port: 5432
+    targetPort: 5432
+

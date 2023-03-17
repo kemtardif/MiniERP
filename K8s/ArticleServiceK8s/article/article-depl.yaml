@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: articles-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: articleservice
+  template:
+    metadata:
+      labels:
+        app: articleservice
+    spec:
+      containers:
+        - name: articleservice
+          image: kemtardif/articleservice:latest
+          imagePullPolicy: "Always"
+          envFrom:
+            - configMapRef:
+                name: article-config
+          volumeMounts:
+          - name: secrets
+            mountPath: /app/secrets
+            readOnly: true
+      volumes:
+      - name: secrets
+        secret:
+          secretName: article-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: article-clusterip-srv
+spec:
+  type: ClusterIP
+  selector:
+    app: articleservice
+  ports: 
+    - name: articleservice-clusterip-p
+      protocol: TCP
+      port: 80
+      targetPort: 80
+
+

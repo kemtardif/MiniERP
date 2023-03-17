@@ -1,10 +1,10 @@
-﻿namespace MiniERP.ArticleService.Exceptions
+﻿namespace MiniERP.InventoryService.Exceptions
 {
     public class SaveChangesException : Exception
     {
         public Type EntityType { get; set; }
-        public SaveChangesException(Type entityType, string message) 
-            : base(message) 
+        public SaveChangesException(Type entityType, string message)
+            : base(message)
         {
             EntityType = entityType;
         }

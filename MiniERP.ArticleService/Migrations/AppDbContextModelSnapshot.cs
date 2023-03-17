@@ -30,6 +30,15 @@ namespace MiniERP.ArticleService.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("AutoOrder")
+                        .HasColumnType("boolean");
+
+                    b.Property<double>("AutoQuantity")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("AutoTreshold")
+                        .HasColumnType("double precision");
+
                     b.Property<double>("BasePrice")
                         .HasColumnType("double precision");
 
@@ -45,6 +54,9 @@ namespace MiniERP.ArticleService.Migrations
 
                     b.Property<long>("EAN")
                         .HasColumnType("bigint");
+
+                    b.Property<double>("MaxQuantity")
+                        .HasColumnType("double precision");
 
                     b.Property<string>("Name")
                         .IsRequired()
