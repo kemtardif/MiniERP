@@ -1,9 +1,11 @@
-﻿using CommonLib.Dtos;
+﻿
+
+using MiniERP.ArticleService.MessageBus.Events;
 
 namespace MiniERP.ArticleService.MessageBus
 {
     public interface IMessageBusClient
     {
-        void PublishNewArticle(GenericEventDto dto);
+        void PublishNewArticle(GenericEvent dto);
     }
 }

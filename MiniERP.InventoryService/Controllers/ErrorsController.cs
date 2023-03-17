@@ -1,7 +1,7 @@
-﻿using CommonLib.Models;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using MiniERP.InventoryService.Models;
 using System.Net;
 
 namespace MiniERP.InventoryService.Controllers

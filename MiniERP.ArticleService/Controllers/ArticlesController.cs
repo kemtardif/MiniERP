@@ -56,7 +56,6 @@ public class ArticlesController : ControllerBase
     public ActionResult<ArticleReadDto> CreateArticle(ArticleCreateDto writeDto)
     {
         Article article = _mapper.Map<Article>(writeDto);
-        article.OpenStatus();
 
         if(!Validate(article))
         {
@@ -65,12 +64,11 @@ public class ArticlesController : ControllerBase
 
         _repository.AddArticle(article);
 
-        article.SetDatesToNow();
         _repository.SaveChanges();
 
         _logger.LogInformation("POST : Article Created : {id} : {date}", article.Id, DateTime.UtcNow);
 
-        _sender.RequestForPublish(RequestType.Created, article);
+        _sender.RequestForPublish(RequestType.Created, article, ChangeType.All);
 
         ArticleReadDto readDto = _mapper.Map<ArticleReadDto>(article);
         return CreatedAtRoute(nameof(GetArticleById), new { id = readDto.Id }, readDto);
@@ -86,17 +84,16 @@ public class ArticlesController : ControllerBase
 
         _repository.RemoveArticle(article);
 
-        article.SetUpdatedAtToNow();
         _repository.SaveChanges();
 
         _logger.LogInformation("DELETE Article : {id} -- {date}", article.Id, DateTime.UtcNow);
 
-        _sender.RequestForPublish(RequestType.Deleted, article);
+        _sender.RequestForPublish(RequestType.Deleted, article, ChangeType.All);
 
         return NoContent();
     }
     [HttpPatch("{id}")]
-    public ActionResult<ArticleReadDto> UpdateArticle(int id, JsonPatchDocument<ArticleUpdateDto> patchDoc )
+    public ActionResult<ArticleReadDto> UpdateArticle(int id, JsonPatchDocument<ArticleUpdateDto> json )
     {
         Article? article = _repository.GetArticleById(id);
         if (article is null)
@@ -104,22 +101,21 @@ public class ArticlesController : ControllerBase
             return NotFound();
         }
 
-        var articleToWrite = _mapper.Map<ArticleUpdateDto>(article);
-        patchDoc.ApplyTo(articleToWrite);
-
-        _mapper.Map(articleToWrite, article);
+        _repository.UpdateArticle(article, json);
 
         if(!Validate(article))
         {
             return UnprocessableEntity(ModelState);
         }
 
-        article.SetUpdatedAtToNow();
-        _repository.SaveChanges();       
 
-        _logger.LogInformation("PATCH : Article Updated : {id} -- {date}",  article.Id, DateTime.UtcNow);
+        ChangeType changed = _repository.TrackChanges(article);
 
-        _sender.RequestForPublish(RequestType.Updated, article);
+        _repository.SaveChanges();
+
+        _logger.LogInformation("PATCH : Article Updated : {id} -- {date}", article.Id, DateTime.UtcNow);
+
+        _sender.RequestForPublish(RequestType.Updated, article, changed);
 
         ArticleReadDto readDto = _mapper.Map<ArticleReadDto>(article);
         return Ok(readDto);

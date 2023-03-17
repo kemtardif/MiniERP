@@ -7,6 +7,7 @@ using MiniERP.InventoryService.Models;
 using MiniERP.InventoryService.Extensions;
 using MiniERP.InventoryService.Exceptions;
 using Microsoft.AspNetCore.Authorization;
+using System.Text.Json;
 
 namespace MiniERP.InventoryService.Controllers;
 
@@ -43,29 +44,13 @@ public class StocksController : ControllerBase
         return dtos;
     }
 
-    [HttpGet("{id}")]
-    public async Task<ActionResult<StockReadDto>> GetItemById(int id)
+    [HttpGet("{articleId}")]
+    public async Task<ActionResult<StockReadDto>> GetItemArticleById(int articleId)
     {
-        Stock? stock;
-        try
-        {
-            stock = await _cache.GetRecordAsync<Stock>(id.ToString());
-        } 
-        catch(DistributedCacheException ex)
-        {
-            _logger.LogError(ex.Message);
-            return Problem(ex.Message);
-        }
+        Stock? stock = await _repository.GetItemByArticleId(articleId);
 
         if(stock is not null)
         {
-            return Ok(_mapper.Map<StockReadDto>(stock));
-        }
-        stock = _repository.GetItemById(id);
-        if (stock is not null)
-        {
-            await _cache.SetRecordAsync(stock.Id.ToString(), stock);
-
             return Ok(_mapper.Map<StockReadDto>(stock));
         }
         return NotFound();

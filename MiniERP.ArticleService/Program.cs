@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Console;
 using MiniERP.ArticleService.Data;
-using MiniERP.ArticleService.Formatters;
 using MiniERP.ArticleService.MessageBus;
 using MiniERP.ArticleService.Models;
 using MiniERP.ArticleService.Validators;
@@ -48,12 +47,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
                 });
 
-// Add services to the container.
-
-builder.Services.AddControllers(opts =>
-{
-    opts.InputFormatters.Insert(0, JsonPatchFormatter.GetJsonPatchInputFormatter());
-})
+builder.Services.AddControllers()
+                .AddNewtonsoftJson()
                 .ConfigureApiBehaviorOptions(options =>
                 {
                     options.InvalidModelStateResponseFactory = context =>

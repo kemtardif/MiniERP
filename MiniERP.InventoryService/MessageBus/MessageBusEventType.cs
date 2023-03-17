@@ -1,4 +1,4 @@
-﻿namespace MiniERP.ArticleService.MessageBus
+﻿namespace MiniERP.InventoryService.MessageBus
 {
     public static class MessageBusEventType
     {

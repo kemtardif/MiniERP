@@ -2,6 +2,7 @@
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
 using System.Text;
+using System.Text.Json.Nodes;
 
 namespace MiniERP.InventoryService.MessageBus
 {
@@ -25,6 +26,7 @@ namespace MiniERP.InventoryService.MessageBus
                 UserName = configuration["RabbitMQUser"],
                 Password = configuration["RabbitMQPassword"],
                 VirtualHost = "/",
+                DispatchConsumersAsync = true
 
             };
             try
@@ -53,34 +55,23 @@ namespace MiniERP.InventoryService.MessageBus
         {
             stoppingToken.ThrowIfCancellationRequested();
 
-            var consumer = new EventingBasicConsumer(_channel);
+           var consumer = new AsyncEventingBasicConsumer(_channel);
 
             consumer.Received += ReceivedHandler;
 
             _channel?.BasicConsume(queue: _queueName, autoAck: false, consumer: consumer);
             return Task.CompletedTask;
         }
-        private void ReceivedHandler(object? consumer, BasicDeliverEventArgs args)
+        private async Task ReceivedHandler(object? consumer, BasicDeliverEventArgs args)
         {
             _logger.LogInformation("----> RabbitMQ : Message Received : {key} : {tag} :{date}",
                                         args.RoutingKey,
                                         args.DeliveryTag,
                                         DateTime.UtcNow);
 
-            string data = string.Empty;
-            try
-            {
-                data = Encoding.UTF8.GetString(args.Body.ToArray());
-            }
-            catch (DecoderFallbackException ex)
-            {
-                _logger.LogError("---> RabbitMQ Exception: {name} : {ex} : {tag} :{date}",
-                                    nameof(DecoderFallbackException),
-                                    ex.Message,
-                                    args.DeliveryTag,
-                                    DateTime.UtcNow);
-                return;
-            }
+            //Decoderfallback shouldn't happen since we use UTF8 always
+            string data = Encoding.UTF8.GetString(args.Body.ToArray());
+
             if (string.IsNullOrEmpty(data))
             {
                 _logger.LogInformation("---> RabbitMQ : No received data : {tag} : {date}",
@@ -89,7 +80,7 @@ namespace MiniERP.InventoryService.MessageBus
                 _channel?.BasicAck(args.DeliveryTag, false);
                 return;
             }
-            _processor.ProcessMessage(data);
+            await _processor.ProcessMessage(data);
 
             _channel?.BasicAck(args.DeliveryTag, false);
             _logger.LogInformation("---> RabbitMQ : MEssage Processed : {tag} : {date}",

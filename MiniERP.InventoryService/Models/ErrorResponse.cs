@@ -1,6 +1,4 @@
-﻿
-
-namespace CommonLib.Models
+﻿namespace MiniERP.InventoryService.Models
 {
     public class ErrorResponse
     {

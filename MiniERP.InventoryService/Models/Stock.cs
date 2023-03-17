@@ -12,6 +12,13 @@
         public double AutoQuantity { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set;}
+        public void SetUpdatedAtToCurrentTime() => UpdatedAt = DateTime.UtcNow;
+        public void SetCreatedAdToCurrentTime() => CreatedAt = DateTime.UtcNow;
+        public void SetAsDiscontinued()
+        {
+            Discontinued = true;
+            AutoOrder = false;
+        }
     }
  
 }

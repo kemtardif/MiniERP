@@ -7,11 +7,10 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
-COPY ["MiniERP.ArticleService/MiniERP.ArticleService.csproj", "MiniERP.ArticleService/"]
-COPY ["CommonLib/CommonLib.csproj", "CommonLib/"]
-RUN dotnet restore "MiniERP.ArticleService/MiniERP.ArticleService.csproj"
+COPY ["MiniERP.ArticleService.csproj", "."]
+RUN dotnet restore "MiniERP.ArticleService.csproj"
 COPY . .
-WORKDIR "/src/MiniERP.ArticleService"
+WORKDIR "/src"
 RUN dotnet build "MiniERP.ArticleService.csproj" -c Release -o /app/build
 
 FROM build AS publish

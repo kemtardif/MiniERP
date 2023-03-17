@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using CommonLib.Dtos;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 using MiniERP.ArticleService.Dtos;
+using MiniERP.ArticleService.MessageBus.Events;
 using MiniERP.ArticleService.Models;
 
 namespace MiniERP.ArticleService.Profiles
@@ -14,7 +14,7 @@ namespace MiniERP.ArticleService.Profiles
             CreateMap<Article, ArticleReadDto>();
             CreateMap<ArticleCreateDto, Article>();
             CreateMap<Article, ArticleCreateDto>();
-            CreateMap<Article, ArticleEventDto>();
+            CreateMap<Article, InventoryEvent>();
             CreateMap<ArticleUpdateDto, Article>();
             CreateMap<Article, ArticleUpdateDto>();
 

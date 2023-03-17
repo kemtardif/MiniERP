@@ -2,7 +2,8 @@
 using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
 using System.Text;
-using CommonLib.Dtos;
+using MiniERP.ArticleService.Dtos;
+using MiniERP.ArticleService.MessageBus.Events;
 
 namespace MiniERP.ArticleService.MessageBus
 {
@@ -39,7 +40,7 @@ namespace MiniERP.ArticleService.MessageBus
 
             _channel = _connection.CreateModel();
 
-            _channel.ExchangeDeclare(exchange: "article", type: ExchangeType.Fanout);
+            _channel.ExchangeDeclare(exchange: "article", type: ExchangeType.Direct);
 
             _logger.LogInformation("---> Connected to RabbitMQ Message Bus : {date}", DateTime.UtcNow);
         }
@@ -61,7 +62,7 @@ namespace MiniERP.ArticleService.MessageBus
             }          
         }
 
-        public void PublishNewArticle(GenericEventDto dto)
+        public void PublishNewArticle(GenericEvent dto)
         {
             if(dto is null)
             {
@@ -80,15 +81,15 @@ namespace MiniERP.ArticleService.MessageBus
 
             string message = JsonSerializer.Serialize(dto);
   
-            PublishMessage(message, dto.EventName);
+            PublishMessage(message, dto.EventName, dto.RoutingKey);
 
         }
-        private void PublishMessage(string message, string eventName)
+        private void PublishMessage(string message, string eventName, string routingKey)
         {
             byte[] body = Encoding.UTF8.GetBytes(message);
 
             _channel?.BasicPublish(exchange: "article",
-                            routingKey: string.Empty,
+                            routingKey: routingKey,
                             basicProperties: null,
                             body: body);
             _logger.LogInformation("RabbitMQ : {method} : Message Published :  {event}:{date}", nameof(PublishMessage), 
