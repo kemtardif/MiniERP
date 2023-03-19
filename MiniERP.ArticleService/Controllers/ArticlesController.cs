@@ -8,6 +8,9 @@ using MiniERP.ArticleService.Data;
 using MiniERP.ArticleService.Dtos;
 using MiniERP.ArticleService.MessageBus;
 using MiniERP.ArticleService.Models;
+using MiniERP.ArticleService.Services;
+using System.Collections.Generic;
+using System.Windows.Markup;
 
 namespace MiniERP.ArticleService.Controllers;
 
@@ -17,121 +20,119 @@ namespace MiniERP.ArticleService.Controllers;
 public class ArticlesController : ControllerBase
 {
     private readonly ILogger<ArticlesController> _logger;
-    private readonly IArticleRepository _repository;
-    private readonly IMapper _mapper;
-    private readonly IMessageBusSender<Article> _sender;
-    private readonly IValidator<Article> _validator;
+    private readonly IArticleService _articleService;
 
-    public ArticlesController(ILogger<ArticlesController> logger, 
-                                IArticleRepository repository, 
-                                IMapper mapper,
-                                IMessageBusSender<Article> sender,
-                                IValidator<Article> validator)
+    public ArticlesController(ILogger<ArticlesController> logger,
+                            IArticleService articleService)
     {
         _logger = logger;
-        _repository = repository;
-        _mapper = mapper;
-        _sender = sender;
-        _validator = validator;
+        _articleService = articleService;
     }
 
     [HttpGet]
     public ActionResult<ArticleReadDto> GetAllArticles()
     {
-        IEnumerable<Article> articles = _repository.GetAllArticles();
-        return Ok(_mapper.Map<IEnumerable<ArticleReadDto>>(articles));
+        try
+        {
+            Result<IEnumerable<ArticleReadDto>> result = _articleService.GetAllArticles();
+
+            return Ok(result.Value);
+        } 
+        catch(Exception ex)
+        {
+            _logger.LogError("{id} : An error occured while getting all articles : {error} : {date}",
+                                HttpContext.TraceIdentifier,
+                                ex.Message,
+                                DateTime.UtcNow);
+            throw new HttpFriendlyException("An error occured while getting all articles", ex);
+        }
     }
 
     [HttpGet("{id}", Name = nameof(GetArticleById))]
     public ActionResult<ArticleReadDto> GetArticleById(int id)
     {
-        Article? article = _repository.GetArticleById(id);
-        if(article is null)
+        try
         {
-            return NotFound();
+            Result<ArticleReadDto> result = _articleService.GetArticleById(id);
+
+            if (!result.IsSuccess)
+            {
+                return NotFound();
+            }
+
+            return Ok(result.Value);
+        } 
+        catch(Exception ex)
+        {
+            throw new HttpFriendlyException($"An error occured while getting article : ID = {id}", ex);
         }
-        return Ok(_mapper.Map<ArticleReadDto>(article));
     }
+
     [HttpPost]
     public ActionResult<ArticleReadDto> CreateArticle(ArticleCreateDto writeDto)
     {
-        Article article = _mapper.Map<Article>(writeDto);
-
-        if(!Validate(article))
+        try
         {
-            return UnprocessableEntity(ModelState);
-        }
+            Result<ArticleReadDto> result = _articleService.CreateArticle(writeDto);
 
-        _repository.AddArticle(article);
+            if (!result.IsSuccess)
+            {
+                return UnprocessableEntity(result.Errors);
+            }
 
-        _repository.SaveChanges();
-
-        _logger.LogInformation("POST : Article Created : {id} : {date}", article.Id, DateTime.UtcNow);
-
-        _sender.RequestForPublish(RequestType.Created, article, ChangeType.All);
-
-        ArticleReadDto readDto = _mapper.Map<ArticleReadDto>(article);
-        return CreatedAtRoute(nameof(GetArticleById), new { id = readDto.Id }, readDto);
+            return CreatedAtRoute(nameof(GetArticleById), new { id = result.Value.Id }, result.Value);
+        } 
+        catch(Exception ex)
+        {
+            throw new HttpFriendlyException($"An error occured while creating article", ex);
+        }       
     }
+
     [HttpDelete("{id}")]
     public ActionResult<ArticleReadDto> RemoveArticle(int id)
     {
-        Article? article = _repository.GetArticleById(id);
-        if (article is null)
+        try
         {
-            return NotFound();
+            Result result = _articleService.RemoveArticleById(id);
+
+            if (!result.IsSuccess)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
         }
-
-        _repository.RemoveArticle(article);
-
-        _repository.SaveChanges();
-
-        _logger.LogInformation("DELETE Article : {id} -- {date}", article.Id, DateTime.UtcNow);
-
-        _sender.RequestForPublish(RequestType.Deleted, article, ChangeType.All);
-
-        return NoContent();
+        catch(Exception ex)
+        {
+            throw new HttpFriendlyException($"An error occured while removing article : {id}", ex);
+        }
     }
+
     [HttpPatch("{id}")]
     public ActionResult<ArticleReadDto> UpdateArticle(int id, JsonPatchDocument<ArticleUpdateDto> json )
     {
-        Article? article = _repository.GetArticleById(id);
-        if (article is null)
+        try
         {
-            return NotFound();
-        }
+            Result<ArticleReadDto> result = _articleService.PatchArticle(id, json);
 
-        _repository.UpdateArticle(article, json);
+            if (!result.IsSuccess)
+            {
+                if (result.Errors.TryGetValue(nameof(Article), out string[]? value)
+                    && value is not null)
+                {
+                    return NotFound(value);
+                }
+                else
+                {
+                    return UnprocessableEntity(result.Errors);
+                }
+            }
 
-        if(!Validate(article))
+            return Ok(result.Value);
+        } 
+        catch(Exception ex)
         {
-            return UnprocessableEntity(ModelState);
-        }
-
-
-        ChangeType changed = _repository.TrackChanges(article);
-
-        _repository.SaveChanges();
-
-        _logger.LogInformation("PATCH : Article Updated : {id} -- {date}", article.Id, DateTime.UtcNow);
-
-        _sender.RequestForPublish(RequestType.Updated, article, changed);
-
-        ArticleReadDto readDto = _mapper.Map<ArticleReadDto>(article);
-        return Ok(readDto);
-    }
-
-    private bool Validate(Article article)
-    {
-        ValidationResult result = _validator.Validate(article);
-        if(result.IsValid)
-        {
-            return true;
-        }
-        foreach(ValidationFailure failure in result.Errors)
-        {
-            ModelState.AddModelError(failure.PropertyName, failure.ErrorMessage);
-        }
-        return false;
+            throw new HttpFriendlyException($"An error occured while updating article : {id}", ex);
+        }       
     }
 }

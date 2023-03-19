@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging.Console;
 using MiniERP.ArticleService.Data;
 using MiniERP.ArticleService.MessageBus;
 using MiniERP.ArticleService.Models;
+using MiniERP.ArticleService.Services;
 using MiniERP.ArticleService.Validators;
 using System.Net.Mime;
 
@@ -26,6 +27,8 @@ builder.Configuration
 
 builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
 builder.Services.AddScoped<IUnitRepository, UnitRepository>();
+builder.Services.AddScoped<IArticleService, ArticleService>();
+builder.Services.AddScoped<IUnitService, UnitService>();
 builder.Services.AddScoped<IValidator<Article>, ArticleValidator>();
 builder.Services.AddScoped<IValidator<Unit>, UnitValidator>();
 

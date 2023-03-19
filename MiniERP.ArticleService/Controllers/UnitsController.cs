@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using MiniERP.ArticleService.Data;
 using MiniERP.ArticleService.Dtos;
 using MiniERP.ArticleService.Models;
+using MiniERP.ArticleService.Services;
 
 namespace MiniERP.ArticleService.Controllers
 {
@@ -16,66 +17,76 @@ namespace MiniERP.ArticleService.Controllers
     public class UnitsController : ControllerBase
     {
         private readonly ILogger<UnitsController> _logger;
-        private readonly IUnitRepository _repository;
-        private readonly IMapper _mapper;
-        private readonly IValidator<Unit> _validator;
+        private readonly IUnitService _unitService;
 
         public UnitsController(ILogger<UnitsController> logger, 
-                                IUnitRepository repository, 
-                                IMapper mapper,
-                                IValidator<Unit> validator)
+                                IUnitService unitService)
         {
             _logger = logger;
-            _repository = repository;
-            _mapper = mapper;
-            _validator = validator;
+            _unitService = unitService;
         }
         [HttpGet]
-        public ActionResult<UnitReadDto> GetAllUnitss()
+        public ActionResult<UnitReadDto> GetAllUnits()
         {
-            IEnumerable<Unit> units = _repository.GetAllUnits();
-            return Ok(_mapper.Map<IEnumerable<UnitReadDto>>(units));
+            try
+            {
+                Result<IEnumerable<UnitReadDto>> result = _unitService.GetAllUnits();
+
+                return Ok(result.Value);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("{id} : An error occured while getting all units : {error} : {date}",
+                    HttpContext.TraceIdentifier,
+                    ex.Message,
+                    DateTime.UtcNow);
+                throw new HttpFriendlyException("An error occured while getting all articles", ex);
+            }
         }
 
         [HttpGet("{id}", Name = nameof(GetUnitById))]
         public ActionResult<UnitReadDto> GetUnitById(int id)
         {
-            Unit? unit = _repository.GetUnitById(id);
-            if (unit is null)
+            try
             {
-                return NotFound();
+                Result<UnitReadDto> result = _unitService.GetUnitById(id);
+                if (!result.IsSuccess)
+                {
+                    return NotFound();
+                }
+
+                return Ok(result.Value);
             }
-            return Ok(_mapper.Map<UnitReadDto>(unit));
+            catch (Exception ex)
+            {
+                _logger.LogError("{id} : An error occured while getting all units : {error} : {date}",
+                    HttpContext.TraceIdentifier,
+                    ex.Message,
+                    DateTime.UtcNow);
+                throw new HttpFriendlyException("An error occured while getting all articles", ex);
+            }
         }
         [HttpPost]
         public ActionResult<UnitReadDto> CreateUnit(UnitWriteDto writeDto)
         {
-            Unit unit = _mapper.Map<Unit>(writeDto);
-            unit.CreatedAt = unit.UpdatedAt = DateTime.UtcNow;
-
-            if(!Validate(unit))
+            try
             {
-                return UnprocessableEntity(ModelState);
-            }
+                Result<UnitReadDto> result = _unitService.CreateUnit(writeDto);
+                if (!result.IsSuccess)
+                {
+                    return UnprocessableEntity(result.Errors);
+                }
 
-            _repository.AddUnit(unit);
-            _repository.SaveChanges();
-
-            UnitReadDto readDto = _mapper.Map<UnitReadDto>(unit);
-            return CreatedAtRoute(nameof(GetUnitById), new { id = readDto.Id }, readDto);
-        }
-        private bool Validate(Unit unit)
-        {
-            ValidationResult result = _validator.Validate(unit);
-            if (result.IsValid)
-            {
-                return true;
+                return CreatedAtRoute(nameof(GetUnitById), new { id = result.Value.Id }, result.Value);
             }
-            foreach (ValidationFailure failure in result.Errors)
+            catch (Exception ex)
             {
-                ModelState.AddModelError(failure.PropertyName, failure.ErrorMessage);
+                _logger.LogError("{id} : An error occured while getting all units : {error} : {date}",
+                    HttpContext.TraceIdentifier,
+                    ex.Message,
+                    DateTime.UtcNow);
+                throw new HttpFriendlyException("An error occured while getting all articles", ex);
             }
-            return false;
         }
     }
 }

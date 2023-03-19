@@ -17,13 +17,13 @@ namespace MiniERP.ArticleService.MessageBus
                                      IMapper mapper, 
                                      IMessageBusClient messageBus)
         {
-            _mapper = mapper;
-            _messageBus = messageBus;
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _messageBus = messageBus ?? throw new ArgumentNullException(nameof(messageBus));
         }
-        public void RequestForPublish(RequestType type, Article article, ChangeType changeType)
+        public void RequestForPublish(RequestType type, ChangeType changeType, Article article)
         {
             string eventName = GetEventName(type);
-            IEnumerable<GenericEvent> events = GetEvents(eventName, article, changeType);
+            IEnumerable<GenericEvent> events = GetEvents(eventName, changeType, article);
 
             foreach(GenericEvent evnt in events)
             {
@@ -38,10 +38,10 @@ namespace MiniERP.ArticleService.MessageBus
                 RequestType.Created => MessageBusEventType.ArticleCreated,
                 RequestType.Deleted => MessageBusEventType.ArticleDeleted,
                 RequestType.Updated => MessageBusEventType.ArticleUpdated,
-                _ => throw new ArgumentNullException(nameof(type)),
+                _ => throw new ArgumentException(nameof(RequestType)),
             };
         }
-        private IEnumerable<GenericEvent> GetEvents(string eventName, Article article, ChangeType change)
+        private IEnumerable<GenericEvent> GetEvents(string eventName, ChangeType change, Article article)
         {
             List<GenericEvent> events = new();
 

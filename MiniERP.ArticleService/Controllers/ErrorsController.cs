@@ -19,33 +19,36 @@ namespace MiniERP.ArticleService.Controllers
         [Route("error")]
         public ErrorResponse Error()
         {
+            HttpContext.Response.StatusCode = 500;
+
             var context = HttpContext.Features.Get<IExceptionHandlerFeature>();
-            if (context == null)
+            if (context is null)
             {
-                _logger.LogCritical("---> {name} : {iexcetion} error : {date}",
-                                    nameof(ErrorsController),
+                _logger.LogCritical("Critical error : {err} : {id} : {date}",
                                     nameof(IExceptionHandlerFeature),
+                                    HttpContext.TraceIdentifier,
                                     DateTime.UtcNow);
                 return new ErrorResponse("Critical internal error");
             }
 
             Exception exception = context.Error;
 
-
-            int code = exception switch
+            switch(exception)
             {
-                JsonPatchException json => (int)HttpStatusCode.UnprocessableEntity,
-                _ => (int)HttpStatusCode.InternalServerError,
-            };
-
-            _logger.LogError("Exception : {ex}: {stack} : {date}",
+                case HttpFriendlyException friendly:
+                    _logger.LogError("{friendly} : {message} : {id} : {date}",
                                       exception.Message,
-                                      exception.StackTrace,
+                                      exception.InnerException?.Message,
+                                      HttpContext.TraceIdentifier,
                                       DateTime.UtcNow);
-
-            HttpContext.Response.StatusCode = code;
-
-            return new ErrorResponse(exception.Message);
+                    return new ErrorResponse(exception.Message);
+                default:
+                    _logger.LogError("{ex} : {id} : {date}",
+                                      exception.Message,
+                                      HttpContext.TraceIdentifier,
+                                      DateTime.UtcNow);
+                    return new ErrorResponse("Critical internal error");
+            }
         }
     }
 }
