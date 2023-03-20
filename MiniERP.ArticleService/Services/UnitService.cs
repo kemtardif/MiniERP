@@ -3,7 +3,6 @@ using FluentValidation;
 using FluentValidation.Results;
 using MiniERP.ArticleService.Data;
 using MiniERP.ArticleService.Dtos;
-using MiniERP.ArticleService.MessageBus;
 using MiniERP.ArticleService.Models;
 
 namespace MiniERP.ArticleService.Services
@@ -55,7 +54,7 @@ namespace MiniERP.ArticleService.Services
 
             return Result<IEnumerable<UnitReadDto>>.Success(unitDtos);
         }
-        Result<UnitReadDto> GetUnitById(int id)
+        public Result<UnitReadDto> GetUnitById(int id)
         {
             Unit? unit = _repository.GetUnitById(id);
             if (unit is null)

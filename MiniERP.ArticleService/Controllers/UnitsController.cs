@@ -1,10 +1,7 @@
-﻿using AutoMapper;
-using FluentValidation;
-using FluentValidation.Results;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MiniERP.ArticleService.Data;
 using MiniERP.ArticleService.Dtos;
+using MiniERP.ArticleService.Exceptions;
 using MiniERP.ArticleService.Models;
 using MiniERP.ArticleService.Services;
 

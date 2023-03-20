@@ -1,6 +1,6 @@
 ﻿namespace MiniERP.InventoryService.MessageBus.Responses
 {
-    public class ArticleResponse : GenericEvent
+    public class ArticleResponse : GenericResponse
     {
         public int Id { get; set; }
         public double MaxQuantity { get; set; }

@@ -1,10 +1,7 @@
 ﻿using AutoMapper;
-using Microsoft.Extensions.Logging;
 using MiniERP.ArticleService.Data;
-using MiniERP.ArticleService.Dtos;
 using MiniERP.ArticleService.MessageBus.Events;
 using MiniERP.ArticleService.Models;
-using System;
 
 namespace MiniERP.ArticleService.MessageBus
 {

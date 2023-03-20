@@ -6,7 +6,6 @@ using MiniERP.ArticleService.Data;
 using MiniERP.ArticleService.Dtos;
 using MiniERP.ArticleService.MessageBus;
 using MiniERP.ArticleService.Models;
-using Newtonsoft.Json;
 
 namespace MiniERP.ArticleService.Services
 {

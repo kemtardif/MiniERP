@@ -1,13 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using MiniERP.InventoryService.Dtos;
-using MiniERP.InventoryService.Exceptions;
 using MiniERP.InventoryService.Extensions;
 using MiniERP.InventoryService.MessageBus.Responses;
 using MiniERP.InventoryService.Models;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
 
 namespace MiniERP.InventoryService.Data
 {
@@ -41,7 +37,6 @@ namespace MiniERP.InventoryService.Data
 
             _context.InventoryItems.Add(item);
 
-            _context.SaveChanges();
         }
 
         //No cache involved
@@ -51,7 +46,7 @@ namespace MiniERP.InventoryService.Data
         }
 
         // GET cache or add if exists but notpresent
-        public async Task<Stock?> GetItemByArticleId(int articleId)
+        public async Task<Stock?> GetItemByArticleIdAsync(int articleId)
         {
             Stock? stock = await _cache.GetRecordAsync<Stock?>(articleId.ToString());
             if (stock is not null)
@@ -80,7 +75,7 @@ namespace MiniERP.InventoryService.Data
         }
 
         //Remove from cache
-        public async Task RemoveItem(Stock item)
+        public void RemoveItem(Stock item)
         {
             if (item is null)
             {
@@ -88,14 +83,10 @@ namespace MiniERP.InventoryService.Data
             }
 
             _context.InventoryItems.Remove(item);
-
-            _context.SaveChanges();
-
-            await _cache.RemoveAsync(item.ProductId.ToString());
         }
 
         //Update cache if exists
-        public async Task SetAsDiscontinued(Stock item)
+        public void SetAsDiscontinued(Stock item)
         {
             if(item is null)
             {
@@ -104,32 +95,57 @@ namespace MiniERP.InventoryService.Data
 
             item.SetAsDiscontinued();
             item.SetUpdatedAtToCurrentTime();
-            
-            _context.SaveChanges();
+        }
+        public void SetAsClosed(Stock item)
+        {
+            if (item is null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
 
-            await UpdateCacheIfItemExists(item);
+            item.SetAsClosed();
+            item.SetUpdatedAtToCurrentTime();
         }
         //Update cache if exists
-        public async Task UpdateFromMessage(Stock item, ArticleResponse article)
+        public void UpdateFromMessage(Stock item, ArticleResponse article)
         {
             _mapper.Map(article, item);
 
             item.SetUpdatedAtToCurrentTime();
-
-            _context.SaveChanges();
-
-           await UpdateCacheIfItemExists(item);
         }
-        private async Task  UpdateCacheIfItemExists(Stock item)
+        public async Task SaveChanges()
         {
-            Stock? stock = await _cache.GetRecordAsync<Stock?>(item.ProductId.ToString());
-            if (stock is not null)
+            List<int> modifiedList = GetChanges();
+
+            if(_context.SaveChanges() > 0)
             {
-                _logger.LogInformation("---> CACHE HIT : {method} : {id}", nameof(UpdateCacheIfItemExists), item.ProductId);
-                await _cache.SetRecordAsync(item.ProductId.ToString(), item);
-                return;
+                await InvalidateCacheChanges(modifiedList);
             }
-            _logger.LogInformation("---> CACHE MISS : {method} : {id}", nameof(UpdateCacheIfItemExists), item.ProductId);
+        }
+        public Stock? GetItemByArticleIdFromSource(int articleId)
+        {
+           return _context.InventoryItems.FirstOrDefault(x => x.ProductId == articleId);
+        }
+        private List<int> GetChanges()
+        {
+            List<int> modifiedList = new();
+
+            foreach (var entity in _context.ChangeTracker.Entries<Stock>())
+            {
+                if (entity.State != EntityState.Unchanged
+                    || entity.State != EntityState.Added)
+                {
+                    modifiedList.Add(entity.Entity.ProductId);
+                }
+            }
+            return modifiedList;
+        }
+        private async Task InvalidateCacheChanges(List<int> changes)
+        {
+            foreach(int id in changes)
+            {
+                await _cache.RemoveAsync(id.ToString());
+            }
         }
     }
 }

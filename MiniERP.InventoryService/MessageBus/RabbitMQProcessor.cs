@@ -1,9 +1,8 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
 using MiniERP.InventoryService.Data;
 using MiniERP.InventoryService.Exceptions;
-using MiniERP.InventoryService.Extensions;
 using MiniERP.InventoryService.MessageBus.Responses;
 using MiniERP.InventoryService.Models;
 using System.Text.Json;
@@ -46,9 +45,40 @@ namespace MiniERP.InventoryService.MessageBus
                     await ArticleUpdated(message);
                     break;
                 default:
-                    _logger.LogInformation("---->  NOTHING TO SEE PROCESS");
                     return;
             }
+        }
+
+        #region Private Methods
+        private EventType GetEventType(string message)
+        {
+            GenericResponse? generic;
+            try
+            {
+                generic = JsonSerializer.Deserialize<GenericResponse>(message);
+
+            }
+            catch (Exception ex)
+            {
+                HandleException(nameof(GetEventType), ex);
+                return EventType.Undefined;
+            }
+
+            if (generic is null)
+            {
+                _logger.LogInformation("--->RabbitMQ : Deserialized message is null : {method} : {date}",
+                                            nameof(GetEventType),
+                                            DateTime.UtcNow);
+                return EventType.Undefined;
+            }
+
+            return generic.EventName switch
+            {
+                MessageBusEventType.ArticleCreated => EventType.ArticleCreated,
+                MessageBusEventType.ArticleDeleted => EventType.ArticleDeleted,
+                MessageBusEventType.ArticleUpdated => EventType.ArticleUpdated,
+                _ => EventType.Undefined,
+            };
         }
         private async Task ArticleUpdated(string message)
         {
@@ -62,21 +92,9 @@ namespace MiniERP.InventoryService.MessageBus
                 await UpdateArticleResponse(dto);
                   
             }
-            catch (JsonException ex)
+            catch (Exception ex)
             {
-                _logger.LogError("--->RabbitMQ Exception : {method} : {name} : {ex} : {date}",
-                                nameof(GetEventType),
-                                nameof(JsonException),
-                                ex.Message,
-                                DateTime.UtcNow);
-            }
-            catch (DbUpdateException sCEx)
-            {
-                _logger.LogError("--->RabbitMQ Exception : {method} : {name} : {ex} : {date}",
-                                nameof(GetEventType),
-                                nameof(DbUpdateException),
-                                sCEx.Message,
-                                DateTime.UtcNow);
+                HandleException(nameof(ArticleUpdated), ex);
             }
         }
 
@@ -93,21 +111,9 @@ namespace MiniERP.InventoryService.MessageBus
                 await AddArticleResponse(dto);
 
             }
-            catch(JsonException ex)
+            catch(Exception ex)
             {
-                _logger.LogError("--->RabbitMQ Exception : {method} : {name} : {ex} : {date}",
-                                nameof(GetEventType),
-                                nameof(JsonException),
-                                ex.Message,
-                                DateTime.UtcNow);
-            }
-            catch(SaveChangesException sCEx) 
-            {
-                _logger.LogError("--->RabbitMQ Exception : {method} : {name} : {ex} : {date}",
-                                nameof(GetEventType),
-                                nameof(SaveChangesException),
-                                sCEx.Message,
-                                DateTime.UtcNow);
+                HandleException(nameof(ArticleCreated), ex);
             }
         }
        
@@ -125,57 +131,18 @@ namespace MiniERP.InventoryService.MessageBus
             }
             catch (JsonException ex)
             {
-                _logger.LogError("--->RabbitMQ Exception : {method} : {name} : {ex} : {date}",
-                                nameof(GetEventType),
-                                nameof(JsonException),
-                                ex.Message,
-                                DateTime.UtcNow);
-            }
-            catch (DbUpdateException sCEx)
-            {
-                _logger.LogError("--->RabbitMQ Exception : {method} : {name} : {ex} : {date}",
-                                nameof(GetEventType),
-                                nameof(DbUpdateException),
-                                sCEx.Message,
-                                DateTime.UtcNow);
+                HandleException(nameof(ArticleDeleted), ex);
             }
         }
-
-        private EventType GetEventType(string message)
+        
+        private void HandleException(string method, Exception exception)
         {
-            GenericEvent? generic;
-            try
-            {
-                generic = JsonSerializer.Deserialize<GenericEvent>(message);
-
-            }
-            catch(JsonException ex)
-            {
-                _logger.LogError("--->RabbitMQ Exception : {method} : {name} : {ex} : {date}",
-                                    nameof(GetEventType),
-                                    nameof(JsonException),
-                                    ex.Message,
+            _logger.LogError("--->RabbitMQ Exception : {method} : {name} : {ex} : {date}",
+                                    method,
+                                    exception.GetType().Name,
+                                    exception.Message,
                                     DateTime.UtcNow);
-                return EventType.Undefined;
-            }
-            if(generic is null)
-            {
-                _logger.LogInformation("--->RabbitMQ : Deserialized message is null : {method} : {date}",
-                                            nameof(GetEventType),
-                                            DateTime.UtcNow);
-                return EventType.Undefined;
-            }
-
-            return generic.EventName switch
-            {
-                MessageBusEventType.ArticleCreated => EventType.ArticleCreated,
-                MessageBusEventType.ArticleDeleted => EventType.ArticleDeleted,
-                MessageBusEventType.ArticleUpdated => EventType.ArticleUpdated,
-                _ => EventType.Undefined,
-            };
         }
-
-        #region Helper Functions
         private ArticleResponse? DeserializeToArticleResponse(string message)
         {
             ArticleResponse? dto = JsonSerializer.Deserialize<ArticleResponse>(message);
@@ -195,6 +162,7 @@ namespace MiniERP.InventoryService.MessageBus
                 Stock stock = _mapper.Map<Stock>(dto);
 
                 repo.AddItem(stock);
+                await repo.SaveChanges();
 
                 _logger.LogInformation("---> RabbitMQ : New product saved has new Stock: {id} : {date}",
                                                stock.ProductId,
@@ -208,13 +176,14 @@ namespace MiniERP.InventoryService.MessageBus
             {
                 var repo = scope.ServiceProvider.GetRequiredService<IInventoryRepository>();
 
-                Stock? stock = await GetScopedStockByArticleId(repo, dto.Id);
+                Stock? stock = GetScopedStockByArticleId(repo, dto.Id);
                 if (stock is null)
                 {
                     return;
                 }
 
-                await repo.SetAsDiscontinued(stock);
+                repo.SetAsClosed(stock);
+                await repo.SaveChanges();
 
                 _logger.LogInformation("---> RabbitMQ : Stock deleted for product: {id} : {date}",
                                                stock.ProductId,
@@ -227,23 +196,23 @@ namespace MiniERP.InventoryService.MessageBus
             {
                 var repo = scope.ServiceProvider.GetRequiredService<IInventoryRepository>();
 
-                Stock? stock = await GetScopedStockByArticleId(repo, dto.Id);
+                Stock? stock = GetScopedStockByArticleId(repo, dto.Id);
                 if (stock is null)
                 {
                     return;
                 }
 
-                await repo.UpdateFromMessage(stock, dto);
-
+                repo.UpdateFromMessage(stock, dto);
+                await repo.SaveChanges();
 
                 _logger.LogInformation("---> RabbitMQ : Stock updated from article : {id} : {date}",
                                                stock.ProductId,
                                                DateTime.UtcNow);
             }
         }
-        private async Task<Stock?> GetScopedStockByArticleId(IInventoryRepository repo, int id)
+        private Stock? GetScopedStockByArticleId(IInventoryRepository repo, int id)
         {
-            Stock? stock = await repo.GetItemByArticleId(id);
+            Stock? stock = repo.GetItemByArticleIdFromSource(id);
             if (stock is null)
             {
                 _logger.LogWarning("---> RabbitMQ : Article for update not in stock : {id} : {date}",

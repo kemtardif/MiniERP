@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.JsonPatch;
 using MiniERP.ArticleService.Dtos;
 using MiniERP.ArticleService.Models;
-using System.Text.Json;
 
 namespace MiniERP.ArticleService.Data
 {

@@ -4,6 +4,7 @@
     {
         public int Id { get; set; }
         public int ProductId { get; set; }
+        public int Status { get; set; }
         public bool Discontinued { get; set; }
         public double Quantity { get; set; }
         public double MaxQuantity { get; set; }
@@ -17,6 +18,11 @@
         public void SetAsDiscontinued()
         {
             Discontinued = true;
+            AutoOrder = false;
+        }
+        public void SetAsClosed()
+        {
+            Status = 2;
             AutoOrder = false;
         }
     }

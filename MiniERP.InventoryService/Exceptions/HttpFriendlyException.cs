@@ -1,4 +1,4 @@
-﻿namespace MiniERP.ArticleService
+﻿namespace MiniERP.InventoryService.Exceptions
 {
     public class HttpFriendlyException : Exception
     {

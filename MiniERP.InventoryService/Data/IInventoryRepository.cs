@@ -7,10 +7,13 @@ namespace MiniERP.InventoryService.Data
     {
         IEnumerable<Stock> GetAllItems();
         Task<Stock?> GetItemById(int id);
-        Task<Stock?> GetItemByArticleId(int srticleId);
+        Task<Stock?> GetItemByArticleIdAsync(int articleId);
+        Stock? GetItemByArticleIdFromSource(int articleId);
         void AddItem(Stock item);
-        Task RemoveItem(Stock item);
-        Task SetAsDiscontinued(Stock item);
-        Task UpdateFromMessage(Stock item, ArticleResponse article);
+        void RemoveItem(Stock item);
+        void SetAsDiscontinued(Stock item);
+        void SetAsClosed(Stock item);
+        Task SaveChanges();
+        void UpdateFromMessage(Stock item, ArticleResponse article);
     }
 }

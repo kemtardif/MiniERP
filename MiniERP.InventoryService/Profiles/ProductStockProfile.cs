@@ -13,17 +13,7 @@ namespace MiniERP.InventoryService.Profiles
             CreateMap<ArticleResponse, Stock>()
                 .ForSourceMember(x => x.EventName, opts => opts.DoNotValidate())
                 .ForMember(dest => dest.ProductId,
-                            opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.Discontinued,
-                            opt => opt.MapFrom<StatusToDiscontinuedResolver>());
-        }
-    }
-    public class StatusToDiscontinuedResolver : IValueResolver<ArticleResponse, Stock, bool>
-    {
-
-        public bool Resolve(ArticleResponse source, Stock destination, bool destMember, ResolutionContext context)
-        {
-            return source.Status == 2;
+                            opt => opt.MapFrom(src => src.Id));
         }
     }
 }
