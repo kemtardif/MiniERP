@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniERP.ArticleService", "M
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniERP.InventoryService", "MiniERP.InventoryService\MiniERP.InventoryService.csproj", "{3AEEDEED-81B2-4587-BCB6-9A77DA6F7F24}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniERP.SalesOrderService", "MiniERP.SalesOrderService\MiniERP.SalesOrderService.csproj", "{182E6311-46FF-4A60-B34E-A1D1E3E35B2D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{3AEEDEED-81B2-4587-BCB6-9A77DA6F7F24}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3AEEDEED-81B2-4587-BCB6-9A77DA6F7F24}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3AEEDEED-81B2-4587-BCB6-9A77DA6F7F24}.Release|Any CPU.Build.0 = Release|Any CPU
+		{182E6311-46FF-4A60-B34E-A1D1E3E35B2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{182E6311-46FF-4A60-B34E-A1D1E3E35B2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{182E6311-46FF-4A60-B34E-A1D1E3E35B2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{182E6311-46FF-4A60-B34E-A1D1E3E35B2D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

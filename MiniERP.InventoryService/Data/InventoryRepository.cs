@@ -12,17 +12,14 @@ namespace MiniERP.InventoryService.Data
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
         private readonly IDistributedCache _cache;
-        private readonly ILogger<InventoryRepository> _logger;
 
         public InventoryRepository(AppDbContext context, 
                                     IMapper mapper,
-                                    IDistributedCache cache,
-                                    ILogger<InventoryRepository> logger)
+                                    IDistributedCache cache)
         {
             _context = context;
             _mapper = mapper;
             _cache = cache;
-            _logger = logger;
         }
 
         //Do not add to cache
@@ -39,7 +36,6 @@ namespace MiniERP.InventoryService.Data
 
         }
 
-        //No cache involved
         public IEnumerable<Stock> GetAllItems()
         {
             return _context.InventoryItems.ToList();
@@ -63,7 +59,6 @@ namespace MiniERP.InventoryService.Data
             return stock;
         }
 
-        //Add to cache
         public async Task<Stock?> GetItemById(int id)
         {
             Stock? stock = _context.InventoryItems.FirstOrDefault(x => x.Id == id);
@@ -74,7 +69,6 @@ namespace MiniERP.InventoryService.Data
             return stock;
         }
 
-        //Remove from cache
         public void RemoveItem(Stock item)
         {
             if (item is null)
@@ -85,7 +79,6 @@ namespace MiniERP.InventoryService.Data
             _context.InventoryItems.Remove(item);
         }
 
-        //Update cache if exists
         public void SetAsDiscontinued(Stock item)
         {
             if(item is null)
@@ -106,7 +99,7 @@ namespace MiniERP.InventoryService.Data
             item.SetAsClosed();
             item.SetUpdatedAtToCurrentTime();
         }
-        //Update cache if exists
+
         public void UpdateFromMessage(Stock item, ArticleResponse article)
         {
             _mapper.Map(article, item);
