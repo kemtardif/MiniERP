@@ -10,7 +10,7 @@ namespace MiniERP.SalesOrderService.Data
         SalesOrder? GetSalesOrderById(int id);
         void AddSalesOrder(SalesOrder salesOrder);
         void RemoveSalesOrder(SalesOrder salesOrder);
-        SalesOrder UpdateArticle(SalesOrder item, JsonPatchDocument<SalesOrderUpdateDto> json);
+        SalesOrder UpdateSalesOrder(SalesOrder item, JsonPatchDocument<SalesOrderUpdateDto> json);
         void SaveChanges();
 
     }

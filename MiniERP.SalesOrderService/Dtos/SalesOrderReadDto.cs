@@ -2,5 +2,6 @@
 {
     public class SalesOrderReadDto
     {
+        public int Id { get; set; } 
     }
 }

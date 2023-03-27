@@ -1,0 +1,119 @@
+﻿using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
+using MiniERP.SalesOrderService.Data;
+using MiniERP.SalesOrderService.Dtos;
+using MiniERP.SalesOrderService.Models;
+
+namespace MiniERP.SalesOrderService.Services
+{
+    public class SalesOrderService : ISalesOrderService
+    {
+        private readonly ILogger<SalesOrderService> _logger;
+        private readonly ISalesOrderRepository _repository;
+        private readonly IMapper _mapper;
+
+        public SalesOrderService(ILogger<SalesOrderService> logger,
+                                 ISalesOrderRepository repository,
+                                 IMapper mapper)
+        {
+            _logger = logger;
+            _repository = repository;
+            _mapper = mapper;
+        }
+        public Result<SalesOrderReadDto> AddSalesOrder(SalesOrderCreateDto salesOrder)
+        {
+            var so = _mapper.Map<SalesOrder>(salesOrder);
+
+            _repository.AddSalesOrder(so);
+
+            _repository.SaveChanges();
+
+            _logger.LogInformation("Sales Order Created : Id = {id}, Date = {date}", so.Id, DateTime.UtcNow);
+
+            var dto = _mapper.Map<SalesOrderReadDto>(so);
+
+            return Result<SalesOrderReadDto>.Success(dto);
+        }
+
+        public Result<IEnumerable<SalesOrderReadDto>> GetAllSalesOrders()
+        {
+            IEnumerable<SalesOrder> sos = _repository.GetAllSalesOrders();
+
+            var dtos = _mapper.Map<IEnumerable<SalesOrderReadDto>>(sos);
+
+            return Result<IEnumerable<SalesOrderReadDto>>.Success(dtos);
+        }
+
+        public Result<SalesOrderReadDto> GetSalesOrderById(int id)
+        {
+            SalesOrder? so = _repository.GetSalesOrderById(id);
+
+            if(so is null)
+            {
+                return Result<SalesOrderReadDto>.Failure(GetNotFoundResult(id));
+            }
+
+            var dto = _mapper.Map<SalesOrderReadDto>(so);
+
+            return Result<SalesOrderReadDto>.Success(dto);
+        }
+
+        public Result RemoveSalesOrderById(int id)
+        {
+            SalesOrder? so = _repository.GetSalesOrderById(id);
+
+            if(so is null)
+            {
+                return Result.Failure(GetNotFoundResult(id));
+            }
+            _repository.RemoveSalesOrder(so);
+
+            return Result.Success();
+        }
+
+        public Result<SalesOrderReadDto> UpdateSalesOrder(int id, JsonPatchDocument<SalesOrderUpdateDto> json)
+        {
+            SalesOrder? so = _repository.GetSalesOrderById(id);
+
+            if (so is null)
+            {
+                return Result<SalesOrderReadDto>.Failure(GetNotFoundResult(id));
+            }
+
+            try
+            {
+                _repository.UpdateSalesOrder(so, json);
+            } 
+            catch(Exception ex)
+            {
+                return Result<SalesOrderReadDto>.Failure(GetCaughtExceptionResult(ex.Message));
+            }
+
+            _repository.SaveChanges();
+
+            var dto = _mapper.Map<SalesOrderReadDto>(so);
+
+            return Result<SalesOrderReadDto>.Success(dto);
+
+        }
+
+        #region Private Methods
+
+        private IDictionary<string, string[]> GetNotFoundResult(int articleId)
+        {
+            return new Dictionary<string, string[]>
+            {
+                [nameof(SalesOrder)] = new string[] { $"Sales Order not found : ID = {articleId}" }
+            };
+        }
+
+        private IDictionary<string, string[]> GetCaughtExceptionResult(string message)
+        {
+            return new Dictionary<string, string[]>
+            {
+                ["message"] = new string[] { message }
+            };
+        }
+        #endregion
+    }
+}

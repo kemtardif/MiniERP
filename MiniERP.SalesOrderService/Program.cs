@@ -2,65 +2,62 @@ using Microsoft.AspNetCore.Mvc;
 using MiniERP.SalesOrderService.Data;
 using Microsoft.Extensions.Logging.Console;
 using System.Net.Mime;
+using MiniERP.SalesOrderService.Services;
 
-namespace MiniERP.SalesOrderService
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
+builder.Logging.AddSimpleConsole(opts =>
 {
-    public class Program
+    opts.ColorBehavior = LoggerColorBehavior.Enabled;
+    opts.TimestampFormat = "HH:mm:ss";
+});
+
+
+builder.Services.AddScoped<ISalesOrderRepository, SalesOrderRepository>();
+builder.Services.AddScoped<ISalesOrderService, SalesOrderService>();
+
+
+// Add services to the container.
+
+builder.Services.AddControllers()
+.ConfigureApiBehaviorOptions(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
     {
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
+        var result = new UnprocessableEntityObjectResult(context.ModelState);
 
-            builder.Logging.ClearProviders();
-            builder.Logging.AddSimpleConsole(opts =>
-            {
-                opts.ColorBehavior = LoggerColorBehavior.Enabled;
-                opts.TimestampFormat = "HH:mm:ss";
-            });
+        result.ContentTypes.Add(MediaTypeNames.Application.Json);
+        result.ContentTypes.Add(MediaTypeNames.Application.Xml);
 
+        return result;
+    };
+});
+builder.Services.AddAutoMapper(typeof(Program));
 
-            // Add services to the container.
+// Configure the HTTP request pipeline.
 
-            builder.Services.AddControllers()
-            .ConfigureApiBehaviorOptions(options =>
-            {
-                options.InvalidModelStateResponseFactory = context =>
-                {
-                    var result = new UnprocessableEntityObjectResult(context.ModelState);
+var app = builder.Build();
 
-                    result.ContentTypes.Add(MediaTypeNames.Application.Json);
-                    result.ContentTypes.Add(MediaTypeNames.Application.Xml);
+// Configure the HTTP request pipeline.
 
-                    return result;
-                };
-            });
-            builder.Services.AddAutoMapper(typeof(Program));
-
-            // Configure the HTTP request pipeline.
-
-            var app = builder.Build();
-
-            // Configure the HTTP request pipeline.
-
-            app.UseExceptionHandler(new ExceptionHandlerOptions()
-            {
-                AllowStatusCode404Response = true,
-                ExceptionHandlingPath = "/error"
-            });
+app.UseExceptionHandler(new ExceptionHandlerOptions()
+{
+    AllowStatusCode404Response = true,
+    ExceptionHandlingPath = "/error"
+});
 
 
-            // Handled via nginx ingress
-            //app.UseHttpsRedirection();
+// Handled via nginx ingress
+//app.UseHttpsRedirection();
 
-            app.UseAuthentication();
-            app.UseAuthorization();
+app.UseAuthentication();
+app.UseAuthorization();
 
 
-            app.MapControllers();
+app.MapControllers();
 
-            Migration.ApplyMigration(app);
+Migration.ApplyMigration(app);
 
-            app.Run();
-        }
-    }
-}
+app.Run();
+ 

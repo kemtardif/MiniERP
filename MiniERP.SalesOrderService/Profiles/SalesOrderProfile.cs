@@ -11,6 +11,7 @@ namespace MiniERP.SalesOrderService.Profiles
             CreateMap<SalesOrder, SalesOrderReadDto>();
             CreateMap<SalesOrderCreateDto, SalesOrder>();
             CreateMap<SalesOrderUpdateDto, SalesOrder>();
+            CreateMap<SalesOrder, SalesOrderUpdateDto>();
         }
     }
 }

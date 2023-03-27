@@ -95,7 +95,6 @@ namespace MiniERP.ArticleService.Services
                 return Result<ArticleReadDto>.Failure(GetCaughtExceptionResult(ex.Message));
             }
 
-            _repository.UpdateArticle(article, document);
 
             ValidationResult validationResult = _validator.Validate(article);
 

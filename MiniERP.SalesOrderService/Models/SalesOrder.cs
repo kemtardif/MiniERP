@@ -23,6 +23,5 @@
         Open = 1,
         Parked = 2,
         Closed = 3
-
     }
 }

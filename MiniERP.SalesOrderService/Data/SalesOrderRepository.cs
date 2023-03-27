@@ -21,6 +21,10 @@ namespace MiniERP.SalesOrderService.Data
             {
                 throw new ArgumentNullException(nameof(salesOrder));
             }
+
+            salesOrder.SetCreatedAdToCurrentTime();
+            salesOrder.SetUpdatedAtToCurrentTime();
+
             _context.SalesOrders.Add(salesOrder);
         }
 
@@ -42,17 +46,34 @@ namespace MiniERP.SalesOrderService.Data
             }
 
             salesOrder.SetAsClosed();
-
+            salesOrder.SetUpdatedAtToCurrentTime();
         }
 
         public void SaveChanges()
         {
-            throw new NotImplementedException();
+            _context.SaveChanges();
         }
 
-        public SalesOrder UpdateArticle(SalesOrder item, JsonPatchDocument<SalesOrderUpdateDto> json)
+        public SalesOrder UpdateSalesOrder(SalesOrder item, JsonPatchDocument<SalesOrderUpdateDto> json)
         {
-            throw new NotImplementedException();
+            if (item is null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+            if (json is null)
+            {
+                throw new ArgumentNullException(nameof(json));
+            }
+
+            var dto = _mapper.Map<SalesOrderUpdateDto>(item);
+
+            json.ApplyTo(dto);
+
+            _mapper.Map(dto, item);
+
+            item.SetUpdatedAtToCurrentTime();
+
+            return item;
         }
     }
 }
