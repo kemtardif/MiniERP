@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option csharp_namespace = "MiniERP.ArticleService.Protos";
+
+service GrpcInventory
+{
+    rpc InventoryItemsCreated(InventoryItemRequest) returns (GrpcInventoryResponse);
+    rpc InventoryItemsUpdated(InventoryItemRequest) returns (GrpcInventoryResponse);
+}
+
+message GrpcInventoryResponse 
+{
+    int32 itemProcessed = 1;
+}
+
+message GrpcInventoryItemModel
+{
+    int32 id = 1;
+    double maxquantity = 2;
+    bool autoOrder = 3;
+    double autoTreshold = 4;
+    double autoQuantity = 5;
+    int32 status = 6;
+}
+
+message InventoryItemRequest
+{
+    repeated GrpcInventoryItemModel inventoryItems = 1;
+}

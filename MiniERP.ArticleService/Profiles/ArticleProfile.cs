@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.JsonPatch.Operations;
 using MiniERP.ArticleService.Dtos;
 using MiniERP.ArticleService.MessageBus.Events;
 using MiniERP.ArticleService.Models;
+using MiniERP.ArticleService.Protos;
 
 namespace MiniERP.ArticleService.Profiles
 {
@@ -17,6 +18,7 @@ namespace MiniERP.ArticleService.Profiles
             CreateMap<Article, InventoryEvent>();
             CreateMap<ArticleUpdateDto, Article>();
             CreateMap<Article, ArticleUpdateDto>();
+            CreateMap<Article, GrpcInventoryItemModel>();
 
             CreateMap<JsonPatchDocument<ArticleUpdateDto>, JsonPatchDocument<Article>>();
             CreateMap<Operation<ArticleUpdateDto>, Operation<Article>>();

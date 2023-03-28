@@ -54,7 +54,7 @@ namespace MiniERP.InventoryService.MessageBus
         {
             stoppingToken.ThrowIfCancellationRequested();
 
-           var consumer = new AsyncEventingBasicConsumer(_channel);
+            var consumer = new AsyncEventingBasicConsumer(_channel);
 
             consumer.Received += ReceivedHandler;
 

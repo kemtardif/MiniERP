@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Console;
 using MiniERP.InventoryService.Data;
+using MiniERP.InventoryService.Grpc;
 using MiniERP.InventoryService.MessageBus;
 using MiniERP.InventoryService.Services;
 using System.Net.Mime;
@@ -16,10 +18,15 @@ builder.Logging.AddSimpleConsole(opts =>
     opts.TimestampFormat = "HH:mm:ss";
 });
 
-
 builder.Configuration
     .AddJsonFile("secrets/inventory.appsettings.secrets.json", optional: true)
     .AddEnvironmentVariables();
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(80, listenOptions => listenOptions.Protocols = HttpProtocols.Http1); //api
+    options.ListenAnyIP(8080, listenOptions => listenOptions.Protocols = HttpProtocols.Http2); //grpc
+});
 
 // Add services to the container.
 
@@ -47,6 +54,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 });
 
 builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddGrpc();
 
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
@@ -93,6 +101,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapGrpcService<GrpcInventoryService>();
 
 Migration.ApplyMigration(app);
 
