@@ -4,10 +4,8 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.JsonPatch;
 using MiniERP.ArticleService.Data;
 using MiniERP.ArticleService.Dtos;
-using MiniERP.ArticleService.Grpc;
 using MiniERP.ArticleService.MessageBus;
 using MiniERP.ArticleService.Models;
-using System.Transactions;
 
 namespace MiniERP.ArticleService.Services
 {
@@ -16,19 +14,19 @@ namespace MiniERP.ArticleService.Services
         private readonly ILogger<ArticleService> _logger;
         private readonly IArticleRepository _repository;
         private readonly IMapper _mapper;
-        private readonly IInventoryDataClient _dataClient;
+        private readonly IMessageBusSender<Article> _sender;
         private readonly IValidator<Article> _validator;
 
         public ArticleService(ILogger<ArticleService> logger,
                             IArticleRepository repository,
                             IMapper mapper,
-                            IInventoryDataClient dataClient,
+                            IMessageBusSender<Article> sender,
                             IValidator<Article> validator)
         {
             _logger = logger;
             _repository = repository;
             _mapper = mapper;
-            _dataClient = dataClient;
+            _sender = sender;
             _validator = validator;
         }
 
@@ -45,17 +43,12 @@ namespace MiniERP.ArticleService.Services
        
              _repository.AddArticle(article);
 
-            using var scope = new TransactionScope();
+            _repository.SaveChanges();
 
-                _repository.SaveChanges();
+            _logger.LogInformation("Article Created : Id = {id}, Date = {date}", article.Id, DateTime.UtcNow);
 
-                _dataClient.InventoryItemsCreated(new List<Article> { article });
+            _sender.RequestForPublish(RequestType.Created, ChangeType.All, article);
 
-                _logger.LogInformation("Article Created : Id = {id}, Date = {date}", article.Id, DateTime.UtcNow);
-
-            scope.Complete();
-
-          
             ArticleReadDto articleReadDto = _mapper.Map<ArticleReadDto>(article);
 
             return Result<ArticleReadDto>.Success(articleReadDto);
@@ -112,18 +105,11 @@ namespace MiniERP.ArticleService.Services
 
             ChangeType changed = _repository.TrackChanges(article);
 
-            using var scope = new TransactionScope();
+            _repository.SaveChanges();
 
-                _repository.SaveChanges();
+             _logger.LogInformation("Article Updated : Id = {id}, Date = {date}", article.Id, DateTime.UtcNow);
 
-                if(changed.HasFlag(ChangeType.Inventory))
-                {
-                    _dataClient.InventoryItemsUpdated(new List<Article>() { article });
-                }
-
-                _logger.LogInformation("Article Updated : Id = {id}, Date = {date}", article.Id, DateTime.UtcNow);
-
-            scope.Complete();
+            _sender.RequestForPublish(RequestType.Updated, changed, article);
 
             ArticleReadDto readDto = _mapper.Map<ArticleReadDto>(article);
 
@@ -144,6 +130,8 @@ namespace MiniERP.ArticleService.Services
             _repository.SaveChanges();
 
             _logger.LogInformation("Article Deleted : Id = {id}, Date = {date}", article.Id, DateTime.UtcNow);
+
+            _sender.RequestForPublish(RequestType.Deleted, ChangeType.All, article);
 
             return Result.Success();
         }

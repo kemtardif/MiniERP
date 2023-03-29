@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: inv-redis
+  name: so-redis
 spec:
   selector:
     matchLabels:
-      app: inv-redis
-  serviceName: inv-redis-srv
+      app: so-redis
+  serviceName: so-redis-srv
   replicas: 1
   template:
     metadata:
       labels:
-        app: inv-redis
+        app: so-redis
     spec:
       initContainers:
       - name: init-redis
@@ -21,21 +21,21 @@ spec:
         - "-c"
         - |
           set -ex
-          cp /mnt/inv-redis.conf /etc/inv-redis.conf        
+          cp /mnt/so-redis.conf /etc/so-redis.conf        
         volumeMounts:
         - name: redis-claim
           mountPath: /etc
         - name: config-map
           mountPath: /mnt/
       containers:
-      - name: inv-redis
+      - name: so-redis
         image: redis:latest
         ports:
         - containerPort: 6379
           name: redis-ss
         command:
           - redis-server
-          - "/etc/inv-redis.conf"
+          - "/etc/so-redis.conf"
         volumeMounts:
         - name: redis-data
           mountPath: /data
@@ -44,7 +44,7 @@ spec:
       volumes:
         - name: config-map
           configMap:
-            name: inv-redis-config 
+            name: so-redis-config 
   volumeClaimTemplates:
   - metadata:
       name: redis-claim

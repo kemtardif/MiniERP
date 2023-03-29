@@ -28,7 +28,6 @@ builder.WebHost.ConfigureKestrel(options =>
     options.ListenAnyIP(8080, listenOptions => listenOptions.Protocols = HttpProtocols.Http2); //grpc
 });
 
-// Add services to the container.
 
 builder.Services.AddControllers()
     .ConfigureApiBehaviorOptions(options =>
@@ -66,12 +65,6 @@ builder.Services.AddDbContext<AppDbContext>(opts =>
     opts.UseNpgsql(builder.Configuration.GetConnectionString("inventoryservicePGSQL"));
 });
 
-
-builder.Services.AddDistributedRedisCache(opts =>
-{
-    opts.InstanceName = "invsrv_";
-    opts.Configuration = builder.Configuration.GetConnectionString("inventoryserviceRedis");
-});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

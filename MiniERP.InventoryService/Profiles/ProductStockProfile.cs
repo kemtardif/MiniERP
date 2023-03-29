@@ -10,18 +10,19 @@ namespace MiniERP.InventoryService.Profiles
     {
         public ProductStockProfile()
         {
-            CreateMap<Stock, StockReadDto>();
-            CreateMap<StockUpdateDto, Stock>();
-            CreateMap<ArticleResponse, Stock>()
+            CreateMap<InventoryItem, StockReadDto>()
+                .ForMember(x => x.Quantity, opt => opt.MapFrom(src => src.Stock.Quantity));
+            CreateMap<ArticleResponse, InventoryItem>()
                 .ForSourceMember(x => x.EventName, opts => opts.DoNotValidate())
                 .ForMember(dest => dest.ProductId,
                             opt => opt.MapFrom(src => src.Id));
-            CreateMap<GrpcInventoryItemModel, Stock>()
-                .ForMember(dest => dest.ProductId,
-                            opt => opt.MapFrom(src => src.Id));
-            CreateMap<GrpcInventoryItemModel, StockUpdateDto>()
-                .ForMember(dest => dest.ProductId,
-                            opt => opt.MapFrom(src => src.Id));
+            CreateMap<InventoryItem, StockModel>()
+                .ForMember(dest => dest.Id,
+                            opt => opt.MapFrom(src => src.ProductId))
+                .ForMember(dest => dest.Quantity,
+                            opt => opt.MapFrom(src => src.Stock.Quantity))
+                .ForMember(dest => dest.Status,
+                            opt => opt.MapFrom(src => src.Status));
         }
     }
 }

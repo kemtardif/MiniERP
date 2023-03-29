@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.JsonPatch;
 using MiniERP.SalesOrderService.Data;
 using MiniERP.SalesOrderService.Dtos;
@@ -10,19 +12,29 @@ namespace MiniERP.SalesOrderService.Services
     {
         private readonly ILogger<SalesOrderService> _logger;
         private readonly ISalesOrderRepository _repository;
+        private readonly IValidator<SalesOrder> _validator;
         private readonly IMapper _mapper;
 
         public SalesOrderService(ILogger<SalesOrderService> logger,
                                  ISalesOrderRepository repository,
+                                 IValidator<SalesOrder> validator,
                                  IMapper mapper)
         {
             _logger = logger;
             _repository = repository;
+            _validator = validator;
             _mapper = mapper;
         }
-        public Result<SalesOrderReadDto> AddSalesOrder(SalesOrderCreateDto salesOrder)
+        public async Task<Result<SalesOrderReadDto>> AddSalesOrder(SalesOrderCreateDto salesOrder)
         {
             var so = _mapper.Map<SalesOrder>(salesOrder);
+
+            ValidationResult validationResult = await _validator.ValidateAsync(so);
+
+            if(!validationResult.IsValid)
+            {
+                return Result<SalesOrderReadDto>.Failure(validationResult.ToDictionary());
+            }
 
             _repository.AddSalesOrder(so);
 
@@ -71,7 +83,7 @@ namespace MiniERP.SalesOrderService.Services
             return Result.Success();
         }
 
-        public Result<SalesOrderReadDto> UpdateSalesOrder(int id, JsonPatchDocument<SalesOrderUpdateDto> json)
+        public async Task<Result<SalesOrderReadDto>> UpdateSalesOrder(int id, JsonPatchDocument<SalesOrderUpdateDto> json)
         {
             SalesOrder? so = _repository.GetSalesOrderById(id);
 
@@ -87,6 +99,13 @@ namespace MiniERP.SalesOrderService.Services
             catch(Exception ex)
             {
                 return Result<SalesOrderReadDto>.Failure(GetCaughtExceptionResult(ex.Message));
+            }
+
+            ValidationResult validationResult = await _validator.ValidateAsync(so);
+
+            if (!validationResult.IsValid)
+            {
+                return Result<SalesOrderReadDto>.Failure(validationResult.ToDictionary());
             }
 
             _repository.SaveChanges();

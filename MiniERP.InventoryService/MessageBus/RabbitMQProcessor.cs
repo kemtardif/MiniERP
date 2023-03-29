@@ -21,7 +21,7 @@ namespace MiniERP.InventoryService.MessageBus
             _mapper = mapper;
             _logger = logger;
         }
-        public async Task ProcessMessage(string message)
+        public void ProcessMessage(string message)
         {
             EventType type = GetEventType(message);
             switch (type)
@@ -30,19 +30,19 @@ namespace MiniERP.InventoryService.MessageBus
                     _logger.LogInformation("---> RabbitMQ : {name} received : {date}", 
                                             EventType.ArticleCreated, 
                                             DateTime.UtcNow);
-                    await ArticleCreated(message);
+                    ArticleCreated(message);
                     break;
                 case EventType.ArticleDeleted:
                     _logger.LogInformation("---> RabbitMQ : {name} received : {date}",
                                             EventType.ArticleDeleted,
                                             DateTime.UtcNow);
-                    await ArticleDeleted(message);
+                    ArticleDeleted(message);
                     break;
                 case EventType.ArticleUpdated:
                     _logger.LogInformation("---> RabbitMQ : {name} received : {date}",
                                             EventType.ArticleUpdated,
                                             DateTime.UtcNow);
-                    await ArticleUpdated(message);
+                    ArticleUpdated(message);
                     break;
                 default:
                     return;
@@ -80,7 +80,7 @@ namespace MiniERP.InventoryService.MessageBus
                 _ => EventType.Undefined,
             };
         }
-        private async Task ArticleUpdated(string message)
+        private void ArticleUpdated(string message)
         {
             try
             {
@@ -89,7 +89,7 @@ namespace MiniERP.InventoryService.MessageBus
                 {
                     return;
                 }
-                await UpdateArticleResponse(dto);
+                UpdateArticleResponse(dto);
                   
             }
             catch (Exception ex)
@@ -99,7 +99,7 @@ namespace MiniERP.InventoryService.MessageBus
         }
 
       
-        private async Task ArticleCreated(string message)
+        private void ArticleCreated(string message)
         {
             try
             {
@@ -108,7 +108,7 @@ namespace MiniERP.InventoryService.MessageBus
                 {
                     return;
                 }
-                await AddArticleResponse(dto);
+                AddArticleResponse(dto);
 
             }
             catch(Exception ex)
@@ -117,7 +117,7 @@ namespace MiniERP.InventoryService.MessageBus
             }
         }
        
-        private async Task ArticleDeleted(string message)
+        private void ArticleDeleted(string message)
         {
             try
             {
@@ -127,7 +127,7 @@ namespace MiniERP.InventoryService.MessageBus
                     return;
                 }
 
-                await RemoveArticleResponse(dto);
+                RemoveArticleResponse(dto);
             }
             catch (JsonException ex)
             {
@@ -153,66 +153,63 @@ namespace MiniERP.InventoryService.MessageBus
             }
             return dto;
         }
-        private async Task AddArticleResponse(ArticleResponse dto)
+        private void AddArticleResponse(ArticleResponse dto)
         {
-            await using (var scope = _scopreFactory.CreateAsyncScope())
-            {
-                var repo = scope.ServiceProvider.GetRequiredService<IInventoryRepository>();
+            using var scope = _scopreFactory.CreateScope();
 
-                Stock stock = _mapper.Map<Stock>(dto);
+            var repo = scope.ServiceProvider.GetRequiredService<IInventoryRepository>();
 
-                repo.AddItem(stock);
-                await repo.SaveChanges();
+            InventoryItem stock = _mapper.Map<InventoryItem>(dto);
 
-                _logger.LogInformation("---> RabbitMQ : New product saved has new Stock: {id} : {date}",
-                                               stock.ProductId,
-                                               DateTime.UtcNow);
+            repo.AddInventoryItem(stock);
+            repo.SaveChanges();
 
-            }
+            _logger.LogInformation("---> RabbitMQ : New product saved has new Stock: {id} : {date}",
+                                           stock.ProductId,
+                                           DateTime.UtcNow);
         }
-        private async Task RemoveArticleResponse(ArticleResponse dto)
+        private void RemoveArticleResponse(ArticleResponse dto)
         {
-            await using(var scope = _scopreFactory.CreateAsyncScope())
+            using var scope = _scopreFactory.CreateScope();
+
+            var repo = scope.ServiceProvider.GetRequiredService<IInventoryRepository>();
+
+            InventoryItem? stock = GetScopedStockByArticleId(repo, dto.Id);
+            if (stock is null)
             {
-                var repo = scope.ServiceProvider.GetRequiredService<IInventoryRepository>();
-
-                Stock? stock = GetScopedStockByArticleId(repo, dto.Id);
-                if (stock is null)
-                {
-                    return;
-                }
-
-                repo.SetAsClosed(stock);
-                await repo.SaveChanges();
-
-                _logger.LogInformation("---> RabbitMQ : Stock deleted for product: {id} : {date}",
-                                               stock.ProductId,
-                                               DateTime.UtcNow);
+                return;
             }
+
+            repo.SetAsClosed(stock);
+            repo.SaveChanges();
+
+            _logger.LogInformation("---> RabbitMQ : Stock deleted for product: {id} : {date}",
+                                           stock.ProductId,
+                                           DateTime.UtcNow);
         }
-        private async Task UpdateArticleResponse(ArticleResponse dto)
+        private void UpdateArticleResponse(ArticleResponse dto)
         {
-            await using(var scope = _scopreFactory.CreateAsyncScope())
+            using var scope = _scopreFactory.CreateScope();
+
+            var repo = scope.ServiceProvider.GetRequiredService<IInventoryRepository>();
+
+            InventoryItem? stock = GetScopedStockByArticleId(repo, dto.Id);
+            if (stock is null)
             {
-                var repo = scope.ServiceProvider.GetRequiredService<IInventoryRepository>();
-
-                Stock? stock = GetScopedStockByArticleId(repo, dto.Id);
-                if (stock is null)
-                {
-                    return;
-                }
-
-                repo.UpdateFromMessage(stock, dto);
-                await repo.SaveChanges();
-
-                _logger.LogInformation("---> RabbitMQ : Stock updated from article : {id} : {date}",
-                                               stock.ProductId,
-                                               DateTime.UtcNow);
+                return;
             }
+
+            _mapper.Map(dto, stock);
+
+            repo.SaveChanges();
+
+            _logger.LogInformation("---> RabbitMQ : Stock updated from article : {id} : {date}",
+                                           stock.ProductId,
+                                           DateTime.UtcNow);
         }
-        private Stock? GetScopedStockByArticleId(IInventoryRepository repo, int id)
+        private InventoryItem? GetScopedStockByArticleId(IInventoryRepository repo, int id)
         {
-            Stock? stock = repo.GetItemByArticleIdFromSource(id);
+            InventoryItem? stock = repo.GetItemByArticleId(id);
             if (stock is null)
             {
                 _logger.LogWarning("---> RabbitMQ : Article for update not in stock : {id} : {date}",

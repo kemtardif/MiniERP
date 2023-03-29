@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.EntityFrameworkCore;
 using MiniERP.SalesOrderService.Dtos;
 using MiniERP.SalesOrderService.Models;
 
@@ -30,12 +31,12 @@ namespace MiniERP.SalesOrderService.Data
 
         public IEnumerable<SalesOrder> GetAllSalesOrders()
         {
-            return _context.SalesOrders;
+            return _context.SalesOrders.Include(x => x.Details);
         }
 
         public SalesOrder? GetSalesOrderById(int id)
         {
-            return _context.SalesOrders.FirstOrDefault(x => x.Id == id);
+            return _context.SalesOrders.Include(x => x.Details).FirstOrDefault(x => x.Id == id);
         }
 
         public void RemoveSalesOrder(SalesOrder salesOrder)

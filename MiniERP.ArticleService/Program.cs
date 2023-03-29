@@ -4,10 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Console;
 using MiniERP.ArticleService.Data;
-using MiniERP.ArticleService.Grpc;
 using MiniERP.ArticleService.MessageBus;
 using MiniERP.ArticleService.Models;
-using MiniERP.ArticleService.Protos;
 using MiniERP.ArticleService.Services;
 using MiniERP.ArticleService.Validators;
 using System.Net.Mime;
@@ -21,8 +19,6 @@ builder.Logging.AddSimpleConsole(opts =>
     opts.TimestampFormat = "HH:mm:ss";
 });
 
-
-
 builder.Configuration
     .AddJsonFile("secrets/appsettings.secrets.json", optional: true)
     .AddEnvironmentVariables();
@@ -33,8 +29,8 @@ builder.Services.AddScoped<IArticleService, ArticleService>();
 builder.Services.AddScoped<IUnitService, UnitService>();
 builder.Services.AddScoped<IValidator<Article>, ArticleValidator>();
 builder.Services.AddScoped<IValidator<Unit>, UnitValidator>();
-builder.Services.AddScoped<IInventoryDataClient, InventoryDataClient>();
-builder.Services.AddScoped<IGrpcClientAdapter, GrpcClientAdapter>();
+builder.Services.AddScoped<IMessageBusClient, RabbitMQClient>();
+builder.Services.AddScoped<IMessageBusSender<Article>, RabbitMQArticleSender>();
 
 
 builder.Services.AddDbContext<AppDbContext>(opts =>
@@ -42,11 +38,6 @@ builder.Services.AddDbContext<AppDbContext>(opts =>
     opts.UseNpgsql(builder.Configuration.GetConnectionString("articleservicePGSQL"));
 });
 builder.Services.AddAutoMapper(typeof(Program));
-builder.Services.AddGrpcClient<GrpcInventory.GrpcInventoryClient>(o =>
-{
-    o.Address = new Uri(builder.Configuration["GrpcInventoryService"]!);
-});
-
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(opts => 

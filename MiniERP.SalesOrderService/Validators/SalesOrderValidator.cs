@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using MiniERP.SalesOrderService.Caching;
 using MiniERP.SalesOrderService.Data;
 using MiniERP.SalesOrderService.Models;
 
@@ -6,20 +7,17 @@ namespace MiniERP.SalesOrderService.Validators
 {
     public class SalesOrderValidator : AbstractValidator<SalesOrder>
     {
-        private ISalesOrderRepository _repository;
-
-        public SalesOrderValidator(ISalesOrderRepository repository)
+        public SalesOrderValidator(ICacheRepository cache)
         {
-            _repository = repository;
-            RuleFor(x => x.CustID).NotNull().Must(x => x > 0);
+            RuleFor(x => x.CustID).NotNull().Must(x => x > 0)
+                .WithMessage("Customer Id must be greater than zero");
             RuleFor(x => x.CustAddress).NotEmpty();
             RuleFor(x => x.Status).NotNull().IsInEnum();
             RuleFor(x => x.ConfirmDate).NotNull().Must(BeAValidDate)
                 .WithMessage("Confirm Date must be a valid date");
-            RuleFor(x => x.ConfirmDate).NotNull().Must(BeAValidDate)
-                .WithMessage("Confirm Date must be a valid date");
-            RuleFor(x => x.Details).NotNull();
-            RuleForEach(x => x.Details).SetValidator(new SalesOrderDetailValidator(_repository));
+            RuleFor(x => x.Details).NotNull().Must(x => x.Any())
+                .WithMessage("Sales Order must have at least one line");
+            RuleForEach(x => x.Details).SetValidator(new SalesOrderDetailValidator(cache));
         }
         private bool BeAValidDate(DateTime date)
         {

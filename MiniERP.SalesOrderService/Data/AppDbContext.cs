@@ -17,7 +17,21 @@ namespace MiniERP.SalesOrderService.Data
 
                 so.HasIndex(x => x.Id)
                 .IsUnique();
-              
+
+                so.Property(x => x.ConfirmDate)
+                .HasConversion
+                (
+                    src => src.Kind == DateTimeKind.Utc ? src : DateTime.SpecifyKind(src, DateTimeKind.Utc),
+                    dst => dst.Kind == DateTimeKind.Utc ? dst : DateTime.SpecifyKind(dst, DateTimeKind.Utc)
+                );
+
+                so.Property(x => x.ReceivedDate)
+                .HasConversion
+                (
+                    src => src.Kind == DateTimeKind.Utc ? src : DateTime.SpecifyKind(src, DateTimeKind.Utc),
+                    dst => dst.Kind == DateTimeKind.Utc ? dst : DateTime.SpecifyKind(dst, DateTimeKind.Utc)
+                );
+
             });
 
             builder.Entity<SalesOrderDetail>(so =>

@@ -3,6 +3,7 @@
     public class StockReadDto
     {
         public int ProductId { get; set; }
+        public int Status { get; set; }
         public bool Discontinued { get; set; }
         public double Quantity { get; set; }
         public double MaxQuantity { get; set; }

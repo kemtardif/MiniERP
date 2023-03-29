@@ -1,15 +1,19 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using MiniERP.SalesOrderService.Dtos;
 using MiniERP.SalesOrderService.Exceptions;
 using MiniERP.SalesOrderService.Models;
 using MiniERP.SalesOrderService.Services;
+using NpgsqlTypes;
+using System.Data;
 
 namespace MiniERP.SalesOrderService.Controllers
 {
+    [Authorize(Roles = "ApplicationHTTPRequestSoSrv")]
     [ApiController]
-    [Route("/api/so-srv/[controller]")]
+    [Route("api/so-srv/[controller]")]
     public class SalesOrdersController : ControllerBase
     {
 
@@ -38,7 +42,7 @@ namespace MiniERP.SalesOrderService.Controllers
                 throw new HttpFriendlyException($"An error occured while getting all Sales Orders", ex);
             }
         }
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = nameof(GetSalesOrderById))]
         public ActionResult<SalesOrderReadDto> GetSalesOrderById(int id)
         {
             try
@@ -59,11 +63,11 @@ namespace MiniERP.SalesOrderService.Controllers
         }
 
         [HttpPost]
-        public ActionResult<SalesOrderReadDto> CreateSalesOrder(SalesOrderCreateDto dto)
+        public async Task<ActionResult<SalesOrderReadDto>> CreateSalesOrder(SalesOrderCreateDto dto)
         {
             try
             {
-                var result = _service.AddSalesOrder(dto);
+                var result = await _service.AddSalesOrder(dto);
 
                 if (!result.IsSuccess)
                 {
@@ -98,11 +102,11 @@ namespace MiniERP.SalesOrderService.Controllers
         }
 
         [HttpPatch("{id}")]
-        public ActionResult<SalesOrderReadDto> PatchSalesOder(int id, JsonPatchDocument<SalesOrderUpdateDto> document)
+        public async Task<ActionResult<SalesOrderReadDto>> PatchSalesOder(int id, JsonPatchDocument<SalesOrderUpdateDto> document)
         {
             try
             {
-                Result<SalesOrderReadDto> result = _service.GetSalesOrderById(id);
+                Result<SalesOrderReadDto> result = await _service.UpdateSalesOrder(id, document);
 
                 if (!result.IsSuccess)
                 {

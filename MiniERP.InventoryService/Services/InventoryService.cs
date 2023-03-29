@@ -21,15 +21,15 @@ namespace MiniERP.InventoryService.Services
         }
         public Result<IEnumerable<StockReadDto>> GetAllStocks()
         {
-            IEnumerable<Stock> stocks = _repository.GetAllItems();
+            IEnumerable<InventoryItem> stocks = _repository.GetAllItems();
             IEnumerable<StockReadDto> stockDtos = _mapper.Map<IEnumerable<StockReadDto>>(stocks);
 
             return Result<IEnumerable<StockReadDto>>.Success(stockDtos);
         }
 
-        public async Task<Result<StockReadDto>> GetStockByArticleId(int articleId)
+        public Result<StockReadDto> GetStockByArticleId(int articleId)
         {
-            Stock? stock = await _repository.GetItemByArticleIdAsync(articleId);
+            InventoryItem? stock = _repository.GetItemByArticleId(articleId);
 
             if(stock is null)
             {
@@ -45,7 +45,7 @@ namespace MiniERP.InventoryService.Services
         {
             return new Dictionary<string, string[]>
             {
-                [nameof(Stock)] = new string[] { $"Stock not found : ArticleID = {articleId}" }
+                [nameof(InventoryItem)] = new string[] { $"Stock not found : ArticleID = {articleId}" }
             };
         }
     }

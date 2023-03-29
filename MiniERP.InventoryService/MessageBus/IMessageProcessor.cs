@@ -2,6 +2,6 @@
 {
     public interface IMessageProcessor
     {
-        Task ProcessMessage(string message);
+        void ProcessMessage(string message);
     }
 }

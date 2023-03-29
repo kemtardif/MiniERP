@@ -12,14 +12,12 @@ namespace MiniERP.InventoryService.Controllers;
 [Route("/api/inv-srv/[controller]")]
 public class StocksController : ControllerBase
 {
-    private readonly ILogger<StocksController> _logger;
     private readonly IInventoryService _inventoryService;
-    public StocksController(ILogger<StocksController> logger, 
-        IInventoryService inventoryService)
+    public StocksController( IInventoryService inventoryService)
     {
-        _logger = logger;
         _inventoryService = inventoryService;
     }
+
     [HttpGet]
     public ActionResult<IEnumerable<StockReadDto>> GetAllStocks()
     {
@@ -36,11 +34,11 @@ public class StocksController : ControllerBase
     }
 
     [HttpGet("{articleId}")]
-    public async Task<ActionResult<StockReadDto>> GetStockByArticleId(int articleId)
+    public ActionResult<StockReadDto> GetStockByArticleId(int articleId)
     {
         try
         {
-            Result<StockReadDto> result = await _inventoryService.GetStockByArticleId(articleId);
+            Result<StockReadDto> result = _inventoryService.GetStockByArticleId(articleId);
 
             if(!result.IsSuccess)
             {

@@ -3,6 +3,14 @@ using MiniERP.SalesOrderService.Data;
 using Microsoft.Extensions.Logging.Console;
 using System.Net.Mime;
 using MiniERP.SalesOrderService.Services;
+using Microsoft.EntityFrameworkCore;
+using MiniERP.SalesOrderService.Protos;
+using MiniERP.SalesOrderService.Grpc;
+using MiniERP.SalesOrderService.Caching;
+using FluentValidation;
+using MiniERP.SalesOrderService.Models;
+using MiniERP.SalesOrderService.Validators;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,12 +21,34 @@ builder.Logging.AddSimpleConsole(opts =>
     opts.TimestampFormat = "HH:mm:ss";
 });
 
+builder.Configuration
+    .AddJsonFile("secrets/salesorder.appsettings.secrets.json", optional: true)
+    .AddEnvironmentVariables();
+
 
 builder.Services.AddScoped<ISalesOrderRepository, SalesOrderRepository>();
 builder.Services.AddScoped<ISalesOrderService, SalesOrderService>();
+builder.Services.AddScoped<IGrpcClientAdapter, GrpcClientAdapter>();
+builder.Services.AddScoped<IInventoryDataClient, InventoryDataClient>();
+builder.Services.AddScoped<ICacheRepository, RedisCacheRepository>();
+builder.Services.AddScoped<IValidator<SalesOrder>, SalesOrderValidator>();
 
 
-// Add services to the container.
+builder.Services.AddDbContext<AppDbContext>(opts =>
+{
+    opts.UseNpgsql(builder.Configuration.GetConnectionString("salesorderservicePGSQL"));
+});
+
+builder.Services.AddDistributedRedisCache(opts =>
+{
+    opts.InstanceName = "sosrv_";
+    opts.Configuration = builder.Configuration.GetConnectionString("salesorderserviceRedis");
+});
+
+builder.Services.AddGrpcClient<GrpcInventory.GrpcInventoryClient>(o =>
+{
+    o.Address = new Uri(builder.Configuration["GrpcInventoryService"]!);
+});
 
 builder.Services.AddControllers()
 .ConfigureApiBehaviorOptions(options =>
@@ -33,6 +63,16 @@ builder.Services.AddControllers()
         return result;
     };
 });
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(opts =>
+                {
+                    opts.Audience = builder.Configuration["AAD:ApplicationId"];
+                    opts.Authority = string.Format("{0}{1}", builder.Configuration["AAD:Tenant"],
+                                                             builder.Configuration["AAD:TenantId"]);
+
+                });
+
 builder.Services.AddAutoMapper(typeof(Program));
 
 // Configure the HTTP request pipeline.

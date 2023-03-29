@@ -7,15 +7,30 @@ namespace MiniERP.InventoryService.Data
     {
         public AppDbContext(DbContextOptions opts) : base(opts) { } 
 
-        public DbSet<Stock> InventoryItems { get; set; }
+        public DbSet<InventoryItem> InventoryItems { get; set; }
+        public DbSet<Stock> Stocks { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<Stock>(p => 
+            builder.Entity<InventoryItem>(p => 
             { 
                 p.HasKey(p => p.Id);
 
                 p.HasIndex(p => p.ProductId)
+                 .IsUnique();
+
+                p.HasOne(p => p.Stock)
+                .WithOne()
+                .HasForeignKey<Stock>(p => p.InventoryId)
+                .IsRequired();
+                    
+            });
+
+            builder.Entity<Stock>(p => 
+            {
+                p.HasKey(p => p.Id);
+
+                p.HasIndex(p => p.InventoryId)
                  .IsUnique();
             });
         }

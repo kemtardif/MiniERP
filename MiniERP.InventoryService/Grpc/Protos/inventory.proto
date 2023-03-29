@@ -4,26 +4,23 @@ option csharp_namespace = "MiniERP.InventoryService.Protos";
 
 service GrpcInventory
 {
-    rpc InventoryItemsCreated(InventoryItemRequest) returns (GrpcInventoryResponse);
-    rpc InventoryItemsUpdated(InventoryItemRequest) returns (GrpcInventoryResponse);
+    rpc GetStockByArticleId(StockRequest) returns (StockResponse);
 }
 
-message GrpcInventoryResponse 
+message StockResponse 
 {
-    int32 itemProcessed = 1;
+    bool isFound = 1;
+    StockModel item = 2;
 }
 
-message GrpcInventoryItemModel
+message StockModel
 {
     int32 id = 1;
-    double maxquantity = 2;
-    bool autoOrder = 3;
-    double autoTreshold = 4;
-    double autoQuantity = 5;
+    double quantity = 2;
     int32 status = 6;
 }
 
-message InventoryItemRequest
+message StockRequest
 {
-    repeated GrpcInventoryItemModel inventoryItems = 1;
+    int32 id = 1;
 }

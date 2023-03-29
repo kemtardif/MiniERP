@@ -8,8 +8,8 @@ namespace MiniERP.SalesOrderService.Services
     {
         Result<IEnumerable<SalesOrderReadDto>> GetAllSalesOrders();
         Result<SalesOrderReadDto> GetSalesOrderById(int id);
-        Result<SalesOrderReadDto> AddSalesOrder(SalesOrderCreateDto salesOrder);
+        Task<Result<SalesOrderReadDto>> AddSalesOrder(SalesOrderCreateDto salesOrder);
         Result RemoveSalesOrderById(int id);
-        Result<SalesOrderReadDto> UpdateSalesOrder(int id, JsonPatchDocument<SalesOrderUpdateDto> json);
+        Task<Result<SalesOrderReadDto>> UpdateSalesOrder(int id, JsonPatchDocument<SalesOrderUpdateDto> json);
     }
 }

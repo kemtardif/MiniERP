@@ -15,7 +15,7 @@
         public void SetCreatedAdToCurrentTime() => CreatedAt = DateTime.UtcNow;
         public void SetAsParked() => Status = SalesOrderStatus.Parked;
         public void SetAsClosed() => Status = SalesOrderStatus.Closed;
-        public IEnumerable<SalesOrderDetail> Details { get; set; } = Array.Empty<SalesOrderDetail>();
+        public IEnumerable<SalesOrderDetail> Details { get; set; } = new List<SalesOrderDetail>();
     }
 
     public enum SalesOrderStatus
