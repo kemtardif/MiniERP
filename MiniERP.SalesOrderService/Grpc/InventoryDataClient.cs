@@ -19,7 +19,7 @@ namespace MiniERP.SalesOrderService.Grpc
 
         public Stock? GetStockByArticleId(int articleId)
         {
-            StockRequest request = new StockRequest()
+            StockRequest request = new()
             {
                 Id = articleId
             };
@@ -31,6 +31,18 @@ namespace MiniERP.SalesOrderService.Grpc
                 return null;
             }
             return _mapper.Map<Stock>(response.Item);
+        }
+
+        public IEnumerable<Stock> StockChanged(IEnumerable<StockChangedModel> changed)
+        {
+            StockChangedRequest request = new();
+            request.Items.AddRange(changed);
+
+            StockChangedResponse response = _client.StockChanged(request);
+
+            IEnumerable<Stock> stocks = _mapper.Map<IEnumerable<Stock>>(response.Items);
+
+            return stocks;
         }
     }
 }

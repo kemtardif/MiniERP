@@ -22,6 +22,14 @@ namespace MiniERP.SalesOrderService.Profiles
             CreateMap<StockModel, Stock>()
                 .ForMember(dest => dest.InventoryId,
                             opt => opt.MapFrom(src => src.Id));
+
+            CreateMap<SalesOrderDetailReadDto, StockChangedModel>()
+                .ForMember(dest => dest.Id,
+                        opt => opt.MapFrom(s => s.ArticleId))
+            .ForMember(dest => dest.Value,
+                        opt => opt.MapFrom(s => s.Quantity))
+            .ForMember(dest => dest.ChangeType,
+                        opt => opt.MapFrom(s => 2)); // 1 = add, 2 = remove
         }
     }
 }

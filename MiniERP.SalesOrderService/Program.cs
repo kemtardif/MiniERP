@@ -11,6 +11,7 @@ using FluentValidation;
 using MiniERP.SalesOrderService.Models;
 using MiniERP.SalesOrderService.Validators;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using MiniERP.SalesOrderService.MessageBus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,8 +29,12 @@ builder.Configuration
 
 builder.Services.AddScoped<ISalesOrderRepository, SalesOrderRepository>();
 builder.Services.AddScoped<ISalesOrderService, SalesOrderService>();
+builder.Services.Decorate<ISalesOrderService, SalesOrderServiceWithInventory>();
+builder.Services.Decorate<ISalesOrderService, SalesOrderServiceWithLogging>();
 builder.Services.AddScoped<IGrpcClientAdapter, GrpcClientAdapter>();
 builder.Services.AddScoped<IInventoryDataClient, InventoryDataClient>();
+builder.Services.AddSingleton<IMessageProcessor, RabbitMQProcessor>();
+builder.Services.AddHostedService<RabbitMQSubscriber>();
 builder.Services.AddScoped<ICacheRepository, RedisCacheRepository>();
 builder.Services.AddScoped<IValidator<SalesOrder>, SalesOrderValidator>();
 

@@ -2,9 +2,9 @@
 
 namespace MiniERP.ArticleService.MessageBus
 {
-    public interface IMessageBusSender<T> 
+    public interface IMessageBusSender<T>
     {
-        void RequestForPublish(RequestType type, ChangeType changeType, T item);
+        void RequestForPublish(RequestType type, T item, ChangeType changeType);
     }
     public enum RequestType
     {

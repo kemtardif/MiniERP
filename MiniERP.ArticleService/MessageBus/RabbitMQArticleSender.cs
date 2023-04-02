@@ -11,18 +11,18 @@ namespace MiniERP.ArticleService.MessageBus
         private readonly IMessageBusClient _messageBus;
 
         public RabbitMQArticleSender(
-                                     IMapper mapper, 
+                                     IMapper mapper,
                                      IMessageBusClient messageBus)
         {
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _messageBus = messageBus ?? throw new ArgumentNullException(nameof(messageBus));
+            _mapper = mapper;
+            _messageBus = messageBus;
         }
-        public void RequestForPublish(RequestType type, ChangeType changeType, Article article)
+        public void RequestForPublish(RequestType type, Article article, ChangeType changeType)
         {
             string eventName = GetEventName(type);
-            IEnumerable<GenericEvent> events = GetEvents(eventName, changeType, article);
+            IEnumerable<GenericEvent> events = GetEvents(eventName, article, changeType);
 
-            foreach(GenericEvent evnt in events)
+            foreach (GenericEvent evnt in events)
             {
                 _messageBus.PublishNewArticle(evnt);
             }
@@ -35,14 +35,14 @@ namespace MiniERP.ArticleService.MessageBus
                 RequestType.Created => MessageBusEventType.ArticleCreated,
                 RequestType.Deleted => MessageBusEventType.ArticleDeleted,
                 RequestType.Updated => MessageBusEventType.ArticleUpdated,
-                _ => throw new ArgumentException(nameof(RequestType)),
+                _ => throw new ArgumentNullException(nameof(type)),
             };
         }
-        private IEnumerable<GenericEvent> GetEvents(string eventName, ChangeType change, Article article)
+        private IEnumerable<GenericEvent> GetEvents(string eventName, Article article, ChangeType change)
         {
             List<GenericEvent> events = new();
 
-            if(change == ChangeType.All)
+            if (change == ChangeType.All)
             {
                 InventoryEvent invAll = GetInventoryEvent(eventName, article);
                 events.Add(invAll);
@@ -61,7 +61,6 @@ namespace MiniERP.ArticleService.MessageBus
             inv.RoutingKey = "inventory";
             return inv;
         }
-
 
     }
 }

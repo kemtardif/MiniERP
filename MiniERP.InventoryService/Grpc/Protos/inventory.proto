@@ -5,6 +5,7 @@ option csharp_namespace = "MiniERP.InventoryService.Protos";
 service GrpcInventory
 {
     rpc GetStockByArticleId(StockRequest) returns (StockResponse);
+    rpc StockChanged(StockChangedRequest) returns (StockChangedResponse);
 }
 
 message StockResponse 
@@ -23,4 +24,21 @@ message StockModel
 message StockRequest
 {
     int32 id = 1;
+}
+
+message StockChangedRequest
+{
+    repeated StockChangedModel items = 1;
+}
+
+message StockChangedModel
+{
+    int32 id = 1;
+    int32 changeType = 2;
+    double value = 3;
+}
+
+message StockChangedResponse
+{
+    repeated StockModel items = 1;
 }

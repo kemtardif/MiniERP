@@ -47,7 +47,7 @@ namespace MiniERP.ArticleService.Services
 
             _logger.LogInformation("Article Created : Id = {id}, Date = {date}", article.Id, DateTime.UtcNow);
 
-            _sender.RequestForPublish(RequestType.Created, ChangeType.All, article);
+            _sender.RequestForPublish(RequestType.Created, article, ChangeType.All);
 
             ArticleReadDto articleReadDto = _mapper.Map<ArticleReadDto>(article);
 
@@ -109,7 +109,7 @@ namespace MiniERP.ArticleService.Services
 
              _logger.LogInformation("Article Updated : Id = {id}, Date = {date}", article.Id, DateTime.UtcNow);
 
-            _sender.RequestForPublish(RequestType.Updated, changed, article);
+            _sender.RequestForPublish(RequestType.Updated, article, changed);
 
             ArticleReadDto readDto = _mapper.Map<ArticleReadDto>(article);
 
@@ -131,7 +131,7 @@ namespace MiniERP.ArticleService.Services
 
             _logger.LogInformation("Article Deleted : Id = {id}, Date = {date}", article.Id, DateTime.UtcNow);
 
-            _sender.RequestForPublish(RequestType.Deleted, ChangeType.All, article);
+            _sender.RequestForPublish(RequestType.Deleted, article, ChangeType.All);
 
             return Result.Success();
         }

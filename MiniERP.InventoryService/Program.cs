@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Console;
 using MiniERP.InventoryService.Data;
 using MiniERP.InventoryService.Grpc;
-using MiniERP.InventoryService.MessageBus;
+using MiniERP.InventoryService.MessageBus.Subscriber;
+using MiniERP.InventoryService.MessageBus.Sender;
 using MiniERP.InventoryService.Services;
 using System.Net.Mime;
 
@@ -57,6 +58,9 @@ builder.Services.AddGrpc();
 
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<IMessageBusClient, RabbitMQClient>();
+builder.Services.AddScoped<IMessageBusSender, RabbitMQSender>();
+
 builder.Services.AddSingleton<IMessageProcessor, RabbitMQProcessor>();
 builder.Services.AddHostedService<RabbitMQSubscriber>();
 

@@ -1,4 +1,4 @@
-﻿namespace MiniERP.InventoryService.MessageBus
+﻿namespace MiniERP.InventoryService.MessageBus.Subscriber
 {
     public interface IMessageProcessor
     {

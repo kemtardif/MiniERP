@@ -10,17 +10,14 @@ namespace MiniERP.SalesOrderService.Services
 {
     public class SalesOrderService : ISalesOrderService
     {
-        private readonly ILogger<SalesOrderService> _logger;
         private readonly ISalesOrderRepository _repository;
         private readonly IValidator<SalesOrder> _validator;
         private readonly IMapper _mapper;
 
-        public SalesOrderService(ILogger<SalesOrderService> logger,
-                                 ISalesOrderRepository repository,
+        public SalesOrderService(ISalesOrderRepository repository,
                                  IValidator<SalesOrder> validator,
                                  IMapper mapper)
         {
-            _logger = logger;
             _repository = repository;
             _validator = validator;
             _mapper = mapper;
@@ -39,8 +36,6 @@ namespace MiniERP.SalesOrderService.Services
             _repository.AddSalesOrder(so);
 
             _repository.SaveChanges();
-
-            _logger.LogInformation("Sales Order Created : Id = {id}, Date = {date}", so.Id, DateTime.UtcNow);
 
             var dto = _mapper.Map<SalesOrderReadDto>(so);
 
@@ -78,7 +73,10 @@ namespace MiniERP.SalesOrderService.Services
             {
                 return Result.Failure(GetNotFoundResult(id));
             }
+
             _repository.RemoveSalesOrder(so);
+
+            _repository.SaveChanges();
 
             return Result.Success();
         }

@@ -1,5 +1,4 @@
-﻿using MiniERP.InventoryService.MessageBus.Responses;
-using MiniERP.InventoryService.Models;
+﻿using MiniERP.InventoryService.Models;
 
 namespace MiniERP.InventoryService.Data
 {

@@ -15,5 +15,10 @@ namespace MiniERP.SalesOrderService.Grpc
         {
             return _grpcClient.GetStockByArticleId(request);
         }
+
+        public StockChangedResponse StockChanged(StockChangedRequest request)
+        {
+            return _grpcClient.StockChanged(request);
+        }
     }
 }

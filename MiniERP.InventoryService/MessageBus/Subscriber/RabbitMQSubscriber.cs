@@ -1,26 +1,32 @@
-﻿using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
+﻿using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
+using RabbitMQ.Client;
 using System.Text;
 
-namespace MiniERP.InventoryService.MessageBus
+namespace MiniERP.InventoryService.MessageBus.Subscriber
 {
     public class RabbitMQSubscriber : BackgroundService
     {
         private readonly ILogger<RabbitMQSubscriber> _logger;
         private readonly IMessageProcessor _processor;
-        private readonly IConnection? _connection;
-        private readonly IModel? _channel;
-        private readonly string _queueName = string.Empty;
-        public RabbitMQSubscriber(IConfiguration configuration, 
+        private IConnection? _connection;
+        private IModel? _channel;
+        private string _queueName = string.Empty;
+        public RabbitMQSubscriber(IConfiguration configuration,
                                   ILogger<RabbitMQSubscriber> logger,
                                   IMessageProcessor processor)
         {
             _logger = logger;
             _processor = processor;
+            var factory = new ConnectionFactory()
+            {
+                HostName = configuration["RabbitMQHost"],
+                Port = int.Parse(configuration["RabbitMQPort"]!),
+                UserName = configuration["RabbitMQUser"],
+                Password = configuration["RabbitMQPassword"],
+                VirtualHost = "/"
 
-            ConnectionFactory factory = InitConnectionFactory(configuration);
-
+            };
             try
             {
                 _connection = factory.CreateConnection();
@@ -36,8 +42,8 @@ namespace MiniERP.InventoryService.MessageBus
 
             _channel.ExchangeDeclare(exchange: "article", type: ExchangeType.Direct);
             _queueName = _channel.QueueDeclare().QueueName;
-            _channel.QueueBind(queue: _queueName, 
-                               exchange: "article", 
+            _channel.QueueBind(queue: _queueName,
+                               exchange: "article",
                                routingKey: "inventory");
 
             _logger.LogInformation("---> Connected to RabbitMQ Message Bus : {date}", DateTime.UtcNow);
@@ -52,7 +58,6 @@ namespace MiniERP.InventoryService.MessageBus
             consumer.Received += ReceivedHandler;
 
             _channel?.BasicConsume(queue: _queueName, autoAck: false, consumer: consumer);
-
             return Task.CompletedTask;
         }
         private void ReceivedHandler(object? consumer, BasicDeliverEventArgs args)
@@ -73,24 +78,12 @@ namespace MiniERP.InventoryService.MessageBus
                 _channel?.BasicAck(args.DeliveryTag, false);
                 return;
             }
-            _processor.ProcessMessage(data);
+           _processor.ProcessMessage(data);
 
             _channel?.BasicAck(args.DeliveryTag, false);
-
-            _logger.LogInformation("---> RabbitMQ : Message Processed : {tag} : {date}",
+            _logger.LogInformation("---> RabbitMQ : MEssage Processed : {tag} : {date}",
                                         args.DeliveryTag,
                                         DateTime.UtcNow);
-        }
-        private ConnectionFactory InitConnectionFactory(IConfiguration configuration)
-        {
-            return new ConnectionFactory()
-            {
-                HostName = configuration["RabbitMQHost"],
-                Port = int.Parse(configuration["RabbitMQPort"]!),
-                UserName = configuration["RabbitMQUser"],
-                Password = configuration["RabbitMQPassword"],
-                VirtualHost = "/"
-            };
         }
 
         public override void Dispose()
