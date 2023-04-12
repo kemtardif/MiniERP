@@ -23,7 +23,7 @@ builder.Logging.AddSimpleConsole(opts =>
 });
 
 builder.Configuration
-    .AddJsonFile("secrets/salesorder.appsettings.secrets.json", optional: true)
+    .AddJsonFile("secrets/salesorder.appsettings.secrets.json", optional: false)
     .AddEnvironmentVariables();
 
 

@@ -6,13 +6,11 @@ using MiniERP.SalesOrderService.Dtos;
 using MiniERP.SalesOrderService.Exceptions;
 using MiniERP.SalesOrderService.Models;
 using MiniERP.SalesOrderService.Services;
-using NpgsqlTypes;
-using System.Data;
 
 namespace MiniERP.SalesOrderService.Controllers
-{
-    [Authorize(Roles = "ApplicationHTTPRequestSoSrv")]
+{   
     [ApiController]
+    [Authorize(Roles = "ApplicationHTTPRequestSoSrv")]
     [Route("api/so-srv/[controller]")]
     public class SalesOrdersController : ControllerBase
     {
@@ -21,7 +19,6 @@ namespace MiniERP.SalesOrderService.Controllers
         private readonly ISalesOrderService _service;
 
         public SalesOrdersController(ILogger<SalesOrdersController> logger,
-                                     IMapper mapper,
                                      ISalesOrderService service)
         {
             _logger = logger;
@@ -58,7 +55,7 @@ namespace MiniERP.SalesOrderService.Controllers
             }
             catch (Exception ex)
             {
-                throw new HttpFriendlyException($"An error occured while getting  Sales Order : ID={id}", ex);
+                throw new HttpFriendlyException($"An error occured while getting Sales Order : ID={id}", ex);
             }
         }
 
