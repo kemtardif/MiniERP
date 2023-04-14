@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+option csharp_namespace = "MiniERP.SalesOrderService.Protos";
+
+service GrpcInventory
+{
+    rpc GetStockByArticleId(StockRequest) returns (StockResponse);
+    rpc StockChanged(StockChangedRequest) returns (StockChangedResponse);
+}
+
+message StockResponse 
+{
+    bool isFound = 1;
+    StockModel item = 2;
+}
+
+message StockModel
+{
+    int32 id = 1;
+    double quantity = 2;
+    int32 status = 6;
+}
+
+message StockRequest
+{
+    int32 id = 1;
+}
+
+message StockChangedRequest
+{
+    repeated StockChangedModel items = 1;
+}
+
+message StockChangedModel
+{
+    int32 id = 1;
+    int32 changeType = 2;
+    double value = 3;
+}
+
+message StockChangedResponse
+{
+    repeated StockModel items = 1;
+}

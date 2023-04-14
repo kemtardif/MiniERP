@@ -2,7 +2,7 @@
 
 namespace MiniERP.ArticleService.MessageBus
 {
-    public interface IMessageBusSender<T> 
+    public interface IMessageBusSender<T>
     {
         void RequestForPublish(RequestType type, T item, ChangeType changeType);
     }

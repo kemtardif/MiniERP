@@ -1,6 +1,4 @@
-﻿
-
-using MiniERP.ArticleService.MessageBus.Events;
+﻿using MiniERP.ArticleService.MessageBus.Events;
 
 namespace MiniERP.ArticleService.MessageBus
 {
@@ -8,4 +6,5 @@ namespace MiniERP.ArticleService.MessageBus
     {
         void PublishNewArticle(GenericEvent dto);
     }
+
 }

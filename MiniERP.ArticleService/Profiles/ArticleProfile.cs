@@ -14,9 +14,10 @@ namespace MiniERP.ArticleService.Profiles
             CreateMap<Article, ArticleReadDto>();
             CreateMap<ArticleCreateDto, Article>();
             CreateMap<Article, ArticleCreateDto>();
-            CreateMap<Article, InventoryEvent>();
             CreateMap<ArticleUpdateDto, Article>();
             CreateMap<Article, ArticleUpdateDto>();
+
+            CreateMap<Article, InventoryEvent>();
 
             CreateMap<JsonPatchDocument<ArticleUpdateDto>, JsonPatchDocument<Article>>();
             CreateMap<Operation<ArticleUpdateDto>, Operation<Article>>();

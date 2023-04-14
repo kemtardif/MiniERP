@@ -1,9 +1,13 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Console;
 using MiniERP.InventoryService.Data;
-using MiniERP.InventoryService.MessageBus;
+using MiniERP.InventoryService.Grpc;
+using MiniERP.InventoryService.MessageBus.Subscriber;
+using MiniERP.InventoryService.MessageBus.Sender;
+using MiniERP.InventoryService.Services;
 using System.Net.Mime;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,12 +19,16 @@ builder.Logging.AddSimpleConsole(opts =>
     opts.TimestampFormat = "HH:mm:ss";
 });
 
-
 builder.Configuration
     .AddJsonFile("secrets/inventory.appsettings.secrets.json", optional: true)
     .AddEnvironmentVariables();
 
-// Add services to the container.
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(80, listenOptions => listenOptions.Protocols = HttpProtocols.Http1); //api
+    options.ListenAnyIP(8080, listenOptions => listenOptions.Protocols = HttpProtocols.Http2); //grpc
+});
+
 
 builder.Services.AddControllers()
     .ConfigureApiBehaviorOptions(options =>
@@ -46,8 +54,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 });
 
 builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddGrpc();
 
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<IMessageBusClient, RabbitMQClient>();
+builder.Services.AddScoped<IMessageBusSender, RabbitMQSender>();
+
 builder.Services.AddSingleton<IMessageProcessor, RabbitMQProcessor>();
 builder.Services.AddHostedService<RabbitMQSubscriber>();
 
@@ -56,12 +69,6 @@ builder.Services.AddDbContext<AppDbContext>(opts =>
     opts.UseNpgsql(builder.Configuration.GetConnectionString("inventoryservicePGSQL"));
 });
 
-
-builder.Services.AddDistributedRedisCache(opts =>
-{
-    opts.InstanceName = "invsrv_";
-    opts.Configuration = builder.Configuration.GetConnectionString("inventoryserviceRedis");
-});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -91,6 +98,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapGrpcService<GrpcInventoryService>();
 
 Migration.ApplyMigration(app);
 

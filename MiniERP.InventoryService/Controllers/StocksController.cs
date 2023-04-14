@@ -1,13 +1,9 @@
-using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
-using MiniERP.InventoryService.Data;
 using MiniERP.InventoryService.Dtos;
 using MiniERP.InventoryService.Models;
-using MiniERP.InventoryService.Extensions;
 using MiniERP.InventoryService.Exceptions;
 using Microsoft.AspNetCore.Authorization;
-using System.Text.Json;
+using MiniERP.InventoryService.Services;
 
 namespace MiniERP.InventoryService.Controllers;
 
@@ -16,43 +12,44 @@ namespace MiniERP.InventoryService.Controllers;
 [Route("/api/inv-srv/[controller]")]
 public class StocksController : ControllerBase
 {
-
-    private readonly ILogger<StocksController> _logger;
-    private readonly IInventoryRepository _repository;
-    private readonly IMapper _mapper;
-    private readonly IDistributedCache _cache;
-
-    public StocksController(ILogger<StocksController> logger, 
-        IInventoryRepository repository, 
-        IMapper mapper,
-        IDistributedCache cache)
+    private readonly IInventoryService _inventoryService;
+    public StocksController( IInventoryService inventoryService)
     {
-        _logger = logger;
-        _repository = repository;
-        _mapper = mapper;
-        _cache = cache;
+        _inventoryService = inventoryService;
     }
-    [HttpGet]
-    public ActionResult<IEnumerable<StockReadDto>> GetAllItems()
-    {
-        List<StockReadDto> dtos = new();
 
-        foreach (Stock model in _repository.GetAllItems())
+    [HttpGet]
+    public ActionResult<IEnumerable<StockReadDto>> GetAllStocks()
+    {
+        try
         {
-            dtos.Add(_mapper.Map<StockReadDto>(model));
+            Result<IEnumerable<StockReadDto>> result = _inventoryService.GetAllStocks();
+
+            return Ok(result.Value);
         }
-        return dtos;
+        catch (Exception ex)
+        {
+            throw new HttpFriendlyException($"An error occured while getting all stocks", ex);
+        }
     }
 
     [HttpGet("{articleId}")]
-    public async Task<ActionResult<StockReadDto>> GetItemArticleById(int articleId)
+    public ActionResult<StockReadDto> GetStockByArticleId(int articleId)
     {
-        Stock? stock = await _repository.GetItemByArticleId(articleId);
-
-        if(stock is not null)
+        try
         {
-            return Ok(_mapper.Map<StockReadDto>(stock));
+            Result<StockReadDto> result = _inventoryService.GetStockByArticleId(articleId);
+
+            if(!result.IsSuccess)
+            {
+                return NotFound();
+            }
+
+            return Ok(result.Value);
         }
-        return NotFound();
+        catch (Exception ex)
+        {
+            throw new HttpFriendlyException($"An error occured while getting stock : ArticlID={articleId}", ex);
+        }
     }
 }

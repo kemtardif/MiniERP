@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: salesorder-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: salesorderservice
+  template:
+    metadata:
+      labels:
+        app:  salesorderservice
+    spec:
+      containers:
+        - name:  salesorderservice
+          image: kemtardif/salesorderservice:latest
+          imagePullPolicy: "Always"
+          envFrom:
+            - configMapRef:
+                name: salesorder-config
+          volumeMounts:
+          - name: secrets
+            mountPath: /app/secrets
+            readOnly: true
+      volumes:
+      - name: secrets
+        secret:
+          secretName: salesorder-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: salesorder-clusterip-srv
+spec:
+  type: ClusterIP
+  selector:
+    app:  salesorderservice
+  ports: 
+    - name: sosrvport
+      protocol: TCP
+      port: 80
+      targetPort: 80
+
+

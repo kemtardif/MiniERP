@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: purchaseorder-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: purchaseorderservice
+  template:
+    metadata:
+      labels:
+        app:  purchaseorderservice
+    spec:
+      containers:
+        - name:  purchaseorderservice
+          image: kemtardif/purchaseorderservice:latest
+          imagePullPolicy: "Always"
+          envFrom:
+            - configMapRef:
+                name: purchaseorder-config
+          volumeMounts:
+          - name: secrets
+            mountPath: /app/secrets
+            readOnly: true
+      volumes:
+      - name: secrets
+        secret:
+          secretName: purchaseorder-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: purchaseorder-clusterip-srv
+spec:
+  type: ClusterIP
+  selector:
+    app:  purchaseorderservice
+  ports: 
+    - name: posrvport
+      protocol: TCP
+      port: 80
+      targetPort: 80
+
+

@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: so-psql-pv
+  labels:
+    type: local
+    app: so-psql
+spec:
+  storageClassName: manual    
+  capacity:
+    storage: 250Mi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data/so-psql"
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: so-psql-pvc
+  labels:
+    app: so-psql
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 250Mi
+

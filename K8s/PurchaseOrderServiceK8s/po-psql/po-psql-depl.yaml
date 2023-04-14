@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: po-psql-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: po-psql
+  template:
+    metadata:
+      labels:
+        app: po-psql
+    spec:      
+      containers:
+        - name: po-psql
+          image: postgres:latest
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: po-psql-secret
+          volumeMounts:
+              - mountPath: /var/lib/postgresql/data
+                name: po-psql-pv-storage
+      volumes:
+        - name: po-psql-pv-storage
+          persistentVolumeClaim:
+            claimName: po-psql-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: po-psql-clusterip-srv
+spec:
+  type: ClusterIP
+  selector:
+    app: po-psql
+  ports:
+  - name: po-psql-p
+    protocol: TCP
+    port: 5432
+    targetPort: 5432
+

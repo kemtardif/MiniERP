@@ -1,10 +1,7 @@
 ﻿using AutoMapper;
-using Microsoft.Extensions.Logging;
 using MiniERP.ArticleService.Data;
-using MiniERP.ArticleService.Dtos;
 using MiniERP.ArticleService.MessageBus.Events;
 using MiniERP.ArticleService.Models;
-using System;
 
 namespace MiniERP.ArticleService.MessageBus
 {
@@ -14,7 +11,7 @@ namespace MiniERP.ArticleService.MessageBus
         private readonly IMessageBusClient _messageBus;
 
         public RabbitMQArticleSender(
-                                     IMapper mapper, 
+                                     IMapper mapper,
                                      IMessageBusClient messageBus)
         {
             _mapper = mapper;
@@ -25,7 +22,7 @@ namespace MiniERP.ArticleService.MessageBus
             string eventName = GetEventName(type);
             IEnumerable<GenericEvent> events = GetEvents(eventName, article, changeType);
 
-            foreach(GenericEvent evnt in events)
+            foreach (GenericEvent evnt in events)
             {
                 _messageBus.PublishNewArticle(evnt);
             }
@@ -45,7 +42,7 @@ namespace MiniERP.ArticleService.MessageBus
         {
             List<GenericEvent> events = new();
 
-            if(change == ChangeType.All)
+            if (change == ChangeType.All)
             {
                 InventoryEvent invAll = GetInventoryEvent(eventName, article);
                 events.Add(invAll);
@@ -64,7 +61,6 @@ namespace MiniERP.ArticleService.MessageBus
             inv.RoutingKey = "inventory";
             return inv;
         }
-
 
     }
 }
