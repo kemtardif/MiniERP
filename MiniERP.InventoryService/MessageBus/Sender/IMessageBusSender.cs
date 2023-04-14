@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace MiniERP.InventoryService.MessageBus.Sender
+﻿namespace MiniERP.InventoryService.MessageBus.Sender
 {
     public interface IMessageBusSender
     {

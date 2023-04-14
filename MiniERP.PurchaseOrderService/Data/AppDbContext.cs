@@ -5,7 +5,7 @@ namespace MiniERP.PurchaseOrderService.Data
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions opts) : base (opts){ }
+        public AppDbContext(DbContextOptions opts) : base (opts) { }
 
         public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
         public DbSet<PODetail> PODetails { get; set; }

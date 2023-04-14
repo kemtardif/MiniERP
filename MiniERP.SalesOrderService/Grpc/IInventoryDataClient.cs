@@ -1,5 +1,4 @@
-﻿using MiniERP.SalesOrderService.Dtos;
-using MiniERP.SalesOrderService.Models;
+﻿using MiniERP.SalesOrderService.Models;
 using MiniERP.SalesOrderService.Protos;
 
 namespace MiniERP.SalesOrderService.Grpc

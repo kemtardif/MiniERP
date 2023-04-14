@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: purchaseorder-config
+data:
+  ASPNETCORE_ENVIRONMENT: Staging
+  ASPNETCORE_FORWARDEDHEADERS_ENABLED: 'true'
+
+

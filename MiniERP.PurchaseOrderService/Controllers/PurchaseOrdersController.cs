@@ -4,8 +4,7 @@ using MiniERP.PurchaseOrderService.Dtos;
 using MiniERP.PurchaseOrderService.Exceptions;
 using MiniERP.PurchaseOrderService.Models;
 using MiniERP.PurchaseOrderService.Services;
-using System.Data;
-using System.Reflection.Metadata.Ecma335;
+
 
 namespace MiniERP.PurchaseOrderService.Controllers
 {

@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using MiniERP.InventoryService.Models;
 
 namespace MiniERP.InventoryService.Data

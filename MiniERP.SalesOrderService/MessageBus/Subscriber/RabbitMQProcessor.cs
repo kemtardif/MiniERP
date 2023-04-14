@@ -1,9 +1,5 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Components;
-using Microsoft.EntityFrameworkCore;
 using MiniERP.SalesOrderService.Caching;
-using MiniERP.SalesOrderService.Data;
-using MiniERP.SalesOrderService.Exceptions;
 using MiniERP.SalesOrderService.MessageBus.Responses;
 using MiniERP.SalesOrderService.Models;
 using System.Text.Json;

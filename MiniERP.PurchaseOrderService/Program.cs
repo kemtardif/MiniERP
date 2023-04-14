@@ -17,10 +17,11 @@ builder.Logging.AddSimpleConsole(opts =>
 });
 
 builder.Configuration
-    .AddJsonFile("secrets/purchaseorder.appsettings.secrets.json", optional: false)
+    .AddJsonFile("secrets/purchaseorder.appsettings.secrets.json", optional: true)
     .AddEnvironmentVariables();
 
 builder.Services.AddScoped<IPOService, POService>();
+builder.Services.AddScoped<IPORepository, PORepository>();
 
 builder.Services.AddAutoMapper(typeof(Program));
 

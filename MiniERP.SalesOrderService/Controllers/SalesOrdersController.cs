@@ -1,4 +1,3 @@
-using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +7,7 @@ using MiniERP.SalesOrderService.Models;
 using MiniERP.SalesOrderService.Services;
 
 namespace MiniERP.SalesOrderService.Controllers
-{   
+{
     [ApiController]
     [Authorize(Roles = "ApplicationHTTPRequestSoSrv")]
     [Route("api/so-srv/[controller]")]

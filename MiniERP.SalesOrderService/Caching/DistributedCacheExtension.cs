@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
-using MiniERP.SalesOrderService.Exceptions;
 using System.Text.Json;
 
 namespace MiniERP.SalesOrderService.Caching

@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
 using Grpc.Core;
 using MiniERP.InventoryService.Data;
-using MiniERP.InventoryService.Dtos;
 using MiniERP.InventoryService.MessageBus.Sender;
 using MiniERP.InventoryService.Models;
 using MiniERP.InventoryService.Protos;
-using System.Transactions;
 
 namespace MiniERP.InventoryService.Grpc
 {
