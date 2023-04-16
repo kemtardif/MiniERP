@@ -9,6 +9,7 @@ using MiniERP.InventoryService.MessageBus.Subscriber;
 using MiniERP.InventoryService.MessageBus.Sender;
 using MiniERP.InventoryService.Services;
 using System.Net.Mime;
+using MiniERP.InventoryService.MessageBus.Processors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,7 +62,9 @@ builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IMessageBusClient, RabbitMQClient>();
 builder.Services.AddScoped<IMessageBusSender, RabbitMQSender>();
 
-builder.Services.AddSingleton<IMessageProcessor, RabbitMQProcessor>();
+
+builder.Services.AddSingleton<IMessageProcessor, ArticleCreatedProcessor>();
+builder.Services.AddSingleton<IMessageRouter, RabbitMQRouter>();
 builder.Services.AddHostedService<RabbitMQSubscriber>();
 
 builder.Services.AddDbContext<AppDbContext>(opts =>

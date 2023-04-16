@@ -34,11 +34,16 @@ namespace MiniERP.InventoryService.Data
             return _context.InventoryItems.Include(x => x.Stock);
         }
 
-        public InventoryItem? GetItemByArticleId(int articleId)
+        public InventoryItem? GetItemByArticleId(int articleId, bool WithStock, bool WithMovement)
         {
-            return _context.InventoryItems
-                        .Include(x => x.Stock)
-                        .FirstOrDefault(x => x.ProductId == articleId);
+            var items = _context.InventoryItems;
+
+            if(WithStock)
+                items.Include(x => x.Stock);
+            if (WithMovement)
+                items.Include(x => x.StockMovements);
+
+            return items.FirstOrDefault(x => x.ProductId == articleId);
         }
 
         public InventoryItem? GetItemById(int id)

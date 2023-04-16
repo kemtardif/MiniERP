@@ -1,9 +1,15 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Console;
+using MiniERP.PurchaseOrderService.Caching;
 using MiniERP.PurchaseOrderService.Data;
+using MiniERP.PurchaseOrderService.Grpc;
+using MiniERP.PurchaseOrderService.Grpc.Protos;
+using MiniERP.PurchaseOrderService.Models;
 using MiniERP.PurchaseOrderService.Services;
+using MiniERP.PurchaseOrderService.Validators;
 using System.Net.Mime;
 
 
@@ -22,6 +28,10 @@ builder.Configuration
 
 builder.Services.AddScoped<IPOService, POService>();
 builder.Services.AddScoped<IPORepository, PORepository>();
+builder.Services.AddScoped<IGrpcClientAdapter, GrpcClientAdapter>();
+builder.Services.AddScoped<IInventoryDataClient, InventoryDataClient>();
+builder.Services.AddScoped<ICacheRepository, RedisCacheRepository>();
+builder.Services.AddScoped<IValidator<PurchaseOrder>, POValidator>();   
 
 builder.Services.AddAutoMapper(typeof(Program));
 
@@ -29,7 +39,18 @@ builder.Services.AddDbContext<AppDbContext>(opts =>
 {
     opts.UseNpgsql(builder.Configuration.GetConnectionString("purchaseorderservicePGSQL"));
 });
-// Add services to the container.
+
+builder.Services.AddDistributedRedisCache(opts =>
+{
+    opts.InstanceName = "posrv_";
+    opts.Configuration = builder.Configuration.GetConnectionString("purchaseorderserviceRedis");
+});
+
+builder.Services.AddGrpcClient<GrpcInventory.GrpcInventoryClient>(o =>
+{
+    o.Address = new Uri(builder.Configuration["GrpcInventoryService"]!);
+});
+
 
 builder.Services.AddControllers()
 .ConfigureApiBehaviorOptions(options =>

@@ -7,7 +7,6 @@ namespace MiniERP.SalesOrderService.Validators
     public class SalesOrderDetailValidator : AbstractValidator<SalesOrderDetail>
     {
         private ICacheRepository _cache;
-
         public SalesOrderDetailValidator(ICacheRepository repository)
         {
             _cache = repository;

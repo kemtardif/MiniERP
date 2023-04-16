@@ -1,4 +1,4 @@
-﻿using MiniERP.InventoryService.MessageBus.Events;
+﻿using MiniERP.InventoryService.MessageBus.Messages;
 using RabbitMQ.Client.Exceptions;
 using RabbitMQ.Client;
 using System.Text.Json;

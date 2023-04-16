@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace MiniERP.InventoryService.MessageBus.Events
+namespace MiniERP.InventoryService.MessageBus.Messages
 {
     [JsonDerivedType(typeof(StockChangedEvent))]
     public class GenericEvent

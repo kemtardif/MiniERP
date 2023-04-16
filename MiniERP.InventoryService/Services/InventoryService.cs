@@ -29,7 +29,7 @@ namespace MiniERP.InventoryService.Services
 
         public Result<StockReadDto> GetStockByArticleId(int articleId)
         {
-            InventoryItem? stock = _repository.GetItemByArticleId(articleId);
+            InventoryItem? stock = _repository.GetItemByArticleId(articleId, true, false);
 
             if(stock is null)
             {

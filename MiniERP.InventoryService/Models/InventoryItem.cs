@@ -11,6 +11,7 @@
         public double AutoTreshold { get; set; }
         public double AutoQuantity { get; set; }
         public Stock Stock { get; set; } = new();
+        public IEnumerable<StockMovement> StockMovements { get; set; } = new List<StockMovement>();
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 

@@ -25,7 +25,7 @@ namespace MiniERP.InventoryService.Grpc
         {
             var response = new StockResponse();
 
-            InventoryItem? item = _repository.GetItemByArticleId(request.Id);
+            InventoryItem? item = _repository.GetItemByArticleId(request.Id, true, false);
 
             if(item is not null)
             {
@@ -42,7 +42,7 @@ namespace MiniERP.InventoryService.Grpc
 
             foreach(var item in request.Items)
             {
-                InventoryItem? invItem = _repository.GetItemByArticleId(item.Id);
+                InventoryItem? invItem = _repository.GetItemByArticleId(item.Id, true, false);
 
                 if(invItem is null)
                 {

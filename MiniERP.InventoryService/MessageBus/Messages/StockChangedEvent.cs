@@ -1,4 +1,4 @@
-﻿namespace MiniERP.InventoryService.MessageBus.Events
+﻿namespace MiniERP.InventoryService.MessageBus.Messages
 {
     public class StockChangedEvent : GenericEvent
     {

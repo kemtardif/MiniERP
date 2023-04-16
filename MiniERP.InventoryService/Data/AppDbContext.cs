@@ -9,6 +9,7 @@ namespace MiniERP.InventoryService.Data
 
         public DbSet<InventoryItem> InventoryItems { get; set; }
         public DbSet<Stock> Stocks { get; set; }
+        public DbSet<StockMovement> StockMovements { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -32,6 +33,16 @@ namespace MiniERP.InventoryService.Data
 
                 p.HasIndex(p => p.InventoryId)
                  .IsUnique();
+            });
+
+            builder.Entity<StockMovement>(sm => 
+            {
+                sm.HasKey(p => p.Id);
+
+                sm.HasOne<InventoryItem>()
+                .WithMany(p => p.StockMovements)
+                .HasForeignKey(x => x.ArticleId)
+                .IsRequired();
             });
         }
     }

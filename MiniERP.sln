@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniERP.InventoryService", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniERP.SalesOrderService", "MiniERP.SalesOrderService\MiniERP.SalesOrderService.csproj", "{182E6311-46FF-4A60-B34E-A1D1E3E35B2D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniERP.PurchaseOrderService", "MiniERP.PurchaseOrderService\MiniERP.PurchaseOrderService.csproj", "{2DFEE003-88A2-4F75-95A9-11531D7DE385}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniERP.PurchaseOrderService", "MiniERP.PurchaseOrderService\MiniERP.PurchaseOrderService.csproj", "{2DFEE003-88A2-4F75-95A9-11531D7DE385}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using FluentValidation;
+using FluentValidation.Results;
 using MiniERP.PurchaseOrderService.Data;
 using MiniERP.PurchaseOrderService.Dtos;
 using MiniERP.PurchaseOrderService.Models;
@@ -9,16 +11,26 @@ namespace MiniERP.PurchaseOrderService.Services
     {
         private readonly IPORepository _repository;
         private readonly IMapper _mapper;
+        private readonly IValidator<PurchaseOrder> _validator;
 
         public POService(IPORepository repository,
-                         IMapper mapper)
+                         IMapper mapper,
+                         IValidator<PurchaseOrder> validator)
         { 
             _repository = repository;
             _mapper = mapper;
+            _validator = validator;
         }
         public Result<POReadDto> CreatePurchaseOrder(POCreateDto createDto)
         {
             var po = _mapper.Map<PurchaseOrder>(createDto);
+
+            ValidationResult validationResult= _validator.Validate(po);
+
+            if(!validationResult.IsValid)
+            {
+                return Result<POReadDto>.Failure(validationResult.ToDictionary());
+            }
 
             _repository.AddPO(po);
 

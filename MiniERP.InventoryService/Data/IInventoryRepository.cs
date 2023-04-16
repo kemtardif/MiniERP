@@ -6,7 +6,7 @@ namespace MiniERP.InventoryService.Data
     {
         IEnumerable<InventoryItem> GetAllItems();
         InventoryItem? GetItemById(int id);
-        InventoryItem? GetItemByArticleId(int articleId);
+        InventoryItem? GetItemByArticleId(int articleId, bool WithStock, bool WithMovement);
         void AddInventoryItem(InventoryItem item);
         void SetAsDiscontinued(InventoryItem item);
         void SetAsClosed(InventoryItem item);
