@@ -50,7 +50,7 @@ builder.Services.AddDistributedRedisCache(opts =>
     opts.Configuration = builder.Configuration.GetConnectionString("salesorderserviceRedis");
 });
 
-builder.Services.AddGrpcClient<GrpcInventory.GrpcInventoryClient>(o =>
+builder.Services.AddGrpcClient<StockMovementService.StockMovementServiceClient>(o =>
 {
     o.Address = new Uri(builder.Configuration["GrpcInventoryService"]!);
 });

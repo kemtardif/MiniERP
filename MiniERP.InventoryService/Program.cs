@@ -59,11 +59,16 @@ builder.Services.AddGrpc();
 
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
+
+builder.Services.AddScoped<IMovementProcessor, GrpcMovementProcessor>();
+
+builder.Services.AddSingleton<IRabbitMQConnection, RabbitMQConnection>();
 builder.Services.AddScoped<IMessageBusClient, RabbitMQClient>();
 builder.Services.AddScoped<IMessageBusSender, RabbitMQSender>();
 
-
 builder.Services.AddSingleton<IMessageProcessor, ArticleCreatedProcessor>();
+builder.Services.AddSingleton<IMessageProcessor, ArticleDeletedProcessor>();
+builder.Services.AddSingleton<IMessageProcessor, ArticleUpdatedProcessor>();
 builder.Services.AddSingleton<IMessageRouter, RabbitMQRouter>();
 builder.Services.AddHostedService<RabbitMQSubscriber>();
 

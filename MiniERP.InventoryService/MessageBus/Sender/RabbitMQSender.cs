@@ -40,13 +40,13 @@ namespace MiniERP.InventoryService.MessageBus.Sender
 
             if (type == RequestType.StockUpdated)
             {
-                StockChangedEvent invAll = GetStockChengedEvent(eventName, item);
+                StockChangedEvent invAll = GetStockChangedEvent(eventName, item);
                 events.Add(invAll);
             }
 
             return events;
         }
-        private StockChangedEvent GetStockChengedEvent<T>(string eventName, IEnumerable<T> item)
+        private StockChangedEvent GetStockChangedEvent<T>(string eventName, IEnumerable<T> item)
         {
             return new StockChangedEvent()
             {

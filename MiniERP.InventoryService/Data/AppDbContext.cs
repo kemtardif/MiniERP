@@ -17,13 +17,19 @@ namespace MiniERP.InventoryService.Data
             { 
                 p.HasKey(p => p.Id);
 
-                p.HasIndex(p => p.ProductId)
+                p.HasIndex(p => p.ArticleId)
                  .IsUnique();
+
 
                 p.HasOne(p => p.Stock)
                 .WithOne()
                 .HasForeignKey<Stock>(p => p.InventoryId)
                 .IsRequired();
+
+                p.HasMany(x => x.StockMovements)
+                .WithOne(x => x.Article)
+                .HasForeignKey(x => x.ArticleId)
+                .HasPrincipalKey(x => x.ArticleId);
                     
             });
 
@@ -38,11 +44,7 @@ namespace MiniERP.InventoryService.Data
             builder.Entity<StockMovement>(sm => 
             {
                 sm.HasKey(p => p.Id);
-
-                sm.HasOne<InventoryItem>()
-                .WithMany(p => p.StockMovements)
-                .HasForeignKey(x => x.ArticleId)
-                .IsRequired();
+             
             });
         }
     }

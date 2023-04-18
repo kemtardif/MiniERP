@@ -29,8 +29,10 @@ builder.Services.AddScoped<IArticleService, ArticleService>();
 builder.Services.AddScoped<IUnitService, UnitService>();
 builder.Services.AddScoped<IValidator<Article>, ArticleValidator>();
 builder.Services.AddScoped<IValidator<Unit>, UnitValidator>();
-builder.Services.AddSingleton<IMessageBusClient, RabbitMQClient>();
-builder.Services.AddSingleton<IMessageBusSender<Article>, RabbitMQArticleSender>();
+
+builder.Services.AddSingleton<IRabbitMQConnection, RabbitMQConnection>();
+builder.Services.AddScoped<IMessageBusClient, RabbitMQClient>();
+builder.Services.AddScoped<IMessageBusSender<Article>, RabbitMQArticleSender>();
 
 
 builder.Services.AddDbContext<AppDbContext>(opts =>

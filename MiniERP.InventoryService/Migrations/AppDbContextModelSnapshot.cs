@@ -30,6 +30,9 @@ namespace MiniERP.InventoryService.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("ArticleId")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("AutoOrder")
                         .HasColumnType("boolean");
 
@@ -48,9 +51,6 @@ namespace MiniERP.InventoryService.Migrations
                     b.Property<double>("MaxQuantity")
                         .HasColumnType("double precision");
 
-                    b.Property<int>("ProductId")
-                        .HasColumnType("integer");
-
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
@@ -59,7 +59,7 @@ namespace MiniERP.InventoryService.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId")
+                    b.HasIndex("ArticleId")
                         .IsUnique();
 
                     b.ToTable("InventoryItems");
@@ -137,11 +137,14 @@ namespace MiniERP.InventoryService.Migrations
 
             modelBuilder.Entity("MiniERP.InventoryService.Models.StockMovement", b =>
                 {
-                    b.HasOne("MiniERP.InventoryService.Models.InventoryItem", null)
+                    b.HasOne("MiniERP.InventoryService.Models.InventoryItem", "Article")
                         .WithMany("StockMovements")
                         .HasForeignKey("ArticleId")
+                        .HasPrincipalKey("ArticleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Article");
                 });
 
             modelBuilder.Entity("MiniERP.InventoryService.Models.InventoryItem", b =>

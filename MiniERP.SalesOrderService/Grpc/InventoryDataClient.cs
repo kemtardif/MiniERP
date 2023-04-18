@@ -18,12 +18,12 @@ namespace MiniERP.SalesOrderService.Grpc
 
         public Stock? GetStockByArticleId(int articleId)
         {
-            StockRequest request = new()
+            GetStockRequest request = new()
             {
-                Id = articleId
+                ArticleId = articleId
             };
 
-            StockResponse response = _client.GetStockByArticleId(request);
+            GetStockResponse response = _client.GetStock(request);
 
             if(!response.IsFound)
             {

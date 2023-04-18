@@ -38,20 +38,13 @@ namespace MiniERP.InventoryService.Data
         {
             var items = _context.InventoryItems;
 
-            if(WithStock)
+            if (WithStock)
                 items.Include(x => x.Stock);
             if (WithMovement)
                 items.Include(x => x.StockMovements);
 
-            return items.FirstOrDefault(x => x.ProductId == articleId);
+            return items.FirstOrDefault(x => x.ArticleId == articleId);
         }
-
-        public InventoryItem? GetItemById(int id)
-        {
-            return _context.InventoryItems
-                    .Include(x => x.Stock)
-                    .FirstOrDefault(x => x.Id == id);
-            }
 
         public void SetAsDiscontinued(InventoryItem item)
         {
@@ -78,6 +71,15 @@ namespace MiniERP.InventoryService.Data
         public void SaveChanges()
         {
             _context.SaveChanges();
+        }
+
+        public IEnumerable<StockMovement> GetMovementsByOrder(RelatedOrderType orderType, int orderId)
+        {
+            return _context.StockMovements
+                    .Include(x => x.Article)
+                    .ThenInclude(y => y.Stock)
+                    .Where(x => x.RelatedOrderType == orderType 
+                                                    && x.RelatedOrderId == orderId);
         }
     }
 }

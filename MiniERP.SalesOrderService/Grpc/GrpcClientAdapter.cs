@@ -11,14 +11,24 @@ namespace MiniERP.SalesOrderService.Grpc
             _grpcClient = grpcClient;
         }
 
-        public StockResponse GetStockByArticleId(StockRequest request)
+        public CancelStockResponse CancelStockMovement(CancelStockRequest request)
         {
-            return _grpcClient.GetStockByArticleId(request);
+            return _grpcClient.CancelStockMovement(request);
         }
 
-        public StockChangedResponse StockChanged(StockChangedRequest request)
+        public CloseStockResponse CloseStockMovement(CloseStockRequest request)
         {
-            return _grpcClient.StockChanged(request);
+            return _grpcClient.CloseStockMovement(request);
+        }
+
+        public GetStockResponse GetStock(GetStockRequest request)
+        {
+            return _grpcClient.GetStock(request);
+        }
+
+        public OpenStockResponse OpenStockMovement(OpenStockRequest request)
+        {
+            return _grpcClient.OpenStockMovement(request);
         }
     }
 }

@@ -3,7 +3,7 @@
     public class InventoryItem
     {
         public int Id { get; set; }
-        public int ProductId { get; set; }
+        public int ArticleId { get; set; }
         public int Status { get; set; }
         public bool Discontinued { get; set; }
         public double MaxQuantity { get; set; }
@@ -11,7 +11,7 @@
         public double AutoTreshold { get; set; }
         public double AutoQuantity { get; set; }
         public Stock Stock { get; set; } = new();
-        public IEnumerable<StockMovement> StockMovements { get; set; } = new List<StockMovement>();
+        public List<StockMovement> StockMovements { get; set; } = new List<StockMovement>();
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 

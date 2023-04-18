@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MiniERP.InventoryService.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230328215854_inventoryitemsandstocks")]
-    partial class inventoryitemsandstocks
+    [Migration("20230418195600_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,6 +33,9 @@ namespace MiniERP.InventoryService.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("ArticleId")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("AutoOrder")
                         .HasColumnType("boolean");
 
@@ -51,9 +54,6 @@ namespace MiniERP.InventoryService.Migrations
                     b.Property<double>("MaxQuantity")
                         .HasColumnType("double precision");
 
-                    b.Property<int>("ProductId")
-                        .HasColumnType("integer");
-
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
@@ -62,7 +62,7 @@ namespace MiniERP.InventoryService.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId")
+                    b.HasIndex("ArticleId")
                         .IsUnique();
 
                     b.ToTable("InventoryItems");
@@ -96,6 +96,39 @@ namespace MiniERP.InventoryService.Migrations
                     b.ToTable("Stocks");
                 });
 
+            modelBuilder.Entity("MiniERP.InventoryService.Models.StockMovement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ArticleId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MovementStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MovementType")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("Quantity")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("RelatedOrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RelatedOrderType")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArticleId");
+
+                    b.ToTable("StockMovements");
+                });
+
             modelBuilder.Entity("MiniERP.InventoryService.Models.Stock", b =>
                 {
                     b.HasOne("MiniERP.InventoryService.Models.InventoryItem", null)
@@ -105,10 +138,24 @@ namespace MiniERP.InventoryService.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("MiniERP.InventoryService.Models.StockMovement", b =>
+                {
+                    b.HasOne("MiniERP.InventoryService.Models.InventoryItem", "Article")
+                        .WithMany("StockMovements")
+                        .HasForeignKey("ArticleId")
+                        .HasPrincipalKey("ArticleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Article");
+                });
+
             modelBuilder.Entity("MiniERP.InventoryService.Models.InventoryItem", b =>
                 {
                     b.Navigation("Stock")
                         .IsRequired();
+
+                    b.Navigation("StockMovements");
                 });
 #pragma warning restore 612, 618
         }

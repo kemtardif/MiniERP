@@ -4,8 +4,10 @@ namespace MiniERP.SalesOrderService.Grpc
 {
     public interface IGrpcClientAdapter
     {
-        StockResponse GetStockByArticleId(StockRequest request);
-        StockChangedResponse StockChanged(StockChangedRequest request);
+        OpenStockResponse OpenStockMovement(OpenStockRequest request);
+        CloseStockResponse CloseStockMovement(CloseStockRequest request);
+        CancelStockResponse CancelStockMovement(CancelStockRequest request);
+        GetStockResponse GetStock(GetStockRequest request);
 
     }
 }

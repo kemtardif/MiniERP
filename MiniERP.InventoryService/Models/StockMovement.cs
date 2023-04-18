@@ -4,6 +4,7 @@
     {
         public int Id { get; set; }
         public int ArticleId { get; set; }
+        public InventoryItem Article { get; set; } = new();
         public MovementType MovementType { get; set; }
         public MovementStatus MovementStatus { get; set; }
         public double Quantity { get; set; }

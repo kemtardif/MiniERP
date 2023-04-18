@@ -6,12 +6,37 @@ service GrpcInventory
 {
     rpc GetStockByArticleId(StockRequest) returns (StockResponse);
     rpc StockChanged(StockChangedRequest) returns (StockChangedResponse);
+
+    rpc OpenStockMovement(OpenStockRequest) returns (OpenStockResponse);
+    rpc CloseStockMovement(CloseStockRequest) returns (CloseStockResponse);
+    rpc CancelStockMovement(CancelStockRequest) returns (CancelStockResponse);
+
+    rpc GetStock(GetStockRequest) returns (GetStockResponse);
 }
+
+
+
 
 message StockResponse 
 {
     bool isFound = 1;
     StockModel item = 2;
+}
+
+
+
+
+
+message GetStockRequest
+{
+    int32 articleId = 1;
+}
+
+message GetStockResponse
+{
+    bool isFound = 1;
+    StockModel item = 2;
+
 }
 
 message StockModel
@@ -20,6 +45,10 @@ message StockModel
     double quantity = 2;
     int32 status = 6;
 }
+
+
+
+
 
 message StockRequest
 {
@@ -42,3 +71,69 @@ message StockChangedResponse
 {
     repeated StockModel items = 1;
 }
+
+
+
+
+
+service StockMovementService
+{
+    rpc OpenStockMovement(OpenStockRequest) returns (OpenStockResponse);
+    rpc CloseStockMovement(CloseStockRequest) returns (CloseStockResponse);
+    rpc CancelStockMovement(CancelStockRequest) returns (CancelStockResponse);
+}
+
+message OpenStockRequest 
+{
+    repeated OpenStockModel items = 1;
+}
+
+message OpenStockModel
+{
+    int32 article_id = 1;
+    int32 movement_type = 2;
+    double quantity = 3;
+    int32 related_order_id = 4;
+    int32 related_order_type = 5;
+}
+
+message OpenStockResponse 
+{
+    bool success = 1;
+    string message = 3;
+}
+
+message CloseStockRequest 
+{
+    CloseStockModel items = 1;
+}
+
+message CloseStockModel
+{
+    int32 related_order_id = 4;
+    int32 related_order_type = 5;
+}
+
+message CloseStockResponse 
+{
+    bool success = 1;
+    string message = 3;
+}
+
+message CancelStockRequest 
+{
+    CancelStockModel items = 1;
+}
+
+message CancelStockModel
+{
+    int32 related_order_id = 4;
+    int32 related_order_type = 5;
+}
+
+message CancelStockResponse 
+{
+    bool success = 1;
+    string message = 3;
+}
+

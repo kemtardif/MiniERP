@@ -7,56 +7,28 @@ using System.Text;
 namespace MiniERP.InventoryService.MessageBus.Sender
 {
     public class RabbitMQClient : IMessageBusClient, IDisposable
-    {    
-        private readonly IConnection _connection;
+    {   
         private readonly IModel _channel;
         private readonly ILogger<RabbitMQClient> _logger;
 
-        public RabbitMQClient(IConfiguration configuration, ILogger<RabbitMQClient> logger)
+        public RabbitMQClient(IRabbitMQConnection rabbitMQConnection, ILogger<RabbitMQClient> logger)
         {
             _logger = logger;
 
-            var factory = new ConnectionFactory()
+            if (!rabbitMQConnection.Connection.IsOpen)
             {
-                HostName = configuration["RabbitMQHost"],
-                Port = int.Parse(configuration["RabbitMQPort"]!),
-                UserName = configuration["RabbitMQUser"],
-                Password = configuration["RabbitMQPassword"],
-                VirtualHost = "/",
-
-            };
-
-            try
-            {
-                _connection = factory.CreateConnection();
-
-                _channel = _connection.CreateModel();
-
-                _channel.ExchangeDeclare(exchange: "inventory", type: ExchangeType.Direct);
+                throw new BrokerUnreachableException(new ArgumentNullException(nameof(rabbitMQConnection)));
             }
-            catch (BrokerUnreachableException ex)
-            {
-                _logger.LogCritical("---> RabbitMQ : {name} : {ex} : {date}", nameof(BrokerUnreachableException),
-                                                                              ex.Message, DateTime.UtcNow);
-                throw new ArgumentException(nameof(_connection));
-            }
+
+            _channel = rabbitMQConnection.Connection.CreateModel();
+
+            _channel.ExchangeDeclare(exchange: "inventory", type: ExchangeType.Direct);
+
         }
 
         public void Dispose()
         {
             _channel.Close();
-            try
-            {
-                _connection.Close();
-            }
-            catch (IOException ex)
-            {
-                _logger.LogError("----> RabbitMQ Exception: {name} : {exName} : {ex} : {date}",
-                                    nameof(Dispose),
-                                    nameof(IOException),
-                                    ex.Message,
-                                    DateTime.UtcNow);
-            }
         }
 
         public void Publish(GenericEvent dto)
@@ -64,12 +36,6 @@ namespace MiniERP.InventoryService.MessageBus.Sender
             if (dto is null)
             {
                 throw new ArgumentNullException(nameof(dto));
-            }
-
-            if (!_connection.IsOpen)
-            {
-                _logger.LogWarning("----> RabbitMQ :  Publish : Connection is closed  : {date}", DateTime.UtcNow);
-                return;
             }
 
             string message = JsonSerializer.Serialize(dto);
