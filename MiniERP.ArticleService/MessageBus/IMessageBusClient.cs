@@ -1,10 +1,10 @@
-﻿using MiniERP.ArticleService.MessageBus.Events;
+﻿using MiniERP.ArticleService.MessageBus.Messages;
 
 namespace MiniERP.ArticleService.MessageBus
 {
     public interface IMessageBusClient
     {
-        void PublishNewArticle(GenericEvent dto);
+        void PublishMessage(string routingKey, string message);
     }
 
 }

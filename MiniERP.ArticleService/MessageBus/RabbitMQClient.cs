@@ -1,12 +1,12 @@
 ﻿using RabbitMQ.Client.Exceptions;
 using RabbitMQ.Client;
 using System.Text;
-using MiniERP.ArticleService.MessageBus.Events;
+using MiniERP.ArticleService.MessageBus.Messages;
 using System.Text.Json;
 
 namespace MiniERP.ArticleService.MessageBus
 {
-    public class RabbitMQClient : IMessageBusClient
+    public class RabbitMQClient : IMessageBusClient, IDisposable
     {
         private readonly IModel _channel;
         private readonly ILogger<RabbitMQClient> _logger;
@@ -31,29 +31,22 @@ namespace MiniERP.ArticleService.MessageBus
             _channel.Close();
         }
 
-        public void PublishNewArticle(GenericEvent dto)
+        public void PublishMessage(string routingKey, string message)
         {
-            if (dto is null)
+            if (string.IsNullOrEmpty(message))
             {
-                throw new ArgumentNullException(nameof(dto));
+                throw new ArgumentNullException(nameof(message));
             }
-
-            string message = JsonSerializer.Serialize(dto);
-
-            PublishMessage(message, dto.EventName, dto.RoutingKey);
-
-        }
-        private void PublishMessage(string message, string eventName, string routingKey)
-        {
             byte[] body = Encoding.UTF8.GetBytes(message);
 
             _channel.BasicPublish(exchange: "article",
                             routingKey: routingKey,
                             basicProperties: null,
                             body: body);
-            _logger.LogInformation("RabbitMQ : {method} : Message Published :  {event}:{date}", nameof(PublishMessage),
-                                                                                        eventName,
-                                                                                        DateTime.UtcNow);
+            _logger.LogInformation("RabbitMQ : Message Published :  {key} : {date}", 
+                                    routingKey,
+                                    DateTime.UtcNow);
+
         }
     }
 }

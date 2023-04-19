@@ -30,6 +30,12 @@ namespace MiniERP.SalesOrderService.Profiles
                         opt => opt.MapFrom(s => s.Quantity))
             .ForMember(dest => dest.ChangeType,
                         opt => opt.MapFrom(s => 2)); // 1 = add, 2 = remove
+
+            CreateMap<SalesOrderDetailReadDto, OpenStockModel>()
+                .ForMember(dest => dest.RelatedOrderType,
+                        opt => opt.MapFrom(s => 1))
+                .ForMember(dest => dest.MovementType,
+                            opt => opt.MapFrom(s => 2));
         }
     }
 }

@@ -1,10 +1,9 @@
 ﻿using MiniERP.ArticleService.Models;
 
-namespace MiniERP.ArticleService.MessageBus.Events
+namespace MiniERP.ArticleService.MessageBus.Messages
 {
-    public class InventoryEvent : GenericEvent
+    public class ArticleUpdateMessage : ArticleMessage
     {
-        public int Id { get; set; }
         public double MaxQuantity { get; set; }
         public bool AutoOrder { get; set; }
         public double AutoTreshold { get; set; }

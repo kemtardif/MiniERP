@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 using MiniERP.ArticleService.Dtos;
-using MiniERP.ArticleService.MessageBus.Events;
+using MiniERP.ArticleService.MessageBus.Messages;
 using MiniERP.ArticleService.Models;
 
 namespace MiniERP.ArticleService.Profiles
@@ -12,12 +12,21 @@ namespace MiniERP.ArticleService.Profiles
         public ArticleProfile()
         {
             CreateMap<Article, ArticleReadDto>();
-            CreateMap<ArticleCreateDto, Article>();
             CreateMap<Article, ArticleCreateDto>();
-            CreateMap<ArticleUpdateDto, Article>();
             CreateMap<Article, ArticleUpdateDto>();
 
-            CreateMap<Article, InventoryEvent>();
+            CreateMap<ArticleCreateDto, Article>();
+            CreateMap<ArticleUpdateDto, Article>();
+
+            CreateMap<Article, ArticleCreateMessage>()
+                .ForMember(dest => dest.Id,
+                            opts => opts.MapFrom(src => src.Id));
+            CreateMap<Article, ArticleUpdateMessage>()
+                .ForMember(dest => dest.Id,
+                            opts => opts.MapFrom(src => src.Id));
+            CreateMap<Article, ArticleDeleteMessage>()
+                .ForMember(dest => dest.Id,
+                            opts => opts.MapFrom(src => src.Id));
 
             CreateMap<JsonPatchDocument<ArticleUpdateDto>, JsonPatchDocument<Article>>();
             CreateMap<Operation<ArticleUpdateDto>, Operation<Article>>();

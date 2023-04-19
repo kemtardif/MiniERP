@@ -23,9 +23,6 @@ namespace MiniERP.ArticleService.Data
                 throw new ArgumentNullException(nameof(item));
             }
 
-            item.SetCreatedAdToCurrentTime();
-            item.SetUpdatedAtToCurrentTime();
-
             _context.Articles.Add(item);
         }
 
@@ -45,17 +42,12 @@ namespace MiniERP.ArticleService.Data
             {
                 throw new ArgumentNullException(nameof(item));
             }
-            item.SetUpdatedAtToCurrentTime();
-            item.CloseArticle();
+            item.Status = ArticleStatus.Closed;
         }
 
         public bool SaveChanges()
         {
             return  _context.SaveChanges() >= 0;
-        }
-        public bool HasValidUnits(int id)
-        {
-            return _context.Units.Any(x => x.Id == id);
         }
         public Article UpdateArticle(Article item, JsonPatchDocument<ArticleUpdateDto> json)
         {
@@ -72,43 +64,7 @@ namespace MiniERP.ArticleService.Data
 
             _mapper.Map(articleToWrite, item);
 
-            item.SetUpdatedAtToCurrentTime();
             return item;
-        }
-        public ChangeType TrackChanges(Article item)
-        {
-            if (item is null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
-            EntityEntry<Article>? entity = _context.ChangeTracker
-                                            .Entries<Article>()
-                                            .FirstOrDefault(x => x.Entity.Id == item.Id);
-            ChangeType type = ChangeType.None;
-
-            if (entity is null
-                || entity.OriginalValues.ToObject() is not Article oldArticle
-                || entity.CurrentValues.ToObject() is not Article newArticle)
-            {
-                return type;
-            }
-            type |= TrackChangesForInventory(oldArticle, newArticle);
-            return type;
-
-            
-        }
-        private ChangeType TrackChangesForInventory(Article oldArticle, Article newArticle)
-        {
-            ChangeType invType = ChangeType.None;
-
-            InventoryRecord oldRecord = new(oldArticle);
-            InventoryRecord newRecord = new(newArticle);
-
-            if(oldRecord != newRecord)
-            {
-                invType |= ChangeType.Inventory;
-            }
-            return invType;
         }
     }
 }

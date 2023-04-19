@@ -29,7 +29,7 @@ builder.Configuration
 
 builder.Services.AddScoped<ISalesOrderRepository, SalesOrderRepository>();
 builder.Services.AddScoped<ISalesOrderService, SalesOrderService>();
-builder.Services.Decorate<ISalesOrderService, SalesOrderServiceWithInventory>();
+builder.Services.Decorate<ISalesOrderService, SalesOrderServiceWithGrpc>();
 builder.Services.Decorate<ISalesOrderService, SalesOrderServiceWithLogging>();
 builder.Services.AddScoped<IGrpcClientAdapter, GrpcClientAdapter>();
 builder.Services.AddScoped<IInventoryDataClient, InventoryDataClient>();

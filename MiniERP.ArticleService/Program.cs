@@ -24,11 +24,8 @@ builder.Configuration
     .AddEnvironmentVariables();
 
 builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
-builder.Services.AddScoped<IUnitRepository, UnitRepository>();
 builder.Services.AddScoped<IArticleService, ArticleService>();
-builder.Services.AddScoped<IUnitService, UnitService>();
 builder.Services.AddScoped<IValidator<Article>, ArticleValidator>();
-builder.Services.AddScoped<IValidator<Unit>, UnitValidator>();
 
 builder.Services.AddSingleton<IRabbitMQConnection, RabbitMQConnection>();
 builder.Services.AddScoped<IMessageBusClient, RabbitMQClient>();

@@ -1,7 +1,8 @@
 ﻿using AutoMapper;
 using MiniERP.ArticleService.Data;
-using MiniERP.ArticleService.MessageBus.Events;
+using MiniERP.ArticleService.MessageBus.Messages;
 using MiniERP.ArticleService.Models;
+using System.Text.Json;
 
 namespace MiniERP.ArticleService.MessageBus
 {
@@ -17,50 +18,32 @@ namespace MiniERP.ArticleService.MessageBus
             _mapper = mapper;
             _messageBus = messageBus;
         }
-        public void RequestForPublish(RequestType type, Article article, ChangeType changeType)
+        public void RequestForPublish(RequestType type, Article article)
         {
-            string eventName = GetEventName(type);
-            IEnumerable<GenericEvent> events = GetEvents(eventName, article, changeType);
-
-            foreach (GenericEvent evnt in events)
+            switch(type)
             {
-                _messageBus.PublishNewArticle(evnt);
+                case RequestType.Created:
+                    var created = _mapper.Map<ArticleCreateMessage>(article);
+                    string createdMsg = Serialize(created);
+                    _messageBus.PublishMessage("article.create", createdMsg);
+                    break;
+                case RequestType.Deleted:
+                    var deleted = _mapper.Map<ArticleDeleteMessage>(article);
+                    string deletedMsg = Serialize(deleted);
+                    _messageBus.PublishMessage("article.delete", deletedMsg);
+                    break;
+                case RequestType.Updated:
+                    ArticleMessage updated = _mapper.Map<ArticleCreateMessage>(article);
+                    var updatedMsg = Serialize(updated);
+                    _messageBus.PublishMessage("article.update", updatedMsg);
+                    break;
+                default:
+                    throw new ArgumentNullException(nameof(type));
             }
         }
-
-        private string GetEventName(RequestType type)
+        private string Serialize<T>(T message)
         {
-            return type switch
-            {
-                RequestType.Created => MessageBusEventType.ArticleCreated,
-                RequestType.Deleted => MessageBusEventType.ArticleDeleted,
-                RequestType.Updated => MessageBusEventType.ArticleUpdated,
-                _ => throw new ArgumentNullException(nameof(type)),
-            };
+            return JsonSerializer.Serialize<T>(message);
         }
-        private IEnumerable<GenericEvent> GetEvents(string eventName, Article article, ChangeType change)
-        {
-            List<GenericEvent> events = new();
-
-            if (change == ChangeType.All)
-            {
-                InventoryEvent invAll = GetInventoryEvent(eventName, article);
-                events.Add(invAll);
-            }
-            else if (change.HasFlag(ChangeType.Inventory))
-            {
-                InventoryEvent invAll = GetInventoryEvent(eventName, article);
-                events.Add(invAll);
-            }
-            return events;
-        }
-        private InventoryEvent GetInventoryEvent(string eventName, Article article)
-        {
-            InventoryEvent inv = _mapper.Map<InventoryEvent>(article);
-            inv.EventName = eventName;
-            inv.RoutingKey = "inventory";
-            return inv;
-        }
-
     }
 }

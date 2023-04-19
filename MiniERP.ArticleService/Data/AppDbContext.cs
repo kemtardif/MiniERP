@@ -8,14 +8,9 @@ namespace MiniERP.ArticleService.Data
         public AppDbContext(DbContextOptions opts) : base(opts) { }
 
         public DbSet<Article> Articles { get; set; }
-        public DbSet<Unit> Units { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<Unit>(u =>
-            {
-                u.HasKey(x => x.Id);
-            });   
             
             builder.Entity<Article>(a => 
             {

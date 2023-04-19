@@ -7,29 +7,39 @@ using MiniERP.SalesOrderService.Protos;
 
 namespace MiniERP.SalesOrderService.Services
 {
-    public class SalesOrderServiceWithInventory : ISalesOrderService
+    public class SalesOrderServiceWithGrpc : ISalesOrderService
     {
         private readonly ISalesOrderService _salesOrderService;
-        private readonly IInventoryDataClient _inventory;
+        private readonly IGrpcClientAdapter _grpcCLient;
         private readonly IMapper _mapper;
 
-        public SalesOrderServiceWithInventory(ISalesOrderService salesOrderService,
-                                              IInventoryDataClient inventory,
-                                              IMapper mapper)
+        public SalesOrderServiceWithGrpc(ISalesOrderService salesOrderService,
+                                        IGrpcClientAdapter grpcCLient,
+                                        IMapper mapper)
         {
             _salesOrderService = salesOrderService;
-            _inventory = inventory;
+            _grpcCLient = grpcCLient;
             _mapper = mapper;
         }
         public async Task<Result<SalesOrderReadDto>> AddSalesOrder(SalesOrderCreateDto salesOrder)
         {
             Result<SalesOrderReadDto> result = await _salesOrderService.AddSalesOrder(salesOrder);
 
-            if(result.IsSuccess)
+            if (result.IsSuccess)
             {
-                var changed = _mapper.Map<IEnumerable<StockChangedModel>>(result.Value.Details);
+                OpenStockRequest request = new();
 
-                _ = _inventory.StockChanged(changed);
+                int orderId = result.Value.Id;
+                foreach (SalesOrderDetailReadDto line in result.Value.Details)
+                {
+                    OpenStockModel model = _mapper.Map<OpenStockModel>(line);
+
+                    model.RelatedOrderId = orderId;
+
+                    request.Items.Add(model);
+                }
+
+                _ = _grpcCLient.OpenStockMovement(request);
             }
 
             return result;
@@ -42,7 +52,7 @@ namespace MiniERP.SalesOrderService.Services
 
         public Result<SalesOrderReadDto> GetSalesOrderById(int id)
         {
-            return _salesOrderService.GetSalesOrderById(id);    
+            return _salesOrderService.GetSalesOrderById(id);
         }
 
         public Result RemoveSalesOrderById(int id)
@@ -54,7 +64,7 @@ namespace MiniERP.SalesOrderService.Services
         {
             Result<SalesOrderReadDto> result = await _salesOrderService.UpdateSalesOrder(id, json);
 
-            if(result.IsSuccess)
+            if (result.IsSuccess)
             {
                 var changed = _mapper.Map<IEnumerable<StockChangedModel>>(result.Value.Details);
 
@@ -63,5 +73,12 @@ namespace MiniERP.SalesOrderService.Services
 
             return result;
         }
+
+        #region Private Methods
+        private IDictionary<string, string[]> GetGrpcError(string error)
+        {
+            return new Dictionary<string, string[]>() { { "grpc", new string[] { error } } };
+        }
+        #endregion
     }
 }
