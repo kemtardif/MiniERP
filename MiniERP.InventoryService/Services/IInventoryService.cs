@@ -5,7 +5,7 @@ namespace MiniERP.InventoryService.Services
 {
     public interface IInventoryService
     {
-        Result<IEnumerable<StockReadDto>> GetAllStocks();
-        Result<StockReadDto> GetStockByArticleId(int articleId);
+        Result<IEnumerable<InventoryItemReadDto>> GetAllInventories();
+        Result<InventoryItemReadDto> GetInventoryByArticleId(int articleId);
     }
 }

@@ -8,8 +8,7 @@ namespace MiniERP.InventoryService.Data
         public AppDbContext(DbContextOptions opts) : base(opts) { } 
 
         public DbSet<InventoryItem> InventoryItems { get; set; }
-        public DbSet<Stock> Stocks { get; set; }
-        public DbSet<StockMovement> StockMovements { get; set; }
+        public DbSet<InventoryMovement> StockMovements { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -19,31 +18,19 @@ namespace MiniERP.InventoryService.Data
 
                 p.HasIndex(p => p.ArticleId)
                  .IsUnique();
-
-
-                p.HasOne(p => p.Stock)
-                .WithOne()
-                .HasForeignKey<Stock>(p => p.InventoryId)
-                .IsRequired();
-
-                p.HasMany(x => x.StockMovements)
-                .WithOne(x => x.Article)
-                .HasForeignKey(x => x.ArticleId)
-                .HasPrincipalKey(x => x.ArticleId);
                     
             });
 
-            builder.Entity<Stock>(p => 
-            {
-                p.HasKey(p => p.Id);
 
-                p.HasIndex(p => p.InventoryId)
-                 .IsUnique();
-            });
-
-            builder.Entity<StockMovement>(sm => 
+            builder.Entity<InventoryMovement>(sm => 
             {
                 sm.HasKey(p => p.Id);
+
+                sm.HasOne(x => x.InventoryItem)
+                .WithMany()
+                .HasForeignKey(x => x.InventoryId)
+                .HasPrincipalKey(x => x.Id)
+                .IsRequired();
              
             });
         }

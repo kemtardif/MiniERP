@@ -4,7 +4,6 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.JsonPatch;
 using MiniERP.SalesOrderService.Data;
 using MiniERP.SalesOrderService.Dtos;
-using MiniERP.SalesOrderService.Grpc;
 using MiniERP.SalesOrderService.Models;
 
 namespace MiniERP.SalesOrderService.Services

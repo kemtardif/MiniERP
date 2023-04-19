@@ -1,4 +1,5 @@
-﻿using RabbitMQ.Client;
+﻿using MiniERP.InventoryService.MessageBus.Sender.Contracts;
+using RabbitMQ.Client;
 
 namespace MiniERP.InventoryService.MessageBus.Sender
 {

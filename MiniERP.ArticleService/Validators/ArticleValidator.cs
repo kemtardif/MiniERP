@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using MiniERP.ArticleService.Data;
 using MiniERP.ArticleService.Models;
 
 namespace MiniERP.ArticleService.Validators

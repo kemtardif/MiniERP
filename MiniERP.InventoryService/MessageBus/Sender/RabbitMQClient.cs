@@ -3,6 +3,7 @@ using RabbitMQ.Client.Exceptions;
 using RabbitMQ.Client;
 using System.Text.Json;
 using System.Text;
+using MiniERP.InventoryService.MessageBus.Sender.Contracts;
 
 namespace MiniERP.InventoryService.MessageBus.Sender
 {

@@ -34,14 +34,15 @@ namespace MiniERP.SalesOrderService.Grpc
 
         public IEnumerable<Stock> StockChanged(IEnumerable<StockChangedModel> changed)
         {
-            StockChangedRequest request = new();
-            request.Items.AddRange(changed);
+            //StockChangedRequest request = new();
+            //request.Items.AddRange(changed);
 
-            StockChangedResponse response = _client.StockChanged(request);
+            //StockChangedResponse response = _client.StockChanged(request);
 
-            IEnumerable<Stock> stocks = _mapper.Map<IEnumerable<Stock>>(response.Items);
+            //IEnumerable<Stock> stocks = _mapper.Map<IEnumerable<Stock>>(response.Items);
 
-            return stocks;
+            //return stocks;
+            throw new NotImplementedException();
         }
     }
 }

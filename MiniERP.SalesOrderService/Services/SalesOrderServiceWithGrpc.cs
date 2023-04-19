@@ -64,12 +64,12 @@ namespace MiniERP.SalesOrderService.Services
         {
             Result<SalesOrderReadDto> result = await _salesOrderService.UpdateSalesOrder(id, json);
 
-            if (result.IsSuccess)
-            {
-                var changed = _mapper.Map<IEnumerable<StockChangedModel>>(result.Value.Details);
+            //if (result.IsSuccess)
+            //{
+            //    var changed = _mapper.Map<IEnumerable<StockChangedModel>>(result.Value.Details);
 
-                _ = _inventory.StockChanged(changed);
-            }
+            //    _ = _grpcCLient.StockChanged(changed);
+            //}
 
             return result;
         }

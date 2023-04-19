@@ -1,29 +1,34 @@
 ﻿using RabbitMQ.Client.Events;
 using RabbitMQ.Client;
+using MiniERP.InventoryService.MessageBus.Consumers;
 
 namespace MiniERP.InventoryService.MessageBus.Subscriber
 {
     public class RabbitMQSubscriber : BackgroundService
     {
         private readonly ILogger<RabbitMQSubscriber> _logger;
-        private readonly IMessageRouter _router;
+        private readonly IConsumerFactory _consumerFactory;
         private readonly IConnection _connection;
         private readonly IModel _channel;
+
         private readonly List<Tuple<string, string>> _queues = new();
+
+        private const string ArticleEXCH = "article";
+
+        private const string ArticleCreateRK = "article.create";
+        private const string ArticleDeleteRK = "article.delete";
+        private const string ArticleUpdateRK = "article.update";
         public RabbitMQSubscriber(IConfiguration configuration,
                                   ILogger<RabbitMQSubscriber> logger,
-                                  IMessageRouter router)
+                                  IConsumerFactory consumerFactory)
         {
             _logger = logger;
-            _router = router;
+            _consumerFactory = consumerFactory;
 
             ConnectionFactory factory = GetConfiguredFactory(configuration);
 
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
-
-            _queues.Add(new("inventory", "movement.command"));
-            _queues.Add(new("article", "inventory"));
 
             _logger.LogInformation("---> Connected to RabbitMQ Message Bus : {date}", DateTime.UtcNow);
         }
@@ -32,35 +37,41 @@ namespace MiniERP.InventoryService.MessageBus.Subscriber
         {
             stoppingToken.ThrowIfCancellationRequested();
 
+            BindQueues();
 
-            foreach(Tuple<string, string> queue in _queues)
-            {
-                DeclareBindAndConsume(queue.Item1, queue.Item2);
-            }
+            ConsumeQueues();
 
             return Task.CompletedTask;
         }
-
-        private void DeclareBindAndConsume(string exchange, string queue)
+      
+        private void BindQueues()
         {
-            string queueName = DeclareAndBindQueue(_channel, exchange, queue);
-
-            EventingBasicConsumer consumer = new RabbitMQConsumer(_logger, _router, _channel);
-
-            _channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
+ 
+            BindQueue(ArticleEXCH, ArticleCreateRK);
+            BindQueue(ArticleEXCH, ArticleDeleteRK);
+            BindQueue(ArticleEXCH, ArticleUpdateRK);
         }
 
-        private string DeclareAndBindQueue(IModel model, string exchange, string queue)
+        private void BindQueue(string exchange, string routingKey)
         {
-            model.ExchangeDeclare(exchange: exchange, type: ExchangeType.Direct);
+            _channel.ExchangeDeclare(exchange: exchange, type: ExchangeType.Direct);
 
-            string queueName = model.QueueDeclare().QueueName;
+            string queueName = _channel.QueueDeclare().QueueName;
 
-            model.QueueBind(queue: queueName,
+            _channel.QueueBind(queue: queueName,
                                exchange: exchange,
-                               routingKey: queue);
-            return queueName;
+                               routingKey: routingKey);
 
+            _queues.Add(new Tuple<string, string>(routingKey, queueName));
+        }
+
+        private void ConsumeQueues()
+        {
+            foreach (var tuple in _queues)
+            {
+                EventingBasicConsumer consumer = _consumerFactory.CreateConsumer(_channel, tuple.Item1);
+                _channel.BasicConsume(queue: tuple.Item2, autoAck: true, consumer: consumer);
+            }
         }
 
         public override void Dispose()

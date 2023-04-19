@@ -4,7 +4,7 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.JsonPatch;
 using MiniERP.ArticleService.Data;
 using MiniERP.ArticleService.Dtos;
-using MiniERP.ArticleService.MessageBus;
+using MiniERP.ArticleService.MessageBus.Sender.Contracts;
 using MiniERP.ArticleService.Models;
 
 namespace MiniERP.ArticleService.Services
@@ -47,7 +47,7 @@ namespace MiniERP.ArticleService.Services
 
             _logger.LogInformation("Article Created : Id = {id}, Date = {date}", article.Id, DateTime.UtcNow);
 
-            _sender.RequestForPublish(RequestType.Created, article, ChangeType.All);
+            _sender.RequestForPublish(RequestType.Created, article);
 
             ArticleReadDto articleReadDto = _mapper.Map<ArticleReadDto>(article);
 
@@ -103,13 +103,11 @@ namespace MiniERP.ArticleService.Services
                 return Result<ArticleReadDto>.Failure(validationResult.ToDictionary());
             }
 
-            ChangeType changed = _repository.TrackChanges(article);
-
             _repository.SaveChanges();
 
              _logger.LogInformation("Article Updated : Id = {id}, Date = {date}", article.Id, DateTime.UtcNow);
 
-            _sender.RequestForPublish(RequestType.Updated, article, changed);
+            _sender.RequestForPublish(RequestType.Updated, article);
 
             ArticleReadDto readDto = _mapper.Map<ArticleReadDto>(article);
 
@@ -131,7 +129,7 @@ namespace MiniERP.ArticleService.Services
 
             _logger.LogInformation("Article Deleted : Id = {id}, Date = {date}", article.Id, DateTime.UtcNow);
 
-            _sender.RequestForPublish(RequestType.Deleted, article, ChangeType.All);
+            _sender.RequestForPublish(RequestType.Deleted, article);
 
             return Result.Success();
         }

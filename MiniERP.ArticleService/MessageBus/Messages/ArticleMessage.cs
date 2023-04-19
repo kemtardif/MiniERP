@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace MiniERP.ArticleService.MessageBus.Messages
+﻿namespace MiniERP.ArticleService.MessageBus.Messages
 {
     public class ArticleMessage
     {

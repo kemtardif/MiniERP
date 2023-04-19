@@ -9,7 +9,8 @@ using MiniERP.InventoryService.MessageBus.Subscriber;
 using MiniERP.InventoryService.MessageBus.Sender;
 using MiniERP.InventoryService.Services;
 using System.Net.Mime;
-using MiniERP.InventoryService.MessageBus.Processors;
+using MiniERP.InventoryService.MessageBus.Consumers;
+using MiniERP.InventoryService.MessageBus.Sender.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,26 +56,29 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 });
 
 builder.Services.AddAutoMapper(typeof(Program));
+
 builder.Services.AddGrpc();
 
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 
-builder.Services.AddScoped<IMovementProcessor, GrpcMovementProcessor>();
 
 builder.Services.AddSingleton<IRabbitMQConnection, RabbitMQConnection>();
 builder.Services.AddScoped<IMessageBusClient, RabbitMQClient>();
 builder.Services.AddScoped<IMessageBusSender, RabbitMQSender>();
 
-builder.Services.AddSingleton<IMessageProcessor, ArticleCreatedProcessor>();
-builder.Services.AddSingleton<IMessageProcessor, ArticleDeletedProcessor>();
-builder.Services.AddSingleton<IMessageProcessor, ArticleUpdatedProcessor>();
-builder.Services.AddSingleton<IMessageRouter, RabbitMQRouter>();
+builder.Services.AddSingleton<IConsumerFactory, ConcreteConsumerFactory>();
 builder.Services.AddHostedService<RabbitMQSubscriber>();
 
 builder.Services.AddDbContext<AppDbContext>(opts =>
 {
     opts.UseNpgsql(builder.Configuration.GetConnectionString("inventoryservicePGSQL"));
+});
+
+builder.Services.AddDistributedRedisCache(opts =>
+{
+    opts.InstanceName = "invsrv_";
+    opts.Configuration = builder.Configuration.GetConnectionString("inventoryserviceRedis");
 });
 
 

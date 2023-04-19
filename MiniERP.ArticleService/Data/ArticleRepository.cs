@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using MiniERP.ArticleService.Dtos;
 using MiniERP.ArticleService.Models;
 

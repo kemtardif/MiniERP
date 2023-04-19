@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MiniERP.InventoryService.MessageBus.Messages;
+using MiniERP.InventoryService.MessageBus.Sender.Contracts;
 
 namespace MiniERP.InventoryService.MessageBus.Sender
 {
