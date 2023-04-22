@@ -1,6 +1,6 @@
 ﻿using RabbitMQ.Client.Events;
 using RabbitMQ.Client;
-using MiniERP.InventoryService.MessageBus.Consumers;
+using MiniERP.InventoryService.MessageBus.Subscriber.Consumer;
 
 namespace MiniERP.InventoryService.MessageBus.Subscriber
 {
@@ -11,13 +11,8 @@ namespace MiniERP.InventoryService.MessageBus.Subscriber
         private readonly IConnection _connection;
         private readonly IModel _channel;
 
-        private readonly List<Tuple<string, string>> _queues = new();
+        private const string Article_EXCHANGE = "article";
 
-        private const string ArticleEXCH = "article";
-
-        private const string ArticleCreateRK = "article.create";
-        private const string ArticleDeleteRK = "article.delete";
-        private const string ArticleUpdateRK = "article.update";
         public RabbitMQSubscriber(IConfiguration configuration,
                                   ILogger<RabbitMQSubscriber> logger,
                                   IConsumerFactory consumerFactory)
@@ -37,22 +32,14 @@ namespace MiniERP.InventoryService.MessageBus.Subscriber
         {
             stoppingToken.ThrowIfCancellationRequested();
 
-            BindQueues();
-
-            ConsumeQueues();
+            string articleQueue = BindQueue(Article_EXCHANGE, string.Empty);
+            ConsumeQueue(articleQueue);
 
             return Task.CompletedTask;
         }
       
-        private void BindQueues()
-        {
- 
-            BindQueue(ArticleEXCH, ArticleCreateRK);
-            BindQueue(ArticleEXCH, ArticleDeleteRK);
-            BindQueue(ArticleEXCH, ArticleUpdateRK);
-        }
 
-        private void BindQueue(string exchange, string routingKey)
+        private string BindQueue(string exchange, string routingKey)
         {
             _channel.ExchangeDeclare(exchange: exchange, type: ExchangeType.Direct);
 
@@ -61,17 +48,13 @@ namespace MiniERP.InventoryService.MessageBus.Subscriber
             _channel.QueueBind(queue: queueName,
                                exchange: exchange,
                                routingKey: routingKey);
+            return queueName;
 
-            _queues.Add(new Tuple<string, string>(routingKey, queueName));
         }
 
-        private void ConsumeQueues()
+        private void ConsumeQueue(string queueName)
         {
-            foreach (var tuple in _queues)
-            {
-                EventingBasicConsumer consumer = _consumerFactory.CreateConsumer(_channel, tuple.Item1);
-                _channel.BasicConsume(queue: tuple.Item2, autoAck: true, consumer: consumer);
-            }
+            _channel.BasicConsume(queueName, autoAck: true, consumer: _consumerFactory.Create(_channel));
         }
 
         public override void Dispose()

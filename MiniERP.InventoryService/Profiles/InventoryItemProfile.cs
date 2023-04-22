@@ -12,11 +12,11 @@ namespace MiniERP.InventoryService.Profiles
             CreateMap<InventoryItem, InventoryItemReadDto>();
             
 
-            CreateMap<ArticleCreateMessage, InventoryItem>()
+            CreateMap<ArticleCreate, InventoryItem>()
                 .ForMember(dest => dest.ArticleId,
                             opts => opts.MapFrom(src => src.Id));
 
-            CreateMap<ArticleUpdateMessage, InventoryItemUpdate>();
+            CreateMap<ArticleUpdate, InventoryItemUpdate>();
             CreateMap<InventoryItemUpdate, InventoryItem>();
         }       
     }

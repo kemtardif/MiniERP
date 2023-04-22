@@ -1,6 +1,6 @@
 ﻿namespace MiniERP.InventoryService.MessageBus.Messages
 {
-    public class ArticleUpdateMessage : ArticleMessage
+    public class ArticleUpdate : MessageBase
     {
         public bool AutoOrder { get; set; }
         public double AutoTreshold { get; set; }

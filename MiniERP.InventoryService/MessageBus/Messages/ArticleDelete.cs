@@ -1,6 +1,6 @@
 ﻿namespace MiniERP.InventoryService.MessageBus.Messages
 {
-    public class ArticleDeleteMessage : ArticleMessage
+    public class ArticleDelete : MessageBase
     {
     }
 }

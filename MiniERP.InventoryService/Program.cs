@@ -9,8 +9,9 @@ using MiniERP.InventoryService.MessageBus.Subscriber;
 using MiniERP.InventoryService.MessageBus.Sender;
 using MiniERP.InventoryService.Services;
 using System.Net.Mime;
-using MiniERP.InventoryService.MessageBus.Consumers;
 using MiniERP.InventoryService.MessageBus.Sender.Contracts;
+using System.Reflection;
+using MiniERP.InventoryService.MessageBus.Subscriber.Consumer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,8 +57,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 });
 
 builder.Services.AddAutoMapper(typeof(Program));
-
 builder.Services.AddGrpc();
+builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<IStockCache, RedisStockCache>();
@@ -68,7 +69,7 @@ builder.Services.AddSingleton<IRabbitMQConnection, RabbitMQConnection>();
 builder.Services.AddScoped<IMessageBusClient, RabbitMQClient>();
 builder.Services.AddScoped<IMessageBusSender, RabbitMQSender>();
 
-builder.Services.AddSingleton<IConsumerFactory, ConcreteConsumerFactory>();
+builder.Services.AddSingleton<IConsumerFactory, RabbitMQConsumerFactory>();
 builder.Services.AddHostedService<RabbitMQSubscriber>();
 
 builder.Services.AddDbContext<AppDbContext>(opts =>
