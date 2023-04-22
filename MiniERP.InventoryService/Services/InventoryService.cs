@@ -45,7 +45,7 @@ namespace MiniERP.InventoryService.Services
         {
             return new Dictionary<string, string[]>
             {
-                [nameof(InventoryItem)] = new string[] { $"Stock not found : ArticleID = {articleId}" }
+                [nameof(InventoryItem)] = new string[] { $"Inventory Item not found : ArticleID = {articleId}" }
             };
         }
     }

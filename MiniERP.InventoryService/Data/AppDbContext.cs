@@ -10,6 +10,9 @@ namespace MiniERP.InventoryService.Data
         public DbSet<InventoryItem> InventoryItems { get; set; }
         public DbSet<InventoryMovement> StockMovements { get; set; }
 
+        public DbSet<AvailableInventoryView> AvailableInventoryView { get; set; }
+        public DbSet<PendingInventoryView> PendingInventoryView { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<InventoryItem>(p => 
@@ -32,6 +35,18 @@ namespace MiniERP.InventoryService.Data
                 .HasPrincipalKey(x => x.Id)
                 .IsRequired();
              
+            });
+
+            builder.Entity<AvailableInventoryView>(ism =>
+            {
+                ism.ToView(nameof(AvailableInventoryView))
+                .HasKey(x => x.ArticleId);
+            });
+
+            builder.Entity<PendingInventoryView>(piv =>
+            {
+                piv.ToView(nameof(PendingInventoryView))
+                .HasKey(x => x.ArticleId);
             });
         }
     }

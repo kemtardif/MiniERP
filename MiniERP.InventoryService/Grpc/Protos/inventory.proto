@@ -6,6 +6,9 @@ service GrpcInventoryService
 {
     rpc GetInventory(StockRequest) returns (StockResponse);
     rpc GetInventoryStream(stream StockRequest) returns (stream StockResponse);
+
+    rpc GetForecastInventory(StockRequest) returns (StockResponse);
+    rpc GetForecastInventoryStream(stream StockRequest) returns (stream StockResponse);
 }
 
 message StockRequest

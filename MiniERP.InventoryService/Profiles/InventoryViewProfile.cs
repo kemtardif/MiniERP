@@ -4,11 +4,15 @@ using MiniERP.InventoryService.Protos;
 
 namespace MiniERP.InventoryService.Profiles
 {
-    public class InventoryMovementProfile : Profile
+    public class InventoryViewProfile : Profile
     {
-        public InventoryMovementProfile()
+        public InventoryViewProfile()
         {
             CreateMap<AvailableInventoryView, StockModel>()
+                .ForMember(dest => dest.Id,
+                            opts => opts.MapFrom(src => src.ArticleId));
+
+            CreateMap<PendingInventoryView, StockModel>()
                 .ForMember(dest => dest.Id,
                             opts => opts.MapFrom(src => src.ArticleId));
         }

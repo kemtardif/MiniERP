@@ -2,11 +2,15 @@
 
 namespace MiniERP.ArticleService.MessageBus.Messages
 {
-    public class ArticleCreateMessage : ArticleMessage
+    public class ArticleCreateMessage : MessageBase
     {
         public bool AutoOrder { get; set; }
         public double AutoTreshold { get; set; }
         public double AutoQuantity { get; set; }
         public ArticleStatus Status { get; set; }
+        public ArticleCreateMessage()
+        {
+            Headers.Add("MessageType", "ArticleCreate");
+        }
     }
 }

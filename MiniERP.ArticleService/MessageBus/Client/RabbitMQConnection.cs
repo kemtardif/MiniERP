@@ -11,7 +11,7 @@ namespace MiniERP.ArticleService.MessageBus.Sender
         public IConnection Connection => _connection;
 
         public RabbitMQConnection(IConfiguration configuration,
-            ILogger<RabbitMQConnection> logger)
+                                  ILogger<RabbitMQConnection> logger)
         {
             var factory = new ConnectionFactory()
             {

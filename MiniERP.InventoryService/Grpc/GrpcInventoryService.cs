@@ -10,22 +10,22 @@ namespace MiniERP.InventoryService.Grpc
     {
         private readonly ILogger<GrpcInventoryService> _logger;
         private readonly IMapper _mapper;
-        private readonly IInventoryRepository _repository;
+        private readonly IStockCache _cache;
 
         public GrpcInventoryService(ILogger<GrpcInventoryService> logger,
                                         IMapper mapper,
-                                        IInventoryRepository repository)
+                                        IStockCache cache)
         {
             _logger = logger;
             _mapper = mapper;
-            _repository = repository;
+            _cache = cache;
         }
 
         public override Task<StockResponse> GetInventory(StockRequest request, ServerCallContext context)
         {
             try
             {
-                InventoryItem? inventory = _repository.GetInventoryByArticleId(request.ArticleId);
+                AvailableInventoryView? inventory = _cache.GetAvailableByArticleId(request.ArticleId);
 
                 if (inventory is null)
                 {
@@ -58,17 +58,22 @@ namespace MiniERP.InventoryService.Grpc
                 {
                     context.CancellationToken.ThrowIfCancellationRequested();
 
-                    InventoryItem? inventory = _repository.GetInventoryByArticleId(callStream.Current.ArticleId);
+                    AvailableInventoryView? inventory = _cache.GetAvailableByArticleId(callStream.Current.ArticleId);
 
                     if (inventory is null)
                     {
                         await responseStream.WriteAsync(new StockResponse() { ArticleId = callStream.Current.ArticleId, IsFound = false });
-                        return;
+                        continue;
                     }
 
                     StockModel stock = _mapper.Map<StockModel>(inventory);
 
                     await responseStream.WriteAsync(new StockResponse() { ArticleId = callStream.Current.ArticleId, IsFound = true, Item = stock });
+
+                    _logger.LogInformation("GRPC  {method} : {id} : {date}",
+                                    nameof(GetInventoryStream),
+                                    stock.Id,
+                                    DateTime.UtcNow);
                 }
             }
             catch (Exception ex)
@@ -76,100 +81,71 @@ namespace MiniERP.InventoryService.Grpc
                 _logger.LogError(ex, "GRPC error {method} : {date}",
                                     nameof(GetInventoryStream),
                                     DateTime.UtcNow);
-                
+
             }
         }
 
-        //public override Task<CloseStockResponse> CloseStockMovement(CloseStockRequest request, ServerCallContext context)
-        //{
-        //    try
-        //    {
-        //        if (!IsValidOrderType(request.Items.RelatedOrderType, out RelatedOrderType type))
-        //        {
-        //            return Task.FromResult(new CloseStockResponse() { Success = false, Message = $"Order Type : {request.Items.RelatedOrderType}" });
-        //        }
+        public override Task<StockResponse> GetForecastInventory(StockRequest request, ServerCallContext context)
+        {
+            try
+            {
+                PendingInventoryView? inventory = _cache.GetPendingByArticleId(request.ArticleId);
 
-        //        List<InventoryMovement> mvmts = _repository.GetMovementsByOrder(type, request.Items.RelatedOrderId).ToList();
+                if (inventory is null)
+                {
+                    return Task.FromResult(new StockResponse() { ArticleId = request.ArticleId, IsFound = false });
+                }
 
-        //        if (!HasItems(mvmts))
-        //        {
-        //            return Task.FromResult(new CloseStockResponse() { Success = false, Message = $"Order ID not valid : {request.Items.RelatedOrderId}" });
-        //        }
+                StockModel sm = _mapper.Map<StockModel>(inventory);
 
-        //        if (!_movementProcessor.Close(mvmts, out string error))
-        //        {
-        //            return Task.FromResult(new CloseStockResponse() { Success = false, Message = error });
-        //        }
+                _logger.LogInformation("GRPC  {method} : {id} : {date}",
+                                    nameof(GetForecastInventory),
+                                    sm.Id,
+                                    DateTime.UtcNow);
 
-        //        _repository.SaveChanges();
+                return Task.FromResult(new StockResponse() { ArticleId = request.ArticleId, IsFound = true, Item = sm });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GRPC error {method} : {date}",
+                                    nameof(GetForecastInventory),
+                                    DateTime.UtcNow);
+                return Task.FromResult(new StockResponse() { IsFound = false });
+            }
+        }
+        public override async Task GetForecastInventoryStream(IAsyncStreamReader<StockRequest> callStream, IServerStreamWriter<StockResponse> responseStream, ServerCallContext context)
+        {
+            try
+            {
+                while (await callStream.MoveNext())
+                {
+                    context.CancellationToken.ThrowIfCancellationRequested();
 
-        //        _logger.LogInformation("GRPC success {method} : {type} : {id} : {date}",
-        //                           nameof(CloseStockMovement),
-        //                           type,
-        //                           request.Items.RelatedOrderId,
-        //                           DateTime.UtcNow);
-        //        return Task.FromResult(new CloseStockResponse() { Success = true });
+                    PendingInventoryView? inventory = _cache.GetPendingByArticleId(callStream.Current.ArticleId);
 
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "GRPC error {method} : {date}",
-        //                            nameof(CloseStockMovement),
-        //                            DateTime.UtcNow);
-        //        return Task.FromResult(new CloseStockResponse() { Success = false, Message = "Internal Error" });
-        //    }
-        //}
+                    if (inventory is null)
+                    {
+                        await responseStream.WriteAsync(new StockResponse() { ArticleId = callStream.Current.ArticleId, IsFound = false });
+                        continue;
+                    }
 
+                    StockModel stock = _mapper.Map<StockModel>(inventory);
 
-        //public override Task<CancelStockResponse> CancelStockMovement(CancelStockRequest request, ServerCallContext context)
-        //{
-        //    try
-        //    {
-        //        if (!IsValidOrderType(request.Items.RelatedOrderType, out RelatedOrderType type))
-        //        {
-        //            return Task.FromResult(new CancelStockResponse() { Success = false, Message = $"Order Type not valid : {request.Items.RelatedOrderType}" });
-        //        }
+                    await responseStream.WriteAsync(new StockResponse() { ArticleId = callStream.Current.ArticleId, IsFound = true, Item = stock });
 
-        //        List<InventoryMovement> mvmts = _repository.GetMovementsByOrder(type, request.Items.RelatedOrderId).ToList();
+                    _logger.LogInformation("GRPC  {method} : {id} : {date}",
+                                    nameof(GetForecastInventoryStream),
+                                    stock.Id,
+                                    DateTime.UtcNow);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GRPC error {method} : {date}",
+                                    nameof(GetForecastInventoryStream),
+                                    DateTime.UtcNow);
 
-        //        if (!HasItems(mvmts))
-        //        {
-        //            return Task.FromResult(new CancelStockResponse() { Success = false, Message = $"Order ID not valid : {request.Items.RelatedOrderId}" });
-        //        }
-
-        //        if (!_movementProcessor.Cancel(mvmts, out string error))
-        //        {
-        //            return Task.FromResult(new CancelStockResponse() { Success = false, Message = error });
-        //        }
-
-        //        _repository.SaveChanges();
-
-        //        _logger.LogInformation("GRPC success {method} : {type} : {id} : {date}",
-        //                           nameof(CancelStockMovement),
-        //                           type,
-        //                           request.Items.RelatedOrderId,
-        //                           DateTime.UtcNow);
-        //        return Task.FromResult(new CancelStockResponse() { Success = true });
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "GRPC error {method} : {date}",
-        //                            nameof(CancelStockMovement),
-        //                            DateTime.UtcNow);
-        //        return Task.FromResult(new CancelStockResponse() { Success = false, Message = "Internal Error" });
-        //    }
-        //}
-
-        //#region Private methods
-        //private bool IsValidOrderType(int orderType, out RelatedOrderType type)
-        //{
-        //    return Enum.TryParse(orderType.ToString(), out type);
-        //}
-        //private bool HasItems(List<InventoryMovement> mvmts)
-        //{
-        //    return mvmts.Count > 0;
-        //}
-       // #endregion
+            }
+        }
     }
 }

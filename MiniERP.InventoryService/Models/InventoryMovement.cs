@@ -10,6 +10,7 @@
         public double Quantity { get; set; }
         public int RelatedOrderId { get; set; }
         public RelatedOrderType RelatedOrderType { get; set; }
+        public DateTime ExpectedDate { get; set; }
 
     }
     public enum MovementType

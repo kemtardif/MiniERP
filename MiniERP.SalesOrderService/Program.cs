@@ -6,7 +6,6 @@ using MiniERP.SalesOrderService.Services;
 using Microsoft.EntityFrameworkCore;
 using MiniERP.SalesOrderService.Protos;
 using MiniERP.SalesOrderService.Grpc;
-using MiniERP.SalesOrderService.Caching;
 using FluentValidation;
 using MiniERP.SalesOrderService.Models;
 using MiniERP.SalesOrderService.Validators;
@@ -35,7 +34,6 @@ builder.Services.AddScoped<IGrpcClientAdapter, GrpcClientAdapter>();
 builder.Services.AddScoped<IInventoryDataClient, InventoryDataClient>();
 builder.Services.AddSingleton<IMessageProcessor, RabbitMQProcessor>();
 builder.Services.AddHostedService<RabbitMQSubscriber>();
-builder.Services.AddScoped<ICacheRepository, RedisCacheRepository>();
 builder.Services.AddScoped<IValidator<SalesOrder>, SalesOrderValidator>();
 
 
@@ -44,11 +42,6 @@ builder.Services.AddDbContext<AppDbContext>(opts =>
     opts.UseNpgsql(builder.Configuration.GetConnectionString("salesorderservicePGSQL"));
 });
 
-builder.Services.AddDistributedRedisCache(opts =>
-{
-    opts.InstanceName = "sosrv_";
-    opts.Configuration = builder.Configuration.GetConnectionString("salesorderserviceRedis");
-});
 
 builder.Services.AddGrpcClient<StockMovementService.StockMovementServiceClient>(o =>
 {

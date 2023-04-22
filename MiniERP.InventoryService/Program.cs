@@ -60,8 +60,9 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddGrpc();
 
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
-builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<IStockCache, RedisStockCache>();
 
+builder.Services.AddScoped<IInventoryService, InventoryService>();
 
 builder.Services.AddSingleton<IRabbitMQConnection, RabbitMQConnection>();
 builder.Services.AddScoped<IMessageBusClient, RabbitMQClient>();

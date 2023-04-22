@@ -1,24 +1,23 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
-using MiniERP.InventoryService.Caching;
 using MiniERP.InventoryService.Models;
 
 namespace MiniERP.InventoryService.Data
 {
+
     public class InventoryRepository : IInventoryRepository
     {
         private readonly AppDbContext _context;
-        private readonly IDistributedCache _cache;
         private readonly IMapper _mapper;
+        private readonly IStockCache _cache;
 
         public InventoryRepository(AppDbContext context,
-                                   IDistributedCache cache,
-                                   IMapper mapper)
+                                   IMapper mapper,
+                                   IStockCache cache)
         {
             _context = context;
-            _cache = cache;
             _mapper = mapper;
+            _cache = cache;
         }
 
         public void AddItem(InventoryItem item)
@@ -36,19 +35,8 @@ namespace MiniERP.InventoryService.Data
         }
 
         public InventoryItem? GetInventoryByArticleId(int articleId)
-        {
-            InventoryItem? item = _cache.GetRecord<InventoryItem>(articleId.ToString());
-
-            if(item is null)
-            {
-                item = _context.InventoryItems.FirstOrDefault(x => x.ArticleId == articleId);
-                if(item is not null)
-                {
-                    _cache.SetRecord(articleId.ToString(), item);
-                }
-            }
-
-            return item;
+        {   
+            return _context.InventoryItems.FirstOrDefault(x => x.ArticleId == articleId);
         }
 
         public void SetAsClosed(int articleId)
@@ -62,7 +50,8 @@ namespace MiniERP.InventoryService.Data
 
             item.SetAsClosed();
 
-            _cache.Remove(articleId.ToString());
+            _cache.Invalidate(articleId);
+
         }
 
         public void SaveChanges()
@@ -89,7 +78,7 @@ namespace MiniERP.InventoryService.Data
 
             _mapper.Map(update, item);
 
-            _cache.Remove(articleId.ToString());
+            _cache.Invalidate(articleId);
         }          
     }
 }

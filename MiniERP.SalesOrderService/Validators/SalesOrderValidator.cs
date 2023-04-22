@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using MiniERP.SalesOrderService.Caching;
+
 using MiniERP.SalesOrderService.Models;
 
 namespace MiniERP.SalesOrderService.Validators

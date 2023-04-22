@@ -3,7 +3,6 @@ using MiniERP.InventoryService.Data;
 using MiniERP.InventoryService.MessageBus.Messages;
 using MiniERP.InventoryService.Models;
 using System.Text.Json;
-using System.Xml;
 
 namespace MiniERP.InventoryService.MessageBus.Consumers.ConsumerHandlers
 {

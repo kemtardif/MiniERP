@@ -4,6 +4,7 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.JsonPatch;
 using MiniERP.ArticleService.Data;
 using MiniERP.ArticleService.Dtos;
+using MiniERP.ArticleService.MessageBus.Messages;
 using MiniERP.ArticleService.MessageBus.Sender.Contracts;
 using MiniERP.ArticleService.Models;
 
@@ -14,19 +15,19 @@ namespace MiniERP.ArticleService.Services
         private readonly ILogger<ArticleService> _logger;
         private readonly IArticleRepository _repository;
         private readonly IMapper _mapper;
-        private readonly IMessageBusSender<Article> _sender;
+        private readonly IMessageBusClient _messageBusClient;
         private readonly IValidator<Article> _validator;
 
         public ArticleService(ILogger<ArticleService> logger,
                             IArticleRepository repository,
                             IMapper mapper,
-                            IMessageBusSender<Article> sender,
+                            IMessageBusClient messageBusClient,
                             IValidator<Article> validator)
         {
             _logger = logger;
             _repository = repository;
             _mapper = mapper;
-            _sender = sender;
+            _messageBusClient = messageBusClient;
             _validator = validator;
         }
 
@@ -47,7 +48,7 @@ namespace MiniERP.ArticleService.Services
 
             _logger.LogInformation("Article Created : Id = {id}, Date = {date}", article.Id, DateTime.UtcNow);
 
-            _sender.RequestForPublish(RequestType.Created, article);
+            _messageBusClient.Publish(_mapper.Map<ArticleCreateMessage>(article));
 
             ArticleReadDto articleReadDto = _mapper.Map<ArticleReadDto>(article);
 
@@ -107,7 +108,7 @@ namespace MiniERP.ArticleService.Services
 
              _logger.LogInformation("Article Updated : Id = {id}, Date = {date}", article.Id, DateTime.UtcNow);
 
-            _sender.RequestForPublish(RequestType.Updated, article);
+            _messageBusClient.Publish(_mapper.Map<ArticleUpdateMessage>(article));
 
             ArticleReadDto readDto = _mapper.Map<ArticleReadDto>(article);
 
@@ -129,7 +130,7 @@ namespace MiniERP.ArticleService.Services
 
             _logger.LogInformation("Article Deleted : Id = {id}, Date = {date}", article.Id, DateTime.UtcNow);
 
-            _sender.RequestForPublish(RequestType.Deleted, article);
+            _messageBusClient.Publish(_mapper.Map<ArticleDeleteMessage>(article));
 
             return Result.Success();
         }

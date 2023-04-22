@@ -30,14 +30,15 @@ builder.Services.AddScoped<IValidator<Article>, ArticleValidator>();
 
 builder.Services.AddSingleton<IRabbitMQConnection, RabbitMQConnection>();
 builder.Services.AddScoped<IMessageBusClient, RabbitMQClient>();
-builder.Services.AddScoped<IMessageBusSender<Article>, RabbitMQArticleSender>();
 
 
 builder.Services.AddDbContext<AppDbContext>(opts =>
 {
     opts.UseNpgsql(builder.Configuration.GetConnectionString("articleservicePGSQL"));
 });
+
 builder.Services.AddAutoMapper(typeof(Program));
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(opts => 
@@ -61,6 +62,7 @@ builder.Services.AddControllers()
                         return result;
                     };
                 });
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
