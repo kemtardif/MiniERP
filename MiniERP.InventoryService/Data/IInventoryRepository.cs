@@ -10,7 +10,7 @@ namespace MiniERP.InventoryService.Data
         void AddItem(InventoryItem item);
         void SetAsClosed(int articleId);
 
-        void Update(int articleId, InventoryItemUpdate update);
+        void Update(InventoryItem item);
         void SaveChanges();
     }
 }

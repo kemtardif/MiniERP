@@ -8,15 +8,12 @@ namespace MiniERP.InventoryService.Data
     public class InventoryRepository : IInventoryRepository
     {
         private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
         private readonly IStockCache _cache;
 
         public InventoryRepository(AppDbContext context,
-                                   IMapper mapper,
                                    IStockCache cache)
         {
             _context = context;
-            _mapper = mapper;
             _cache = cache;
         }
 
@@ -67,18 +64,14 @@ namespace MiniERP.InventoryService.Data
                                                     && x.RelatedOrderId == orderId);
         }
 
-        public void Update(int articleId, InventoryItemUpdate update)
+        public void Update(InventoryItem item)
         {
-            InventoryItem? item = _context.InventoryItems.FirstOrDefault(x => x.ArticleId == articleId);
-
             if(item is null)
             {
-                throw new ArgumentNullException(nameof(articleId));
+                throw new ArgumentNullException(nameof(item));
             }
 
-            _mapper.Map(update, item);
-
-            _cache.Invalidate(articleId);
+            _context.InventoryItems.Update(item);
         }          
     }
 }

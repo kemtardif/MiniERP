@@ -38,7 +38,7 @@ namespace MiniERP.InventoryService.MessageBus.Subscriber.Consumer
                 return;
             }
 
-            string header = GetStringHeader(args, MESSAGE_TYPE);
+            string header = GetHeaderString(args, MESSAGE_TYPE);
 
             Type? type = GetMessageType(header);
             if(type is null)
@@ -50,37 +50,31 @@ namespace MiniERP.InventoryService.MessageBus.Subscriber.Consumer
                 return;
             }
 
-            //Decoderfallback shouldn't happen since we use UTF8 always
-            string data = Encoding.UTF8.GetString(args.Body.ToArray());
-
-            var message = (IRequest)JsonSerializer.Deserialize(data, type)!;
-
-            _mediator.Send(message);
-
-            _logger.LogInformation("---> RabbitMQ : Message Handled : {key} : {tag} : {date}",
-                                        args.RoutingKey,    
-                                        args.DeliveryTag,
-                                        DateTime.UtcNow);
+            Handle(args, type);           
         }
         private bool AreHeaderPresent(BasicDeliverEventArgs args)
         {
             return args.BasicProperties.IsHeadersPresent() && args.BasicProperties.Headers.ContainsKey(MESSAGE_TYPE);
         }
 
-        private string GetStringHeader(BasicDeliverEventArgs args, string key)
+        private string GetHeaderString(BasicDeliverEventArgs args, string key)
         {
-            byte[] messageTypeByte = (byte[])args.BasicProperties.Headers[MESSAGE_TYPE];
+            byte[] messageTypeByte = (byte[])args.BasicProperties.Headers[key];
 
-            if (messageTypeByte == null)
-            {
-                return string.Empty;
-            }
-
-           return Encoding.UTF8.GetString(messageTypeByte);
+            return Encoding.UTF8.GetString(messageTypeByte);
         }
         private Type? GetMessageType(string type)
         {
             return  Type.GetType(string.Format("{0}.{1}", MESSAgE_NAMESPACE, type));
+        }
+
+        private void Handle(BasicDeliverEventArgs args, Type type)
+        {
+            string data = Encoding.UTF8.GetString(args.Body.ToArray());
+
+            var message = (IRequest)JsonSerializer.Deserialize(data, type)!;
+
+            _mediator.Send(message);
         }
     }
 }

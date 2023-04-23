@@ -16,8 +16,9 @@ namespace MiniERP.InventoryService.Profiles
                 .ForMember(dest => dest.ArticleId,
                             opts => opts.MapFrom(src => src.Id));
 
-            CreateMap<ArticleUpdate, InventoryItemUpdate>();
-            CreateMap<InventoryItemUpdate, InventoryItem>();
+            CreateMap<ArticleUpdate, InventoryItem>()
+                .ForMember(dest => dest.Id,
+                            opts => opts.Ignore());
         }       
     }
 }
