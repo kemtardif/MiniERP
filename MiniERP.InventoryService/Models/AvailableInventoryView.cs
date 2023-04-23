@@ -1,4 +1,6 @@
-﻿namespace MiniERP.InventoryService.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace MiniERP.InventoryService.Models
 {
     public class AvailableInventoryView
     {

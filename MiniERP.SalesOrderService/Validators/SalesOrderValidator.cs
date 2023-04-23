@@ -6,7 +6,7 @@ namespace MiniERP.SalesOrderService.Validators
 {
     public class SalesOrderValidator : AbstractValidator<SalesOrder>
     {
-        public SalesOrderValidator(ICacheRepository cache)
+        public SalesOrderValidator()
         {
             RuleFor(x => x.CustID).NotNull().Must(x => x > 0)
                 .WithMessage("Customer Id must be greater than zero");
@@ -16,7 +16,7 @@ namespace MiniERP.SalesOrderService.Validators
                 .WithMessage("Confirm Date must be a valid date");
             RuleFor(x => x.Details).NotNull().Must(x => x.Any())
                 .WithMessage("Sales Order must have at least one line");
-            RuleForEach(x => x.Details).SetValidator(new SalesOrderDetailValidator(cache));
+            RuleForEach(x => x.Details).SetValidator(new SalesOrderDetailValidator());
         }
         private bool BeAValidDate(DateTime date)
         {

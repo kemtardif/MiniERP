@@ -50,6 +50,7 @@ namespace MiniERP.InventoryService.Grpc
             }
         }
 
+
         public override async Task GetInventoryStream(IAsyncStreamReader<StockRequest> callStream, IServerStreamWriter<StockResponse> responseStream, ServerCallContext context)
         {
             try

@@ -22,11 +22,11 @@ namespace MiniERP.InventoryService.Data
         {
             AvailableInventoryView? item = _cache.GetRecord<AvailableInventoryView>($"{AVAILABLEKEY}:{articleId}");
 
-            if(item is null)
+            if (item is null)
             {
                 item = _context.AvailableInventoryView.FirstOrDefault(x => x.ArticleId == articleId);
 
-                if(item is not null)
+                if (item is not null)
                 {
                     _cache.SetRecord($"{AVAILABLEKEY}:{articleId}", item);
                 }

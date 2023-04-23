@@ -4,13 +4,13 @@ using Microsoft.Extensions.Logging.Console;
 using System.Net.Mime;
 using MiniERP.SalesOrderService.Services;
 using Microsoft.EntityFrameworkCore;
-using MiniERP.SalesOrderService.Protos;
 using MiniERP.SalesOrderService.Grpc;
 using FluentValidation;
 using MiniERP.SalesOrderService.Models;
 using MiniERP.SalesOrderService.Validators;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using MiniERP.SalesOrderService.MessageBus;
+using MiniERP.SalesOrderService.Protos;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,10 +28,7 @@ builder.Configuration
 
 builder.Services.AddScoped<ISalesOrderRepository, SalesOrderRepository>();
 builder.Services.AddScoped<ISalesOrderService, SalesOrderService>();
-builder.Services.Decorate<ISalesOrderService, SalesOrderServiceWithGrpc>();
-builder.Services.Decorate<ISalesOrderService, SalesOrderServiceWithLogging>();
-builder.Services.AddScoped<IGrpcClientAdapter, GrpcClientAdapter>();
-builder.Services.AddScoped<IInventoryDataClient, InventoryDataClient>();
+builder.Services.AddScoped<IDataClient, GrpcDataClient>();
 builder.Services.AddSingleton<IMessageProcessor, RabbitMQProcessor>();
 builder.Services.AddHostedService<RabbitMQSubscriber>();
 builder.Services.AddScoped<IValidator<SalesOrder>, SalesOrderValidator>();
@@ -43,7 +40,7 @@ builder.Services.AddDbContext<AppDbContext>(opts =>
 });
 
 
-builder.Services.AddGrpcClient<StockMovementService.StockMovementServiceClient>(o =>
+builder.Services.AddGrpcClient<GrpcInventoryService.GrpcInventoryServiceClient>(o =>
 {
     o.Address = new Uri(builder.Configuration["GrpcInventoryService"]!);
 });

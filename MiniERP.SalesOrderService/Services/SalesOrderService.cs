@@ -4,7 +4,10 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.JsonPatch;
 using MiniERP.SalesOrderService.Data;
 using MiniERP.SalesOrderService.Dtos;
+using MiniERP.SalesOrderService.Grpc;
 using MiniERP.SalesOrderService.Models;
+using MiniERP.SalesOrderService.Protos;
+using System.Text.Json;
 
 namespace MiniERP.SalesOrderService.Services
 {
@@ -13,14 +16,20 @@ namespace MiniERP.SalesOrderService.Services
         private readonly ISalesOrderRepository _repository;
         private readonly IValidator<SalesOrder> _validator;
         private readonly IMapper _mapper;
+        private readonly IDataClient _dataClient;
+        private readonly ILogger<SalesOrderService> _logger;
 
         public SalesOrderService(ISalesOrderRepository repository,
                                  IValidator<SalesOrder> validator,
-                                 IMapper mapper)
+                                 IMapper mapper,
+                                 IDataClient dataClient,
+                                 ILogger<SalesOrderService> logger)
         {
             _repository = repository;
             _validator = validator;
             _mapper = mapper;
+            _dataClient = dataClient;
+            _logger = logger;
         }
         public async Task<Result<SalesOrderReadDto>> AddSalesOrder(SalesOrderCreateDto salesOrder)
         {
@@ -28,9 +37,17 @@ namespace MiniERP.SalesOrderService.Services
 
             ValidationResult validationResult = await _validator.ValidateAsync(so);
 
-            if(!validationResult.IsValid)
+            if (!validationResult.IsValid)
             {
                 return Result<SalesOrderReadDto>.Failure(validationResult.ToDictionary());
+            }
+
+            var articleIds = so.Details.Select(x => x.ArticleId)
+                                        .ToAsyncEnumerable();
+
+            await foreach(StockResponse response in _dataClient.GetAvailableStockStream(articleIds))
+            {
+                ///Add Inventory logic here
             }
 
             _repository.AddSalesOrder(so);

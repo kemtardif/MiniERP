@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using MiniERP.SalesOrderService.Caching;
 using MiniERP.SalesOrderService.MessageBus.Responses;
 using MiniERP.SalesOrderService.Models;
 using System.Text.Json;
@@ -103,24 +102,24 @@ namespace MiniERP.SalesOrderService.MessageBus
         {
             using var scope = _scopreFactory.CreateScope();
 
-            var cache = scope.ServiceProvider.GetRequiredService<ICacheRepository>();
+            //var cache = scope.ServiceProvider.GetRequiredService<ICacheRepository>();
 
-            foreach(StockChange change in resp.Changes)
-            {
-                Stock? stock = await cache.GetStockByArticleId(change.Id);
-                if (stock is null)
-                {
-                    continue;
-                }
+            //foreach(StockChange change in resp.Changes)
+            //{
+            //    Stock? stock = await cache.GetStockByArticleId(change.Id);
+            //    if (stock is null)
+            //    {
+            //        continue;
+            //    }
 
-                stock.Quantity = change.NewValue;
+            //    stock.Quantity = change.NewValue;
 
-                await cache.SetStock(stock);
+            //    await cache.SetStock(stock);
 
-                _logger.LogInformation("---> RabbitMQ : Stock updated in cache: {id} : {date}",
-                                           stock.InventoryId,
-                                           DateTime.UtcNow);
-            }
+            //    _logger.LogInformation("---> RabbitMQ : Stock updated in cache: {id} : {date}",
+            //                               stock.InventoryId,
+            //                               DateTime.UtcNow);
+            //}
 
         }
         #endregion

@@ -6,7 +6,6 @@ namespace MiniERP.InventoryService.Data
     {
         IEnumerable<AvailableInventoryView> GetAllActualInventory();
         IEnumerable<PendingInventoryView> GetAllPendingInventory();
-
         AvailableInventoryView? GetAvailableByArticleId(int articleId);
         PendingInventoryView? GetPendingByArticleId(int articleId);
 
