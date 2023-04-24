@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using FluentValidation.Results;
 using MiniERP.SalesOrderService.Models;
 
 namespace MiniERP.SalesOrderService.Validators

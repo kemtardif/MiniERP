@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using MiniERP.SalesOrderService.Models;
 
 namespace MiniERP.SalesOrderService.Behaviors
 {

@@ -1,5 +1,4 @@
 ﻿using Grpc.Core;
-using MediatR;
 using MiniERP.SalesOrderService.Protos;
 
 namespace MiniERP.SalesOrderService.Grpc

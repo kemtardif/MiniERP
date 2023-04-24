@@ -33,6 +33,7 @@ builder.Configuration
 
 builder.Services.AddScoped<ISalesOrderRepository, SalesOrderRepository>();
 builder.Services.AddScoped<IValidator<SalesOrder>, SOValidator>();
+builder.Services.AddScoped<IValidator<Inventory>, InventoryValidator>();
 
 builder.Services.AddScoped<IDataClient, GrpcDataClient>();
 

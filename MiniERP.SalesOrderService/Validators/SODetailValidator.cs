@@ -7,7 +7,7 @@ namespace MiniERP.SalesOrderService.Validators
     {
         public SODetailValidator()
         {
-            RuleFor(x =>  x.Quantity )
+            RuleFor(x =>  x.Quantity)
                     .Must(x => x > 0)
                     .WithMessage("Quantity must be greater than zero")
                     .WithName("Positive quantity");

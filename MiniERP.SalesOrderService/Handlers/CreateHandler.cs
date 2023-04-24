@@ -4,7 +4,6 @@ using MiniERP.SalesOrderService.Commands;
 using MiniERP.SalesOrderService.Data;
 using MiniERP.SalesOrderService.DTOs;
 using MiniERP.SalesOrderService.Models;
-using System.Text.Json;
 
 namespace MiniERP.SalesOrderService.Handlers
 {

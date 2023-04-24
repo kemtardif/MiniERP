@@ -6,7 +6,6 @@ using MiniERP.SalesOrderService.DTOs;
 using MiniERP.SalesOrderService.Exceptions;
 using MiniERP.SalesOrderService.Models;
 using MiniERP.SalesOrderService.Queries;
-using System.Text.Json;
 
 namespace MiniERP.SalesOrderService.Controllers
 {
