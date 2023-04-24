@@ -3,7 +3,7 @@ using MiniERP.PurchaseOrderService.Models;
 
 namespace MiniERP.PurchaseOrderService.Data
 {
-    public class PORepository : IPORepository
+    public class PORepository : IRepository
     {
         private readonly AppDbContext _context;
 

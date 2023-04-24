@@ -2,18 +2,18 @@
 using FluentValidation;
 using FluentValidation.Results;
 using MiniERP.PurchaseOrderService.Data;
-using MiniERP.PurchaseOrderService.Dtos;
+using MiniERP.PurchaseOrderService.DTOs;
 using MiniERP.PurchaseOrderService.Models;
 
 namespace MiniERP.PurchaseOrderService.Services
 {
     public class POService : IPOService
     {
-        private readonly IPORepository _repository;
+        private readonly IRepository _repository;
         private readonly IMapper _mapper;
         private readonly IValidator<PurchaseOrder> _validator;
 
-        public POService(IPORepository repository,
+        public POService(IRepository repository,
                          IMapper mapper,
                          IValidator<PurchaseOrder> validator)
         { 
@@ -21,7 +21,7 @@ namespace MiniERP.PurchaseOrderService.Services
             _mapper = mapper;
             _validator = validator;
         }
-        public Result<POReadDto> CreatePurchaseOrder(POCreateDto createDto)
+        public Result<POReadDto> CreatePurchaseOrder(POCreateDTO createDto)
         {
             var po = _mapper.Map<PurchaseOrder>(createDto);
 

@@ -1,4 +1,4 @@
-﻿namespace MiniERP.PurchaseOrderService.Dtos
+﻿namespace MiniERP.PurchaseOrderService.DTOs
 {
     public class PODetailReadDto
     {

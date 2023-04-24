@@ -1,8 +1,9 @@
 ﻿using AutoMapper;
 using Grpc.Core;
-using MiniERP.SalesOrderService.Protos;
+using MiniERP.PurchaseOrderService.Grpc.Protos;
+using MiniERP.PurchaseOrderService.Models;
 
-namespace MiniERP.SalesOrderService.Grpc
+namespace MiniERP.PurchaseOrderService.Grpc
 {
     public class GrpcDataClient : IDataClient
     {
@@ -15,7 +16,7 @@ namespace MiniERP.SalesOrderService.Grpc
 
         public StockResponse GetAvailableStock(int articleId)
         {
-            StockRequest request = new() {  ArticleId = articleId };
+            StockRequest request = new() { ArticleId = articleId };
 
             StockResponse response = _grpcClient.GetInventory(request);
 
@@ -29,7 +30,7 @@ namespace MiniERP.SalesOrderService.Grpc
 
             var requestTask = Task.Run(async () =>
             {
-                await foreach(int articleId in articleIds)
+                await foreach (int articleId in articleIds)
                 {
                     StockRequest request = new() { ArticleId = articleId };
 
@@ -39,7 +40,7 @@ namespace MiniERP.SalesOrderService.Grpc
                 await stream.RequestStream.CompleteAsync();
             });
 
-            await foreach(StockResponse response in stream.ResponseStream.ReadAllAsync())
+            await foreach (StockResponse response in stream.ResponseStream.ReadAllAsync())
             {
                 yield return response;
             }

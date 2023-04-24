@@ -32,11 +32,11 @@ namespace MiniERP.SalesOrderService.Handlers
             return Task.FromResult(Result<SOReadDTO>.Success(dto));
         }
 
-        private IDictionary<string, string[]> GetNotFoundResult(int articleId)
+        private IDictionary<string, string[]> GetNotFoundResult(int id)
         {
             return new Dictionary<string, string[]>
             {
-                [nameof(SalesOrder)] = new string[] { $"Sales Order not found : ID = {articleId}" }
+                [nameof(SalesOrder)] = new string[] { $"Sales Order not found : ID = {id}" }
             };
         }
     }

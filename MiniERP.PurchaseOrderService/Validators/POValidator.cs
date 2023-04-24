@@ -1,12 +1,11 @@
 ﻿using FluentValidation;
-using MiniERP.PurchaseOrderService.Caching;
 using MiniERP.PurchaseOrderService.Models;
 
 namespace MiniERP.PurchaseOrderService.Validators
 {
     public class POValidator : AbstractValidator<PurchaseOrder>
     {
-        public POValidator(ICacheRepository cache)
+        public POValidator()
         {
 
                 RuleFor(x => x.SupplierID).NotNull().Must(x => x > 0)
@@ -16,7 +15,7 @@ namespace MiniERP.PurchaseOrderService.Validators
                     .WithMessage("Delivery Date must be a valid date");
                 RuleFor(x => x.Details).NotNull().Must(x => x.Any())
                     .WithMessage("Sales Order must have at least one line");
-                RuleForEach(x => x.Details).SetValidator(new PODetailValidator(cache));
+                RuleForEach(x => x.Details).SetValidator(new PODetailValidator());
         }
         private bool BeAValidDate(DateTime date)
         {

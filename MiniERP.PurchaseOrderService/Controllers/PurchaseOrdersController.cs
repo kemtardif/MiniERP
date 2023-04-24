@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MiniERP.PurchaseOrderService.Dtos;
+using MiniERP.PurchaseOrderService.DTOs;
 using MiniERP.PurchaseOrderService.Exceptions;
 using MiniERP.PurchaseOrderService.Models;
 using MiniERP.PurchaseOrderService.Services;
@@ -59,7 +59,7 @@ namespace MiniERP.PurchaseOrderService.Controllers
         }
 
         [HttpPost]
-        public ActionResult CreatePurchaseOrder(POCreateDto dto)
+        public ActionResult CreatePurchaseOrder(POCreateDTO dto)
         {
             try
             {

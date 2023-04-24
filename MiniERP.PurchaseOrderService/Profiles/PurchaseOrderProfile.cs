@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using MiniERP.PurchaseOrderService.Dtos;
+using MiniERP.PurchaseOrderService.DTOs;
 using MiniERP.PurchaseOrderService.Models;
 
 namespace MiniERP.PurchaseOrderService.Profiles
@@ -14,7 +14,7 @@ namespace MiniERP.PurchaseOrderService.Profiles
                     opt => opt.MapFrom(src => src.Details));
 
             CreateMap<PODetailCreateDto, PODetail>();
-            CreateMap<POCreateDto, PurchaseOrder>()
+            CreateMap<POCreateDTO, PurchaseOrder>()
                 .ForMember(dest => dest.Details,
                     opt => opt.MapFrom(src => src.Details));
         }

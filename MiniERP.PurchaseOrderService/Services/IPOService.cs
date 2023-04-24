@@ -1,4 +1,4 @@
-﻿using MiniERP.PurchaseOrderService.Dtos;
+﻿using MiniERP.PurchaseOrderService.DTOs;
 using MiniERP.PurchaseOrderService.Models;
 
 namespace MiniERP.PurchaseOrderService.Services
@@ -7,6 +7,6 @@ namespace MiniERP.PurchaseOrderService.Services
     {
         Result<IEnumerable<POReadDto>> GetAllPurchaseOrders();
         Result<POReadDto> GetPOById(int id);
-        Result<POReadDto> CreatePurchaseOrder(POCreateDto createDto);
+        Result<POReadDto> CreatePurchaseOrder(POCreateDTO createDto);
     }
 }

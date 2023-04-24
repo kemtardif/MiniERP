@@ -1,8 +1,8 @@
 ﻿using MiniERP.PurchaseOrderService.Models;
 
-namespace MiniERP.PurchaseOrderService.Dtos
+namespace MiniERP.PurchaseOrderService.DTOs
 {
-    public class POCreateDto
+    public class POCreateDTO
     {
         public int SupplierID { get; set; }
         public int Responsible { get; set; }
