@@ -1,13 +1,14 @@
 ﻿using FluentValidation;
-
+using FluentValidation.Results;
 using MiniERP.SalesOrderService.Models;
 
 namespace MiniERP.SalesOrderService.Validators
 {
-    public class SalesOrderValidator : AbstractValidator<SalesOrder>
+    public class SOValidator : AbstractValidator<SalesOrder>
     {
-        public SalesOrderValidator()
+        public SOValidator()
         {
+
             RuleFor(x => x.CustID).NotNull().Must(x => x > 0)
                 .WithMessage("Customer Id must be greater than zero");
             RuleFor(x => x.CustAddress).NotEmpty();
@@ -16,11 +17,14 @@ namespace MiniERP.SalesOrderService.Validators
                 .WithMessage("Confirm Date must be a valid date");
             RuleFor(x => x.Details).NotNull().Must(x => x.Any())
                 .WithMessage("Sales Order must have at least one line");
-            RuleForEach(x => x.Details).SetValidator(new SalesOrderDetailValidator());
+            RuleForEach(x => x.Details).SetValidator(new SODetailValidator());
+
         }
+
         private bool BeAValidDate(DateTime date)
         {
             return !date.Equals(default);
         }
+
     }
 }

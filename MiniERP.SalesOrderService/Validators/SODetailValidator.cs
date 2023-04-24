@@ -3,9 +3,9 @@ using MiniERP.SalesOrderService.Models;
 
 namespace MiniERP.SalesOrderService.Validators
 {
-    public class SalesOrderDetailValidator : AbstractValidator<SalesOrderDetail>
+    public class SODetailValidator : AbstractValidator<SalesOrderDetail>
     {
-        public SalesOrderDetailValidator()
+        public SODetailValidator()
         {
             RuleFor(x =>  x.Quantity )
                     .Must(x => x > 0)

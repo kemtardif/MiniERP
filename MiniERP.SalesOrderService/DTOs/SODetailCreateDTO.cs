@@ -1,6 +1,6 @@
-﻿namespace MiniERP.SalesOrderService.Dtos
+﻿namespace MiniERP.SalesOrderService.DTOs
 {
-    public class SalesOrderDetailCreateDto
+    public class SODetailCreateDTO
     {
         public int ArticleId { get; set; }
         public int UnitId { get; set; }

@@ -1,10 +1,12 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using MiniERP.SalesOrderService.Dtos;
+using MiniERP.SalesOrderService.Commands;
+using MiniERP.SalesOrderService.DTOs;
 using MiniERP.SalesOrderService.Exceptions;
 using MiniERP.SalesOrderService.Models;
-using MiniERP.SalesOrderService.Services;
+using MiniERP.SalesOrderService.Queries;
+using System.Text.Json;
 
 namespace MiniERP.SalesOrderService.Controllers
 {
@@ -13,23 +15,19 @@ namespace MiniERP.SalesOrderService.Controllers
     [Route("api/so-srv/[controller]")]
     public class SalesOrdersController : ControllerBase
     {
+        private readonly IMediator _mediator;
 
-        private readonly ILogger<SalesOrdersController> _logger;
-        private readonly ISalesOrderService _service;
-
-        public SalesOrdersController(ILogger<SalesOrdersController> logger,
-                                     ISalesOrderService service)
+        public SalesOrdersController(IMediator mediator)
         {
-            _logger = logger;
-            _service = service;
+            _mediator = mediator;
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<SalesOrderReadDto>> GetAllSalesOrder()
+        public async Task<ActionResult<IEnumerable<SOReadDTO>>> GetAllSalesOrder()
         {
             try
             {
-                var result = _service.GetAllSalesOrders();
+                Result<IEnumerable<SOReadDTO>> result = await _mediator.Send(new GetAllQuery());
 
                 return Ok(result.Value);
             }
@@ -39,11 +37,11 @@ namespace MiniERP.SalesOrderService.Controllers
             }
         }
         [HttpGet("{id}", Name = nameof(GetSalesOrderById))]
-        public ActionResult<SalesOrderReadDto> GetSalesOrderById(int id)
+        public async Task<ActionResult<SOReadDTO>> GetSalesOrderById(int id)
         {
             try
             {
-                var result = _service.GetSalesOrderById(id);
+                Result<SOReadDTO> result = await _mediator.Send(new GetByIdQuery() { Id = id });
 
                 if (!result.IsSuccess)
                 {
@@ -59,11 +57,11 @@ namespace MiniERP.SalesOrderService.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<SalesOrderReadDto>> CreateSalesOrder(SalesOrderCreateDto dto)
+        public async Task<ActionResult<SOReadDTO>> CreateSalesOrder(SOCreateDTO dto)
         {
             try
             {
-                var result = await _service.AddSalesOrder(dto);
+                Result<SOReadDTO> result = await _mediator.Send(new CreateCommand() { SalesOrder = dto });
 
                 if (!result.IsSuccess)
                 {
@@ -79,11 +77,11 @@ namespace MiniERP.SalesOrderService.Controllers
         }
 
         [HttpDelete("{id}")]
-        public ActionResult DeleteSalesOrder(int id)
+        public async Task<ActionResult> DeleteSalesOrder(int id)
         {
             try
             {
-                Result result = _service.RemoveSalesOrderById(id);
+                Result<int> result = await _mediator.Send(new DeleteCommand() { Id = id });
 
                 if(!result.IsSuccess)
                 {
@@ -97,31 +95,31 @@ namespace MiniERP.SalesOrderService.Controllers
             }
         }
 
-        [HttpPatch("{id}")]
-        public async Task<ActionResult<SalesOrderReadDto>> PatchSalesOder(int id, JsonPatchDocument<SalesOrderUpdateDto> document)
-        {
-            try
-            {
-                Result<SalesOrderReadDto> result = await _service.UpdateSalesOrder(id, document);
+        //[HttpPatch("{id}")]
+        //public async Task<ActionResult<SOReadDTO>> PatchSalesOder(int id, JsonPatchDocument<UpdateSalesOrder> document)
+        //{
+        //    try
+        //    {
+        //        Result<SOReadDTO> result = await _service.UpdateSalesOrder(id, document);
 
-                if (!result.IsSuccess)
-                {
-                    if(result.Errors.TryGetValue(nameof(SalesOrder), out string[]? errors)
-                        && errors is not null)
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        return UnprocessableEntity(result.Errors);
-                    }
-                }
-                return Ok(result.Value);
-            }
-            catch (Exception ex)
-            {
-                throw new HttpFriendlyException($"An error occured while updating Sales Order : ID={id}", ex);
-            }
-        }
+        //        if (!result.IsSuccess)
+        //        {
+        //            if(result.Errors.TryGetValue(nameof(SalesOrder), out string[]? errors)
+        //                && errors is not null)
+        //            {
+        //                return NotFound();
+        //            }
+        //            else
+        //            {
+        //                return UnprocessableEntity(result.Errors);
+        //            }
+        //        }
+        //        return Ok(result.Value);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new HttpFriendlyException($"An error occured while updating Sales Order : ID={id}", ex);
+        //    }
+        //}
     }
 }

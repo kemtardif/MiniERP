@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
-using MiniERP.SalesOrderService.Dtos;
+using MiniERP.SalesOrderService.DTOs;
 using MiniERP.SalesOrderService.Models;
 
 namespace MiniERP.SalesOrderService.Data
@@ -22,9 +22,6 @@ namespace MiniERP.SalesOrderService.Data
             {
                 throw new ArgumentNullException(nameof(salesOrder));
             }
-
-            salesOrder.SetCreatedAdToCurrentTime();
-            salesOrder.SetUpdatedAtToCurrentTime();
 
             _context.SalesOrders.Add(salesOrder);
         }
@@ -47,7 +44,6 @@ namespace MiniERP.SalesOrderService.Data
             }
 
             salesOrder.SetAsClosed();
-            salesOrder.SetUpdatedAtToCurrentTime();
         }
 
         public void SaveChanges()
@@ -55,7 +51,7 @@ namespace MiniERP.SalesOrderService.Data
             _context.SaveChanges();
         }
 
-        public SalesOrder UpdateSalesOrder(SalesOrder item, JsonPatchDocument<SalesOrderUpdateDto> json)
+        public SalesOrder UpdateSalesOrder(SalesOrder item, JsonPatchDocument<UpdateSalesOrder> json)
         {
             if (item is null)
             {
@@ -66,13 +62,11 @@ namespace MiniERP.SalesOrderService.Data
                 throw new ArgumentNullException(nameof(json));
             }
 
-            var dto = _mapper.Map<SalesOrderUpdateDto>(item);
+            var dto = _mapper.Map<UpdateSalesOrder>(item);
 
             json.ApplyTo(dto);
 
             _mapper.Map(dto, item);
-
-            item.SetUpdatedAtToCurrentTime();
 
             return item;
         }

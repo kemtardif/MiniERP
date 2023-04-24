@@ -9,10 +9,6 @@
         public int SupplierId { get; set; }
         public double Quantity { get; set; }
         public decimal UnitCost { get; set; }
-        public decimal Amount { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
-        public void SetUpdatedAtToCurrentTime() => UpdatedAt = DateTime.UtcNow;
-        public void SetCreatedAdToCurrentTime() => CreatedAt = DateTime.UtcNow;        
+        public decimal Amount { get; set; }     
     }
 }

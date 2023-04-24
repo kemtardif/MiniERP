@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Grpc.Core;
-using MiniERP.SalesOrderService.Models;
 using MiniERP.SalesOrderService.Protos;
 
 namespace MiniERP.SalesOrderService.Grpc
@@ -48,6 +47,11 @@ namespace MiniERP.SalesOrderService.Grpc
             }
 
             await requestTask;
+        }
+
+        public AsyncDuplexStreamingCall<StockRequest, StockResponse> GetInventoryStream(CancellationToken token)
+        {
+            return _grpcClient.GetInventoryStream(cancellationToken: token);
         }
     }
 }

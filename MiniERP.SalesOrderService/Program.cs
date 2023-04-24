@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using MiniERP.SalesOrderService.Data;
 using Microsoft.Extensions.Logging.Console;
 using System.Net.Mime;
-using MiniERP.SalesOrderService.Services;
 using Microsoft.EntityFrameworkCore;
 using MiniERP.SalesOrderService.Grpc;
 using FluentValidation;
@@ -11,6 +10,12 @@ using MiniERP.SalesOrderService.Validators;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using MiniERP.SalesOrderService.MessageBus;
 using MiniERP.SalesOrderService.Protos;
+using System.Reflection;
+using MiniERP.SalesOrderService.Behaviors.CreateBehavior;
+using MediatR;
+using MiniERP.SalesOrderService.Commands;
+using MiniERP.SalesOrderService.DTOs;
+using MiniERP.SalesOrderService.Behaviors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,16 +27,18 @@ builder.Logging.AddSimpleConsole(opts =>
 });
 
 builder.Configuration
-    .AddJsonFile("secrets/salesorder.appsettings.secrets.json", optional: false)
+    .AddJsonFile("secrets/salesorder.appsettings.secrets.json", optional: true)
     .AddEnvironmentVariables();
 
 
 builder.Services.AddScoped<ISalesOrderRepository, SalesOrderRepository>();
-builder.Services.AddScoped<ISalesOrderService, SalesOrderService>();
+builder.Services.AddScoped<IValidator<SalesOrder>, SOValidator>();
+
 builder.Services.AddScoped<IDataClient, GrpcDataClient>();
+
 builder.Services.AddSingleton<IMessageProcessor, RabbitMQProcessor>();
 builder.Services.AddHostedService<RabbitMQSubscriber>();
-builder.Services.AddScoped<IValidator<SalesOrder>, SalesOrderValidator>();
+
 
 
 builder.Services.AddDbContext<AppDbContext>(opts =>
@@ -69,6 +76,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 });
 
 builder.Services.AddAutoMapper(typeof(Program));
+
+builder.Services.AddMediatR(config => {
+    config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+    config.AddOpenBehavior(typeof(LoggingBehavior<,>));
+    config.AddBehavior<IPipelineBehavior<CreateCommand, Result<SOReadDTO>>, CreateValidationBehavior>();
+});
 
 // Configure the HTTP request pipeline.
 

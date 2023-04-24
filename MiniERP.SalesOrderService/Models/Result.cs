@@ -1,8 +1,7 @@
 ﻿namespace MiniERP.SalesOrderService.Models
 {
-    public class Result<T>
+    public class Result<T> : ResultBase
     {
-        private readonly IDictionary<string, string[]> _errors;
         private readonly T _value;
         public T Value
         {
@@ -15,40 +14,32 @@
                 return _value;
             }
         }
-        public IDictionary<string, string[]> Errors => new Dictionary<string, string[]>(_errors);
-        public bool IsSuccess => _errors.Count == 0;
-
-        public Result(T value)
+        private Result(T value) : base()
         {
             _value = value;
-            _errors = new Dictionary<string, string[]>();
         }
-        public Result(IDictionary<string, string[]> error)
+        private Result(IDictionary<string, string[]> errors) : base(errors)
         {
             _value = default!;
-            _errors = error;
         }
 
         public static Result<T> Success(T value) => new(value);
         public static Result<T> Failure(IDictionary<string, string[]> errors) => new(errors);
     }
 
-    public class Result
+    public abstract class ResultBase
     {
         private readonly IDictionary<string, string[]> _errors;
         public IDictionary<string, string[]> Errors => new Dictionary<string, string[]>(_errors);
         public bool IsSuccess => _errors.Count == 0;
 
-        public Result()
+        protected ResultBase()
         {
             _errors = new Dictionary<string, string[]>();
         }
-        public Result(IDictionary<string, string[]> error)
+        protected ResultBase(IDictionary<string, string[]> errors)
         {
-            _errors = error;
+            _errors = errors;
         }
-
-        public static Result Success() => new();
-        public static Result Failure(IDictionary<string, string[]> errors) => new(errors);
     }
 }

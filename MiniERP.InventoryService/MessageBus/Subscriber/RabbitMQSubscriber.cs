@@ -1,5 +1,4 @@
-﻿using RabbitMQ.Client.Events;
-using RabbitMQ.Client;
+﻿using RabbitMQ.Client;
 using MiniERP.InventoryService.MessageBus.Subscriber.Consumer;
 
 namespace MiniERP.InventoryService.MessageBus.Subscriber

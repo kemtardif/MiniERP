@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using MediatR;
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿using MediatR;
 using MiniERP.InventoryService.Data;
 using MiniERP.InventoryService.MessageBus.Messages;
 

@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using MiniERP.SalesOrderService.MessageBus.Responses;
-using MiniERP.SalesOrderService.Models;
 using System.Text.Json;
 
 namespace MiniERP.SalesOrderService.MessageBus

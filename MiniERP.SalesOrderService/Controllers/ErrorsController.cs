@@ -35,15 +35,14 @@ namespace MiniERP.SalesOrderService.Controllers
             switch (exception)
             {
                 case HttpFriendlyException friendly:
-                    _logger.LogError("{friendly} : {message} : {id} : {date}",
+                    _logger.LogError(exception, "{friendly} : {message} : {id} : {date}",
                                       exception.Message,
                                       exception.InnerException?.Message,
                                       HttpContext.TraceIdentifier,
                                       DateTime.UtcNow);
                     return new ErrorResponse(exception.Message);
                 default:
-                    _logger.LogError("{ex} : {id} : {date}",
-                                      exception.Message,
+                    _logger.LogError(exception, "Internal error : {id} : {date}",
                                       HttpContext.TraceIdentifier,
                                       DateTime.UtcNow);
                     return new ErrorResponse("Critical internal error");
