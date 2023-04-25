@@ -47,9 +47,9 @@ namespace MiniERP.ArticleService.MessageBus.Sender
             IBasicProperties properties = GetBasicProperties(message);
 
             _channel.BasicPublish(exchange: ARTICLE_EXCHANGE,
-                            routingKey: string.Empty,
-                            basicProperties: properties,
-                            body: body);
+                                routingKey: string.Empty,
+                                basicProperties: properties,
+                                body: body);
 
             _logger.LogInformation("RabbitMQ : Article Message Published :  {id} : {type} {date}",
                                     message.Id,

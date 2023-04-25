@@ -11,6 +11,8 @@ using MiniERP.PurchaseOrderService.Data;
 using MiniERP.PurchaseOrderService.DTOs;
 using MiniERP.PurchaseOrderService.Grpc;
 using MiniERP.PurchaseOrderService.Grpc.Protos;
+using MiniERP.PurchaseOrderService.MessageBus.Sender;
+using MiniERP.PurchaseOrderService.MessageBus.Sender.Contracts;
 using MiniERP.PurchaseOrderService.Models;
 using MiniERP.PurchaseOrderService.Validators;
 using System.Net.Mime;
@@ -32,13 +34,17 @@ builder.Configuration
 builder.Services.AddScoped<IRepository, PORepository>();
 builder.Services.AddScoped<IDataClient, GrpcDataClient>();
 
-builder.Services.AddScoped<IValidator<PurchaseOrder>, POValidator>();   
+builder.Services.AddScoped<IValidator<PurchaseOrder>, POValidator>();
+
+builder.Services.AddSingleton<IRabbitMQConnection, RabbitMQConnection>();
+builder.Services.AddScoped<IRabbitMQClient, RabbitMQClient>();
 
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddMediatR(config => {
     config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
     config.AddOpenBehavior(typeof(LoggingBehavior<,>));
     config.AddBehavior<IPipelineBehavior<CreateCommand, Result<POReadDTO>>, CreateValidationBehavior>();
+    config.AddBehavior<IPipelineBehavior<CreateCommand, Result<POReadDTO>>, MessagingBehavior>();
 });
 
 builder.Services.AddDbContext<AppDbContext>(opts =>

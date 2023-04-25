@@ -20,7 +20,7 @@ namespace MiniERP.InventoryService.MessageBus.Handlers
             {
                 RemoveArticle(request);
 
-                _logger.LogInformation("---> RabbitMQ : Message Handled : {handler} : {id} : {}",
+                _logger.LogInformation("---> RabbitMQ : Message Handled : {handler} : {id} : {date}",
                                        nameof(ArticleDeleteHandler),
                                        request.Id,
                                        DateTime.UtcNow);

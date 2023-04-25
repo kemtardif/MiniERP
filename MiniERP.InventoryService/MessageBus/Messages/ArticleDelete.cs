@@ -2,5 +2,6 @@
 {
     public class ArticleDelete : MessageBase
     {
+        public int Id { get; set; }
     }
 }

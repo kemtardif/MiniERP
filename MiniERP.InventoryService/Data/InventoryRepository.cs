@@ -25,6 +25,17 @@ namespace MiniERP.InventoryService.Data
             _context.InventoryItems.Add(item);
         }
 
+        public void AddItem(InventoryMovement item)
+        {
+            if (item is null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+            _context.StockMovements.Add(item);
+
+            _cache.Invalidate(item.ArticleId);
+        }
+
         public IEnumerable<InventoryItem> GetAllItems()
         {
             return _context.InventoryItems;
@@ -71,6 +82,8 @@ namespace MiniERP.InventoryService.Data
             }
 
             _context.InventoryItems.Update(item);
+
+            _cache.Invalidate(item.ArticleId);
         }          
     }
 }

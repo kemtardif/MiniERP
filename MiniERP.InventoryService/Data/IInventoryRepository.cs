@@ -7,6 +7,7 @@ namespace MiniERP.InventoryService.Data
         IEnumerable<InventoryItem> GetAllItems();
         InventoryItem? GetInventoryByArticleId(int articleId);
         IEnumerable<InventoryMovement> GetMovementsByOrder(RelatedOrderType orderType, int orderId);
+        void AddItem(InventoryMovement item);
         void AddItem(InventoryItem item);
         void SetAsClosed(int articleId);
 

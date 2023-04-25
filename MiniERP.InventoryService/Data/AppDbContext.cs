@@ -31,8 +31,6 @@ namespace MiniERP.InventoryService.Data
 
                 sm.HasOne(x => x.InventoryItem)
                 .WithMany()
-                .HasForeignKey(x => x.InventoryId)
-                .HasPrincipalKey(x => x.Id)
                 .IsRequired();
              
             });

@@ -26,7 +26,7 @@ namespace MiniERP.InventoryService.MessageBus.Handlers
             {
                 AddArticle(create);
 
-                _logger.LogInformation("---> RabbitMQ : Message Handled : {handler} : {id} : {}",
+                _logger.LogInformation("---> RabbitMQ : Message Handled : {handler} : {id} : {date}",
                                        nameof(ArticleCreateHandler),
                                        create.Id,
                                        DateTime.UtcNow);

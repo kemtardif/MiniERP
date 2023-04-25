@@ -3,14 +3,13 @@
     public class InventoryMovement
     {
         public int Id { get; set; }
-        public int InventoryId { get; set; }
+        public int ArticleId { get; set; }
         public InventoryItem InventoryItem { get; set; } = new();
         public MovementType MovementType { get; set; }
         public MovementStatus MovementStatus { get; set; }
         public double Quantity { get; set; }
         public int RelatedOrderId { get; set; }
         public RelatedOrderType RelatedOrderType { get; set; }
-        public DateTime ExpectedDate { get; set; }
 
     }
     public enum MovementType

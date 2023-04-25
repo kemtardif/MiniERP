@@ -1,6 +1,6 @@
 ﻿using RabbitMQ.Client;
 
-namespace MiniERP.InventoryService.MessageBus.Sender.Contracts
+namespace MiniERP.SalesOrderService.MessageBus.Sender.Contracts
 {
     public interface IRabbitMQConnection
     {

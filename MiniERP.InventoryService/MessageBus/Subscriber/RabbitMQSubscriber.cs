@@ -11,6 +11,7 @@ namespace MiniERP.InventoryService.MessageBus.Subscriber
         private readonly IModel _channel;
 
         private const string Article_EXCHANGE = "article";
+        private const string INVENTORY_EXCHANGE = "inventory";
 
         public RabbitMQSubscriber(IConfiguration configuration,
                                   ILogger<RabbitMQSubscriber> logger,
@@ -33,6 +34,9 @@ namespace MiniERP.InventoryService.MessageBus.Subscriber
 
             string articleQueue = BindQueue(Article_EXCHANGE, string.Empty);
             ConsumeQueue(articleQueue);
+
+            string inventoryQueue = BindQueue(INVENTORY_EXCHANGE, string.Empty);
+            ConsumeQueue(inventoryQueue);
 
             return Task.CompletedTask;
         }

@@ -16,6 +16,8 @@ using MediatR;
 using MiniERP.SalesOrderService.Commands;
 using MiniERP.SalesOrderService.DTOs;
 using MiniERP.SalesOrderService.Behaviors;
+using MiniERP.SalesOrderService.MessageBus.Sender.Contracts;
+using MiniERP.SalesOrderService.MessageBus.Sender;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +38,9 @@ builder.Services.AddScoped<IValidator<SalesOrder>, SOValidator>();
 builder.Services.AddScoped<IValidator<Inventory>, InventoryValidator>();
 
 builder.Services.AddScoped<IDataClient, GrpcDataClient>();
+
+builder.Services.AddSingleton<IRabbitMQConnection, RabbitMQConnection>();
+builder.Services.AddScoped<IRabbitMQClient, RabbitMQClient>();
 
 builder.Services.AddSingleton<IMessageProcessor, RabbitMQProcessor>();
 builder.Services.AddHostedService<RabbitMQSubscriber>();
@@ -82,6 +87,7 @@ builder.Services.AddMediatR(config => {
     config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
     config.AddOpenBehavior(typeof(LoggingBehavior<,>));
     config.AddBehavior<IPipelineBehavior<CreateCommand, Result<SOReadDTO>>, CreateValidationBehavior>();
+    config.AddBehavior<IPipelineBehavior<CreateCommand, Result<SOReadDTO>>, MessagingBehavior>();
 });
 
 // Configure the HTTP request pipeline.
