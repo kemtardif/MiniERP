@@ -8,7 +8,6 @@ namespace MiniERP.InventoryService.Data
     {
         private readonly AppDbContext _context;
         private readonly IStockCache _cache;
-
         public InventoryRepository(AppDbContext context,
                                    IStockCache cache)
         {
