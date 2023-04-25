@@ -1,6 +1,6 @@
 ﻿namespace MiniERP.PurchaseOrderService.DTOs
 {
-    public class PODetailCreateDto
+    public class PODetailCreateDTO
     {
         public int LineNo { get; set; }
         public int Productd { get; set; }

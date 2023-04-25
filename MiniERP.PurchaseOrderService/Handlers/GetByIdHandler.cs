@@ -7,7 +7,7 @@ using MiniERP.PurchaseOrderService.Queries;
 
 namespace MiniERP.PurchaseOrderService.Handlers
 {
-    public class GetByIdHandler : IRequestHandler<GetByIdQuery, Result<POReadDto>>
+    public class GetByIdHandler : IRequestHandler<GetByIdQuery, Result<POReadDTO>>
     {
         private readonly IRepository _repository;
         private readonly IMapper _mapper;
@@ -18,18 +18,18 @@ namespace MiniERP.PurchaseOrderService.Handlers
             _repository = repository;
             _mapper = mapper;
         }
-        public Task<Result<POReadDto>> Handle(GetByIdQuery request, CancellationToken cancellationToken)
+        public Task<Result<POReadDTO>> Handle(GetByIdQuery request, CancellationToken cancellationToken)
         {
             var model = _repository.GetPOById(request.Id);
 
             if(model is null)
             {
-                Task.FromResult(Result<POReadDto>.Failure(GetNotFoundResult(request.Id));
+                Task.FromResult(Result<POReadDTO>.Failure(GetNotFoundResult(request.Id)));
             }
 
-            var dto = _mapper.Map<POReadDto>(model);
+            var dto = _mapper.Map<POReadDTO>(model);
 
-            return Task.FromResult(Result<POReadDto>.Success(dto));
+            return Task.FromResult(Result<POReadDTO>.Success(dto));
         }
 
         private IDictionary<string, string[]> GetNotFoundResult(int id)

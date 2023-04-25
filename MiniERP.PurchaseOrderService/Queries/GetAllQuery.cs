@@ -4,7 +4,7 @@ using MiniERP.PurchaseOrderService.Models;
 
 namespace MiniERP.PurchaseOrderService.Queries
 {
-    public class GetAllQuery : IRequest<Result<IEnumerable<POReadDto>>>
+    public class GetAllQuery : IRequest<Result<IEnumerable<POReadDTO>>>
     {
     }
 }

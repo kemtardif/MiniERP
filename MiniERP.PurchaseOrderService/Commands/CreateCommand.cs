@@ -4,7 +4,7 @@ using MiniERP.PurchaseOrderService.Models;
 
 namespace MiniERP.PurchaseOrderService.Commands
 {
-    public class CreateCommand : IRequest<Result<POReadDto>>
+    public class CreateCommand : IRequest<Result<POReadDTO>>
     {
         public POCreateDTO PurchaseOrder { get; set; }
 

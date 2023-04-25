@@ -1,10 +1,11 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MiniERP.PurchaseOrderService.Commands;
 using MiniERP.PurchaseOrderService.DTOs;
 using MiniERP.PurchaseOrderService.Exceptions;
 using MiniERP.PurchaseOrderService.Models;
-using MiniERP.PurchaseOrderService.Services;
-
+using MiniERP.PurchaseOrderService.Queries;
 
 namespace MiniERP.PurchaseOrderService.Controllers
 {
@@ -13,22 +14,19 @@ namespace MiniERP.PurchaseOrderService.Controllers
     [Route("api/po-srv/[controller]")]
     public class PurchaseOrdersController : ControllerBase
     {
-        private readonly ILogger<PurchaseOrdersController> _logger;
-        private readonly IPOService _service;
+        private readonly IMediator _mediator;
 
-        public PurchaseOrdersController(ILogger<PurchaseOrdersController> logger,
-                                        IPOService service)
+        public PurchaseOrdersController(IMediator mediator)
         {
-            _logger = logger;
-            _service = service;
+            _mediator = mediator;
         }
 
         [HttpGet]
-        public ActionResult GetAllPurchaseOrders()
+        public async Task<ActionResult> GetAllPurchaseOrders()
         {            
             try
             {
-                Result<IEnumerable<POReadDto>> result = _service.GetAllPurchaseOrders();
+                var result = await _mediator.Send(new GetAllQuery());
 
                 return Ok(result.Value);
             }
@@ -39,13 +37,13 @@ namespace MiniERP.PurchaseOrderService.Controllers
         }
 
         [HttpGet("{id}", Name = nameof(GetPOByOId))]
-        public ActionResult GetPOByOId(int id)
+        public async Task<ActionResult> GetPOByOId(int id)
         {
             try
             {
-                Result<POReadDto> result = _service.GetPOById(id);
+                var result = await _mediator.Send(new GetByIdQuery(id));
 
-                if(!result.IsSuccess)
+                if (!result.IsSuccess)
                 {
                     return NotFound(result.Errors);
                 }
@@ -59,13 +57,13 @@ namespace MiniERP.PurchaseOrderService.Controllers
         }
 
         [HttpPost]
-        public ActionResult CreatePurchaseOrder(POCreateDTO dto)
+        public async Task<ActionResult> CreatePurchaseOrder(POCreateDTO dto)
         {
             try
             {
-                Result<POReadDto> result = _service.CreatePurchaseOrder(dto);
+                var result = await _mediator.Send(new CreateCommand(dto));
 
-                if(!result.IsSuccess)
+                if (!result.IsSuccess)
                 {
                     return UnprocessableEntity(result.Errors);
                 }

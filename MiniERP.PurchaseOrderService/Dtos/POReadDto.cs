@@ -2,7 +2,7 @@
 
 namespace MiniERP.PurchaseOrderService.DTOs
 {
-    public class POReadDto
+    public class POReadDTO
     {
         public int Id { get; set; }
         public int SupplierID { get; set; }
@@ -12,6 +12,6 @@ namespace MiniERP.PurchaseOrderService.DTOs
         public DateTime OrderDate { get; set; }
         public DateTime DeliveryDate { get; set; }
         public decimal TotalAmount { get; set; }
-        public IEnumerable<PODetailReadDto> Details { get; set; } = new List<PODetailReadDto>();
+        public IEnumerable<PODetailReadDTO> Details { get; set; } = new List<PODetailReadDTO>();
     }
 }
