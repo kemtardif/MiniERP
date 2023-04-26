@@ -7,9 +7,9 @@ namespace MiniERP.InventoryService.MessageBus.Handlers
     public class ArticleDeleteHandler : IRequestHandler<ArticleDelete>
     {
         private readonly ILogger<ArticleDeleteHandler> _logger;
-        private readonly IInventoryRepository _repository;
+        private readonly IRepository _repository;
         public ArticleDeleteHandler(ILogger<ArticleDeleteHandler> logger,
-                                     IInventoryRepository repository)
+                                     IRepository repository)
         {
             _logger = logger;
             _repository = repository;
@@ -37,7 +37,7 @@ namespace MiniERP.InventoryService.MessageBus.Handlers
 
         private void RemoveArticle(ArticleDelete request)
         {
-            _repository.SetAsClosed(request.Id);
+            _repository.CloseItem(request.Id);
 
             _repository.SaveChanges();
         }

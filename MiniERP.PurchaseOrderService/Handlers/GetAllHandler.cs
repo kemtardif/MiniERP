@@ -7,16 +7,10 @@ using MiniERP.PurchaseOrderService.Queries;
 
 namespace MiniERP.PurchaseOrderService.Handlers
 {
-    public class GetAllHandler : IRequestHandler<GetAllQuery, Result<IEnumerable<POReadDTO>>>
+    public class GetAllHandler : HandlerBase, IRequestHandler<GetAllQuery, Result<IEnumerable<POReadDTO>>>
     {
-        private readonly IRepository _repository;
-        private readonly IMapper _mapper;
-
-        public GetAllHandler(IRepository repository,
-            IMapper mapper)
+        public GetAllHandler(IRepository repository, IMapper mapper) : base(repository, mapper)
         {
-            _repository = repository;
-            _mapper = mapper;
         }
         public Task<Result<IEnumerable<POReadDTO>>> Handle(GetAllQuery request, CancellationToken cancellationToken)
         {

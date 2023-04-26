@@ -14,11 +14,8 @@
     }
     public enum PurchaseOrderStatus
     {
-        Draft,
-        Submitted,
-        Approved,
-        Rejected,
-        Received,
+        Open,
+        Closed,
         Cancelled
     }
 }

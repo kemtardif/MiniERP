@@ -3,20 +3,16 @@ using MediatR;
 using MiniERP.SalesOrderService.Commands;
 using MiniERP.SalesOrderService.Data;
 using MiniERP.SalesOrderService.DTOs;
+using MiniERP.SalesOrderService.MessageBus.Messages;
 using MiniERP.SalesOrderService.Models;
 
 namespace MiniERP.SalesOrderService.Handlers
 {
-    public class CreateHandler : IRequestHandler<CreateCommand, Result<SOReadDTO>>
+    public class CreateHandler : HandlerBase, IRequestHandler<CreateCommand, Result<SOReadDTO>>
     {
-        private readonly ISalesOrderRepository _repository;
-        private readonly IMapper _mapper;
-
-        public CreateHandler(ISalesOrderRepository repository,
-                             IMapper mapper)
+        public CreateHandler(IRepository repository, IMapper mapper) : base(repository, mapper)
         {
-            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+
         }
         public Task<Result<SOReadDTO>> Handle(CreateCommand request, CancellationToken cancellationToken)
         {
@@ -30,7 +26,10 @@ namespace MiniERP.SalesOrderService.Handlers
 
             var dto = _mapper.Map<SOReadDTO>(so);
 
-            return Task.FromResult(Result<SOReadDTO>.Success(dto));
+            var message = _mapper.Map<OrderCreated>(dto);
+            message.TransactionId = request.TransactionId; 
+
+            return Task.FromResult(Result<SOReadDTO>.Success(dto, message));
         }
     }
 }

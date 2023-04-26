@@ -6,12 +6,12 @@ using MiniERP.SalesOrderService.Models;
 
 namespace MiniERP.SalesOrderService.Data
 {
-    public class SalesOrderRepository : ISalesOrderRepository
+    public class SORepository : IRepository
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
 
-        public SalesOrderRepository(AppDbContext context, IMapper mapper)
+        public SORepository(AppDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
@@ -31,7 +31,7 @@ namespace MiniERP.SalesOrderService.Data
             return _context.SalesOrders.Include(x => x.Details);
         }
 
-        public SalesOrder? GetSalesOrderById(int id)
+        public SalesOrder? GetSOById(int id)
         {
             return _context.SalesOrders.Include(x => x.Details).FirstOrDefault(x => x.Id == id);
         }
@@ -49,6 +49,11 @@ namespace MiniERP.SalesOrderService.Data
         public void SaveChanges()
         {
             _context.SaveChanges();
+        }
+
+        public void Update(SalesOrder so)
+        {
+            _context.Update(so);
         }
 
         public SalesOrder UpdateSalesOrder(SalesOrder item, JsonPatchDocument<UpdateSalesOrder> json)

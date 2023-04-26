@@ -7,20 +7,15 @@ using MiniERP.SalesOrderService.Queries;
 
 namespace MiniERP.SalesOrderService.Handlers
 {
-    public class GetByIdHandler : IRequestHandler<GetByIdQuery, Result<SOReadDTO>>
+    public class GetByIdHandler : HandlerBase, IRequestHandler<GetByIdQuery, Result<SOReadDTO>>
     {
-        private readonly ISalesOrderRepository _repository;
-        private readonly IMapper _mapper;
-        public GetByIdHandler(ISalesOrderRepository repository,
-                             IMapper mapper)
+        public GetByIdHandler(IRepository repository, IMapper mapper) : base(repository, mapper) 
         {
-            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         public Task<Result<SOReadDTO>> Handle(GetByIdQuery request, CancellationToken cancellationToken)
         {
-            SalesOrder? so = _repository.GetSalesOrderById(request.Id);
+            SalesOrder? so = _repository.GetSOById(request.Id);
 
             if (so is null)
             {

@@ -4,12 +4,14 @@ using MiniERP.InventoryService.Models;
 namespace MiniERP.InventoryService.Data
 {
 
-    public class InventoryRepository : IInventoryRepository
+    public class ConcreteRepository : IRepository
     {
         private readonly AppDbContext _context;
-        private readonly IStockCache _cache;
-        public InventoryRepository(AppDbContext context,
-                                   IStockCache cache)
+        private readonly ICache _cache;
+
+        private readonly HashSet<int> _invalidates = new();
+        public ConcreteRepository(AppDbContext context,
+                                   ICache cache)
         {
             _context = context;
             _cache = cache;
@@ -32,7 +34,7 @@ namespace MiniERP.InventoryService.Data
             }
             _context.StockMovements.Add(item);
 
-            _cache.Invalidate(item.ArticleId);
+           _invalidates.Add(item.ArticleId);
         }
 
         public IEnumerable<InventoryItem> GetAllItems()
@@ -45,7 +47,7 @@ namespace MiniERP.InventoryService.Data
             return _context.InventoryItems.FirstOrDefault(x => x.ArticleId == articleId);
         }
 
-        public void SetAsClosed(int articleId)
+        public void CloseItem(int articleId)
         {
             InventoryItem? item = _context.InventoryItems.FirstOrDefault(x => x.ArticleId == articleId);
 
@@ -56,13 +58,19 @@ namespace MiniERP.InventoryService.Data
 
             item.SetAsClosed();
 
-            _cache.Invalidate(articleId);
+            _invalidates.Add(articleId);
 
         }
 
         public void SaveChanges()
         {
+
             _context.SaveChanges();
+
+            foreach(int invalidate in _invalidates)
+            {
+                _cache.Invalidate(invalidate);
+            }
         }
 
         public IEnumerable<InventoryMovement> GetMovementsByOrder(RelatedOrderType orderType, int orderId)
@@ -82,7 +90,19 @@ namespace MiniERP.InventoryService.Data
 
             _context.InventoryItems.Update(item);
 
-            _cache.Invalidate(item.ArticleId);
-        }          
+            _invalidates.Add(item.ArticleId);
+        }
+
+        public void Update(InventoryMovement item)
+        {
+            if (item is null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            _context.StockMovements.Update(item);
+
+            _invalidates.Add(item.ArticleId);
+        }
     }
 }

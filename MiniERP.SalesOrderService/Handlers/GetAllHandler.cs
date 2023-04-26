@@ -7,16 +7,10 @@ using MiniERP.SalesOrderService.Queries;
 
 namespace MiniERP.SalesOrderService.Handlers
 {
-    public class GetAllHandler : IRequestHandler<GetAllQuery, Result<IEnumerable<SOReadDTO>>>
+    public class GetAllHandler : HandlerBase, IRequestHandler<GetAllQuery, Result<IEnumerable<SOReadDTO>>>
     {
-        private readonly ISalesOrderRepository _repository;
-        private readonly IMapper _mapper;
-
-        public GetAllHandler(ISalesOrderRepository repository,
-                             IMapper mapper)
+        public GetAllHandler(IRepository repository, IMapper mapper) : base(repository, mapper)
         {
-            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         public Task<Result<IEnumerable<SOReadDTO>>> Handle(GetAllQuery request, CancellationToken cancellationToken)

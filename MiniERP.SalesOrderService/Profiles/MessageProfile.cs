@@ -8,16 +8,14 @@ namespace MiniERP.SalesOrderService.Profiles
     {
         public MessageProfile()
         {
-            CreateMap<SODetailReadDTO, MovementOpenItem>()
-                .ForMember(dest => dest.MovementType,
-                        opts => opts.MapFrom(x => MovementType.Out));
+            CreateMap<SODetailReadDTO, OrderItem>();
 
-            CreateMap<SOReadDTO, MovementOpen>()
-                .ForMember(dest => dest.RelatedOrderType,
-                        opts => opts.MapFrom(x => RelatedOrderType.SO))
-                .ForMember(dest => dest.RelatedOrderId,
+            CreateMap<SOReadDTO, OrderCreated>()
+                .ForMember(dest => dest.OrderType,
+                        opts => opts.MapFrom(x => (int)RelatedOrderType.SO))
+                .ForMember(dest => dest.OrderId,
                         opts => opts.MapFrom(x => x.Id))
-                .ForMember(dest => dest.MovementItems,
+                .ForMember(dest => dest.Items,
                         opts => opts.MapFrom(x => x.Details));
         }
     }

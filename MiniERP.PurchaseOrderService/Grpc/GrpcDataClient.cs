@@ -22,35 +22,5 @@ namespace MiniERP.PurchaseOrderService.Grpc
 
             return response;
         }
-
-        public async IAsyncEnumerable<StockResponse> GetAvailableStockStream(IAsyncEnumerable<int> articleIds)
-        {
-            using var tcs = new CancellationTokenSource();
-            using var stream = _grpcClient.GetInventoryStream(cancellationToken: tcs.Token);
-
-            var requestTask = Task.Run(async () =>
-            {
-                await foreach (int articleId in articleIds)
-                {
-                    StockRequest request = new() { ArticleId = articleId };
-
-                    await stream.RequestStream.WriteAsync(request);
-                };
-
-                await stream.RequestStream.CompleteAsync();
-            });
-
-            await foreach (StockResponse response in stream.ResponseStream.ReadAllAsync())
-            {
-                yield return response;
-            }
-
-            await requestTask;
-        }
-
-        public AsyncDuplexStreamingCall<StockRequest, StockResponse> GetInventoryStream(CancellationToken token)
-        {
-            return _grpcClient.GetInventoryStream(cancellationToken: token);
-        }
     }
 }

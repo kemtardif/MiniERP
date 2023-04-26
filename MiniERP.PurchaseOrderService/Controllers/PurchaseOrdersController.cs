@@ -23,7 +23,7 @@ namespace MiniERP.PurchaseOrderService.Controllers
 
         [HttpGet]
         public async Task<ActionResult> GetAllPurchaseOrders()
-        {            
+        {
             try
             {
                 var result = await _mediator.Send(new GetAllQuery());
@@ -68,11 +68,59 @@ namespace MiniERP.PurchaseOrderService.Controllers
                     return UnprocessableEntity(result.Errors);
                 }
 
-                return CreatedAtRoute(nameof(GetPOByOId), new { id = result.Value.Id}, result.Value);
-            } 
-            catch(Exception ex)
+                return CreatedAtRoute(nameof(GetPOByOId), new { id = result.Value.Id }, result.Value);
+            }
+            catch (Exception ex)
             {
                 throw new HttpFriendlyException($"An error occured while creating Purchase Order", ex);
+            }
+        }
+
+        [HttpPost("{id}/close")]
+        public async Task<ActionResult> ClosePurchaseOrder(int id)
+        {
+            try
+            {
+                var result = await _mediator.Send(new CloseCommand(id));
+
+                if (!result.IsSuccess)
+                {
+                    if(result.Errors.ContainsKey(nameof(PurchaseOrder)))
+                    {
+                        return NotFound();
+                    }
+                    return UnprocessableEntity(result.Errors);
+                }
+
+                return Ok(result.Value);
+            }
+            catch (Exception ex)
+            {
+                throw new HttpFriendlyException($"An error occured while closing Purchase Order", ex);
+            }
+        }
+
+        [HttpPost("{id}/cancel")]
+        public async Task<ActionResult> CancelPurchaseOrder(int id)
+        {
+            try
+            {
+                var result = await _mediator.Send(new CancelCommand(id));
+
+                if (!result.IsSuccess)
+                {
+                    if (result.Errors.ContainsKey(nameof(PurchaseOrder)))
+                    {
+                        return NotFound();
+                    }
+                    return UnprocessableEntity(result.Errors);
+                }
+
+                return Ok(result.Value);
+            }
+            catch (Exception ex)
+            {
+                throw new HttpFriendlyException($"An error occured while cancelling Purchase Order", ex);
             }
         }
     }

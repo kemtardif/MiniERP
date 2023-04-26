@@ -75,50 +75,53 @@ namespace MiniERP.SalesOrderService.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteSalesOrder(int id)
+        [HttpPost("{id}/close")]
+        public async Task<ActionResult> CloseSalesOrder(int id)
         {
             try
             {
-                Result<int> result = await _mediator.Send(new DeleteCommand() { Id = id });
+                var result = await _mediator.Send(new CloseCommand(id));
 
-                if(!result.IsSuccess)
+                if (!result.IsSuccess)
                 {
-                    return NotFound();
+                    if (result.Errors.ContainsKey(nameof(SalesOrder)))
+                    {
+                        return NotFound();
+                    }
+                    return UnprocessableEntity(result.Errors);
                 }
-                return NoContent();
+
+                return Ok(result.Value);
             }
             catch (Exception ex)
             {
-                throw new HttpFriendlyException("An error occured while deleting Sales Order : ID={id}", ex);
+                throw new HttpFriendlyException($"An error occured while closing Sales Order", ex);
             }
         }
 
-        //[HttpPatch("{id}")]
-        //public async Task<ActionResult<SOReadDTO>> PatchSalesOder(int id, JsonPatchDocument<UpdateSalesOrder> document)
-        //{
-        //    try
-        //    {
-        //        Result<SOReadDTO> result = await _service.UpdateSalesOrder(id, document);
+        [HttpPost("{id}/cancel")]
+        public async Task<ActionResult> CancelSalesOrder(int id)
+        {
+            try
+            {
+                var result = await _mediator.Send(new CancelCommand(id));
 
-        //        if (!result.IsSuccess)
-        //        {
-        //            if(result.Errors.TryGetValue(nameof(SalesOrder), out string[]? errors)
-        //                && errors is not null)
-        //            {
-        //                return NotFound();
-        //            }
-        //            else
-        //            {
-        //                return UnprocessableEntity(result.Errors);
-        //            }
-        //        }
-        //        return Ok(result.Value);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new HttpFriendlyException($"An error occured while updating Sales Order : ID={id}", ex);
-        //    }
-        //}
+                if (!result.IsSuccess)
+                {
+                    if (result.Errors.ContainsKey(nameof(SalesOrder)))
+                    {
+                        return NotFound();
+                    }
+                    return UnprocessableEntity(result.Errors);
+                }
+
+                return Ok(result.Value);
+            }
+            catch (Exception ex)
+            {
+                throw new HttpFriendlyException($"An error occured while cancelling Sales Order", ex);
+            }
+        }
+
     }
 }

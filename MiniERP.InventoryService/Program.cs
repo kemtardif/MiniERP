@@ -10,6 +10,7 @@ using MiniERP.InventoryService.Services;
 using System.Net.Mime;
 using System.Reflection;
 using MiniERP.InventoryService.MessageBus.Subscriber.Consumer;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,8 +59,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddGrpc();
 builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
-builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
-builder.Services.AddScoped<IStockCache, RedisStockCache>();
+builder.Services.AddScoped<IRepository, ConcreteRepository>();
 
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 
@@ -76,6 +76,8 @@ builder.Services.AddDistributedRedisCache(opts =>
     opts.InstanceName = "invsrv_";
     opts.Configuration = builder.Configuration.GetConnectionString("inventoryserviceRedis");
 });
+
+builder.Services.AddScoped<ICache, RedisCache>();
 
 
 builder.Services.AddEndpointsApiExplorer();

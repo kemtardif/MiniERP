@@ -8,11 +8,11 @@ namespace MiniERP.InventoryService.Services
     public class InventoryService : IInventoryService
     {
         private readonly ILogger<InventoryService> _logger;
-        private readonly IInventoryRepository _repository;
+        private readonly IRepository _repository;
         private readonly IMapper _mapper;
 
         public InventoryService(ILogger<InventoryService> logger,
-                                IInventoryRepository repository,
+                                IRepository repository,
                                 IMapper mapper)
         {
             _logger = logger;

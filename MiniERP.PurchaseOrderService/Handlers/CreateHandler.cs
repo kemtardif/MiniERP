@@ -3,20 +3,15 @@ using MediatR;
 using MiniERP.PurchaseOrderService.Commands;
 using MiniERP.PurchaseOrderService.Data;
 using MiniERP.PurchaseOrderService.DTOs;
+using MiniERP.PurchaseOrderService.MessageBus.Messages;
 using MiniERP.PurchaseOrderService.Models;
 
 namespace MiniERP.PurchaseOrderService.Handlers
 {
-    public class CreateHandler : IRequestHandler<CreateCommand, Result<POReadDTO>>
+    public class CreateHandler : HandlerBase, IRequestHandler<CreateCommand, Result<POReadDTO>>
     {
-        private readonly IRepository _repository;
-        private readonly IMapper _mapper;
-
-        public CreateHandler(IRepository repository,
-                             IMapper mapper)
+        public CreateHandler(IRepository repository, IMapper mapper) : base(repository, mapper)
         {
-            _repository = repository;
-            _mapper = mapper;
         }
         public Task<Result<POReadDTO>> Handle(CreateCommand request, CancellationToken cancellationToken)
         {
@@ -28,7 +23,10 @@ namespace MiniERP.PurchaseOrderService.Handlers
 
             var dto = _mapper.Map<POReadDTO>(purchaseOrder);
 
-            return Task.FromResult(Result<POReadDTO>.Success(dto));
+            var message = _mapper.Map<OrderCreated>(dto);
+            message.TransactionId = request.TransactionID;
+
+            return Task.FromResult(Result<POReadDTO>.Success(dto, message));
         }
     }
 }

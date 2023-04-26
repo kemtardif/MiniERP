@@ -36,5 +36,10 @@ namespace MiniERP.PurchaseOrderService.Data
         {
             _context.SaveChanges();
         }
+
+        public void UpdatePO(PurchaseOrder po)
+        {
+           _context.Update(po);
+        }
     }
 }

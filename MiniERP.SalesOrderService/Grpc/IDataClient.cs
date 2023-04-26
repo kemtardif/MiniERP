@@ -7,7 +7,5 @@ namespace MiniERP.SalesOrderService.Grpc
     {
         StockResponse GetAvailableStock(int articleId);
 
-        AsyncDuplexStreamingCall<StockRequest, StockResponse> GetInventoryStream(CancellationToken token);
-        IAsyncEnumerable<StockResponse> GetAvailableStockStream(IAsyncEnumerable<int> articleIds);
     }
 }

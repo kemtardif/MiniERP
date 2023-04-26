@@ -43,8 +43,8 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddMediatR(config => {
     config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
     config.AddOpenBehavior(typeof(LoggingBehavior<,>));
+    config.AddOpenBehavior(typeof(MessagingBehavior<,>));
     config.AddBehavior<IPipelineBehavior<CreateCommand, Result<POReadDTO>>, CreateValidationBehavior>();
-    config.AddBehavior<IPipelineBehavior<CreateCommand, Result<POReadDTO>>, MessagingBehavior>();
 });
 
 builder.Services.AddDbContext<AppDbContext>(opts =>

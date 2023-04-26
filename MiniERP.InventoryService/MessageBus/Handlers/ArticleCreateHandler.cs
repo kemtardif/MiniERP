@@ -10,11 +10,11 @@ namespace MiniERP.InventoryService.MessageBus.Handlers
     {
         private readonly ILogger<ArticleCreateHandler> _logger;
         private readonly IMapper _mapper;
-        private readonly IInventoryRepository _repository;
+        private readonly IRepository _repository;
 
         public ArticleCreateHandler(ILogger<ArticleCreateHandler> logger,
                                      IMapper mapper,
-                                     IInventoryRepository repository)
+                                     IRepository repository)
         {
             _logger = logger;
             _mapper = mapper;

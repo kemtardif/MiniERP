@@ -33,7 +33,7 @@ builder.Configuration
     .AddEnvironmentVariables();
 
 
-builder.Services.AddScoped<ISalesOrderRepository, SalesOrderRepository>();
+builder.Services.AddScoped<IRepository, SORepository>();
 builder.Services.AddScoped<IValidator<SalesOrder>, SOValidator>();
 builder.Services.AddScoped<IValidator<Inventory>, InventoryValidator>();
 
@@ -86,8 +86,8 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddMediatR(config => {
     config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
     config.AddOpenBehavior(typeof(LoggingBehavior<,>));
+    config.AddOpenBehavior(typeof(MessagingBehavior<,>));
     config.AddBehavior<IPipelineBehavior<CreateCommand, Result<SOReadDTO>>, CreateValidationBehavior>();
-    config.AddBehavior<IPipelineBehavior<CreateCommand, Result<SOReadDTO>>, MessagingBehavior>();
 });
 
 // Configure the HTTP request pipeline.

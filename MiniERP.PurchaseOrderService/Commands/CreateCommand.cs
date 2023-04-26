@@ -6,11 +6,13 @@ namespace MiniERP.PurchaseOrderService.Commands
 {
     public class CreateCommand : IRequest<Result<POReadDTO>>
     {
-        public POCreateDTO PurchaseOrder { get; set; }
+        public Guid TransactionID { get; }
+        public POCreateDTO PurchaseOrder { get; }
 
         public CreateCommand(POCreateDTO dto)
         {
             PurchaseOrder = dto;
+            TransactionID = Guid.NewGuid();
         }
     }
 }

@@ -5,7 +5,6 @@ option csharp_namespace = "MiniERP.PurchaseOrderService.Grpc.Protos";
 service GrpcInventoryService
 {
     rpc GetInventory(StockRequest) returns (StockResponse);
-    rpc GetInventoryStream(stream StockRequest) returns (stream StockResponse);
 }
 
 message StockRequest

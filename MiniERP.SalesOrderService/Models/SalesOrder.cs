@@ -9,7 +9,7 @@
         public SalesOrderStatus Status { get; set; }
         public DateTime ConfirmDate { get; set; }
         public DateTime ReceivedDate { get; set; }
-        public void SetAsParked() => Status = SalesOrderStatus.Parked;
+        public void SetAsParked() => Status = SalesOrderStatus.Cancelled;
         public void SetAsClosed() => Status = SalesOrderStatus.Closed;
         public IEnumerable<SalesOrderDetail> Details { get; set; } = new List<SalesOrderDetail>();
     }
@@ -17,7 +17,7 @@
     public enum SalesOrderStatus
     {
         Open = 1,
-        Parked = 2,
+        Cancelled = 2,
         Closed = 3
     }
 }

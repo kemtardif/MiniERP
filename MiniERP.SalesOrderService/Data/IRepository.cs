@@ -4,13 +4,14 @@ using MiniERP.SalesOrderService.Models;
 
 namespace MiniERP.SalesOrderService.Data
 {
-    public interface ISalesOrderRepository
+    public interface IRepository
     {
         IEnumerable<SalesOrder> GetAllSalesOrders();
-        SalesOrder? GetSalesOrderById(int id);
+        SalesOrder? GetSOById(int id);
         void AddSalesOrder(SalesOrder salesOrder);
         void RemoveSalesOrder(SalesOrder salesOrder);
         SalesOrder UpdateSalesOrder(SalesOrder item, JsonPatchDocument<UpdateSalesOrder> json);
+        void Update(SalesOrder so);
         void SaveChanges();
 
     }
