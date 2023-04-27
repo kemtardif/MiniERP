@@ -9,12 +9,12 @@ using MiniERP.SalesOrderService.Models;
 
 namespace MiniERP.SalesOrderService.Behaviors.CreateBehavior
 {
-    public class CreateValidationBehavior : IPipelineBehavior<CreateCommand, Result<SOReadDTO>>
+    public class ValidationBehavior : IPipelineBehavior<CreateCommand, Result<SOReadDTO>>
     {
         private readonly IValidator<SalesOrder> _baseValidator;
         private readonly IValidator<Inventory> _inventoryValidator;
         private readonly IMapper _mapper;
-        public CreateValidationBehavior(IValidator<SalesOrder> baseValidator,
+        public ValidationBehavior(IValidator<SalesOrder> baseValidator,
                                         IValidator<Inventory> inventoryValidator,
                                         IMapper mapper)
         {

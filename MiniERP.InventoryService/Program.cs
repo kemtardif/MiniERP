@@ -73,7 +73,7 @@ builder.Services.AddDbContext<AppDbContext>(opts =>
 
 builder.Services.AddDistributedRedisCache(opts =>
 {
-    opts.InstanceName = "invsrv_";
+    opts.InstanceName = "invsrv:";
     opts.Configuration = builder.Configuration.GetConnectionString("inventoryserviceRedis");
 });
 

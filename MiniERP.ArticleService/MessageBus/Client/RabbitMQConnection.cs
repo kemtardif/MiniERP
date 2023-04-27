@@ -3,6 +3,7 @@ using RabbitMQ.Client;
 
 namespace MiniERP.ArticleService.MessageBus.Sender
 {
+
     public class RabbitMQConnection : IRabbitMQConnection
     {
         private readonly IConnection _connection;

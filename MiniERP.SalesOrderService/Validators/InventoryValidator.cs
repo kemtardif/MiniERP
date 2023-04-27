@@ -1,18 +1,20 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using MiniERP.SalesOrderService.Data;
 using MiniERP.SalesOrderService.Grpc;
 using MiniERP.SalesOrderService.Models;
 using MiniERP.SalesOrderService.Protos;
+using StackExchange.Redis;
 
 namespace MiniERP.SalesOrderService.Validators
 {
     public class InventoryValidator : AbstractValidator<Inventory>
     {
-        private readonly IDataClient _dataClient;
+        private readonly ICache _cache;
 
-        public InventoryValidator(IDataClient dataClient)
+        public InventoryValidator(ICache cache)
         {
-            _dataClient = dataClient;
+            _cache = cache;
 
             RuleFor(x => x)
                 .Custom(ValidateInventory);
@@ -22,21 +24,21 @@ namespace MiniERP.SalesOrderService.Validators
         {
             foreach (InventoryItem item in inventory.Items)
             {
-                StockResponse response = _dataClient.GetAvailableStock(item.Id);
+                StockModel? model = _cache.GetCachedStockModel(item.Id);
 
-                if (!response.IsFound)
+                if (model is null)
                 {
                     context.AddFailure(new ValidationFailure($"[{item.Id}]", "Item not found"));
                     continue;
                 }
 
-                if (response.Item.Status != 1)
+                if (model.Status != 1)
                 {
                     context.AddFailure(new ValidationFailure($"[{item.Id}]", "Item unavailable"));
                     continue;
                 }
 
-                if (response.Item.Quantity < item.Quantity)
+                if (model.Quantity < item.Quantity)
                 {
                     context.AddFailure(new ValidationFailure($"[{item.Id}]", "Quantity unavailable"));
                     continue;

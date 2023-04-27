@@ -18,6 +18,9 @@ using MiniERP.SalesOrderService.DTOs;
 using MiniERP.SalesOrderService.Behaviors;
 using MiniERP.SalesOrderService.MessageBus.Sender.Contracts;
 using MiniERP.SalesOrderService.MessageBus.Sender;
+using StackExchange.Redis;
+using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis.KeyspaceIsolation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +47,23 @@ builder.Services.AddScoped<IRabbitMQClient, RabbitMQClient>();
 
 builder.Services.AddSingleton<IMessageProcessor, RabbitMQProcessor>();
 builder.Services.AddHostedService<RabbitMQSubscriber>();
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
+{
+    ConfigurationOptions option = new ConfigurationOptions
+    {
+        AbortOnConnectFail = false,
+        ConnectTimeout = 30000,
+        ResponseTimeout = 30000,
+        Password = builder.Configuration["redisPassword"]
+    };
+    option.EndPoints.Add(builder.Configuration["redisHost"]);
+
+    return ConnectionMultiplexer.Connect(option);
+});
+builder.Services.AddScoped(provider =>
+    provider.GetRequiredService<IConnectionMultiplexer>().GetDatabase().WithKeyPrefix("invsrv:"));
+builder.Services.AddScoped<ICache, RedisCache>();
 
 
 
@@ -87,7 +107,7 @@ builder.Services.AddMediatR(config => {
     config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
     config.AddOpenBehavior(typeof(LoggingBehavior<,>));
     config.AddOpenBehavior(typeof(MessagingBehavior<,>));
-    config.AddBehavior<IPipelineBehavior<CreateCommand, Result<SOReadDTO>>, CreateValidationBehavior>();
+    config.AddBehavior<IPipelineBehavior<CreateCommand, Result<SOReadDTO>>, ValidationBehavior>();
 });
 
 // Configure the HTTP request pipeline.
