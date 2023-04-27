@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using MiniERP.InventoryService.Dtos;
+using MiniERP.InventoryService.DTOs;
 using MiniERP.InventoryService.Models;
 using MiniERP.InventoryService.Exceptions;
 using Microsoft.AspNetCore.Authorization;
@@ -19,11 +19,11 @@ public class InventoriesController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<InventoryItemReadDto>> GetAllInventories()
+    public ActionResult<IEnumerable<InventoryReadDTO>> GetAllInventories()
     {
         try
         {
-            Result<IEnumerable<InventoryItemReadDto>> result = _inventoryService.GetAllInventories();
+            Result<IEnumerable<InventoryReadDTO>> result = _inventoryService.GetAllInventories();
 
             return Ok(result.Value);
         }
@@ -34,11 +34,11 @@ public class InventoriesController : ControllerBase
     }
 
     [HttpGet("{articleId}")]
-    public ActionResult<InventoryItemReadDto> GetInventoryByArticleId(int articleId)
+    public ActionResult<InventoryReadDTO> GetInventoryByArticleId(int articleId)
     {
         try
         {
-            Result<InventoryItemReadDto> result = _inventoryService.GetInventoryByArticleId(articleId);
+            Result<InventoryReadDTO> result = _inventoryService.GetInventoryByArticleId(articleId);
 
             if(!result.IsSuccess)
             {

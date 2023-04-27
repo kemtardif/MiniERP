@@ -1,15 +1,21 @@
 using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Console;
+using MiniERP.ArticleService.Behaviors;
+using MiniERP.ArticleService.Behaviors.CreateBehavior;
+using MiniERP.ArticleService.Behaviors.UpdateBehavior;
+using MiniERP.ArticleService.Commands;
 using MiniERP.ArticleService.Data;
+using MiniERP.ArticleService.DTOs;
 using MiniERP.ArticleService.MessageBus.Sender;
 using MiniERP.ArticleService.MessageBus.Sender.Contracts;
 using MiniERP.ArticleService.Models;
-using MiniERP.ArticleService.Services;
 using MiniERP.ArticleService.Validators;
 using System.Net.Mime;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,12 +30,13 @@ builder.Configuration
     .AddJsonFile("secrets/appsettings.secrets.json", optional: true)
     .AddEnvironmentVariables();
 
-builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
-builder.Services.AddScoped<IArticleService, ArticleService>();
-builder.Services.AddScoped<IValidator<Article>, ArticleValidator>();
+builder.Services.AddScoped<IRepository, ArticleRepository>();
+
+builder.Services.AddScoped<IValidator<CreateDTO>, CreateValidator>();
+builder.Services.AddScoped<IValidator<UpdateDTO>, UpdateValidator>();
 
 builder.Services.AddSingleton<IRabbitMQConnection, RabbitMQConnection>();
-builder.Services.AddScoped<IMessageBusClient, RabbitMQClient>();
+builder.Services.AddScoped<IRabbitMQClient, RabbitMQClient>();
 
 
 builder.Services.AddDbContext<AppDbContext>(opts =>
@@ -37,7 +44,15 @@ builder.Services.AddDbContext<AppDbContext>(opts =>
     opts.UseNpgsql(builder.Configuration.GetConnectionString("articleservicePGSQL"));
 });
 
+
 builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddMediatR(config => {
+    config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+    config.AddOpenBehavior(typeof(LoggingBehavior<,>));
+    config.AddOpenBehavior(typeof(MessagingBehavior<,>));
+    config.AddBehavior<IPipelineBehavior<CreateCommand, Result<ReadDTO>>, CreateValidationBehavior>();
+    config.AddBehavior<IPipelineBehavior<UpdateCommand, Result<ReadDTO>>, UpdateValidationBehavior>();
+});
 
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

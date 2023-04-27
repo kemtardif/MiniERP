@@ -1,10 +1,8 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
 using MiniERP.SalesOrderService.Data;
-using MiniERP.SalesOrderService.Grpc;
 using MiniERP.SalesOrderService.Models;
 using MiniERP.SalesOrderService.Protos;
-using StackExchange.Redis;
 
 namespace MiniERP.SalesOrderService.Validators
 {

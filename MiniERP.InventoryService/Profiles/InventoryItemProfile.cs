@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using MiniERP.InventoryService.Dtos;
+using MiniERP.InventoryService.DTOs;
 using MiniERP.InventoryService.MessageBus.Messages;
 using MiniERP.InventoryService.Models;
 
@@ -9,7 +9,7 @@ namespace MiniERP.InventoryService.Profiles
     {
         public InventoryItemProfile()
         {
-            CreateMap<InventoryItem, InventoryItemReadDto>();
+            CreateMap<InventoryItem, InventoryReadDTO>();
             
 
             CreateMap<ArticleCreate, InventoryItem>()

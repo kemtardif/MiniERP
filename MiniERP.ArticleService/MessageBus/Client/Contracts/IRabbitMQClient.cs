@@ -2,7 +2,7 @@
 
 namespace MiniERP.ArticleService.MessageBus.Sender.Contracts
 {
-    public interface IMessageBusClient
+    public interface IRabbitMQClient
     {
         void Publish(MessageBase message);
     }

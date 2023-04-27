@@ -1,6 +1,6 @@
-﻿namespace MiniERP.InventoryService.Dtos
+﻿namespace MiniERP.InventoryService.DTOs
 {
-    public class InventoryItemReadDto
+    public class InventoryReadDTO
     {
         public int ArticleId { get; set; }
         public int Status { get; set; }

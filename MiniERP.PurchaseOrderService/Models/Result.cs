@@ -1,6 +1,4 @@
-﻿using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
-using MiniERP.PurchaseOrderService.MessageBus.Messages;
+﻿using MiniERP.PurchaseOrderService.MessageBus.Messages;
 
 namespace MiniERP.PurchaseOrderService.Models
 {
@@ -49,8 +47,6 @@ namespace MiniERP.PurchaseOrderService.Models
                 return _message!;
             }
         }
-
-
         protected Result(MessageBase? message = null)
         {
             _errors = new Dictionary<string, string[]>();

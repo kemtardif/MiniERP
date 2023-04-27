@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace MiniERP.ArticleService.MessageBus.Sender
 {
-    public class RabbitMQClient : IMessageBusClient, IDisposable
+    public class RabbitMQClient : IRabbitMQClient, IDisposable
     {
         private readonly IModel _channel;
         private readonly ILogger<RabbitMQClient> _logger;
@@ -51,8 +51,7 @@ namespace MiniERP.ArticleService.MessageBus.Sender
                                 basicProperties: properties,
                                 body: body);
 
-            _logger.LogInformation("RabbitMQ : Article Message Published :  {id} : {type} {date}",
-                                    message.Id,
+            _logger.LogInformation("RabbitMQ : Article Message Published : {type} {date}",
                                     message.GetType(),
                                     DateTime.UtcNow);
 

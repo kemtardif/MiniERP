@@ -1,5 +1,4 @@
-﻿using Grpc.Core;
-using MiniERP.PurchaseOrderService.Grpc.Protos;
+﻿using MiniERP.PurchaseOrderService.Grpc.Protos;
 
 namespace MiniERP.PurchaseOrderService.Grpc
 {

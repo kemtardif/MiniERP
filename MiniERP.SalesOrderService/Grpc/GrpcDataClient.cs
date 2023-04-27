@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using Grpc.Core;
-using MiniERP.SalesOrderService.Protos;
+﻿using MiniERP.SalesOrderService.Protos;
 
 namespace MiniERP.SalesOrderService.Grpc
 {

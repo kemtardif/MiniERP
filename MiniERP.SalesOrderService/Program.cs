@@ -19,7 +19,6 @@ using MiniERP.SalesOrderService.Behaviors;
 using MiniERP.SalesOrderService.MessageBus.Sender.Contracts;
 using MiniERP.SalesOrderService.MessageBus.Sender;
 using StackExchange.Redis;
-using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis.KeyspaceIsolation;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -55,9 +54,10 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
         AbortOnConnectFail = false,
         ConnectTimeout = 30000,
         ResponseTimeout = 30000,
-        Password = builder.Configuration["redisPassword"]
+        Password = builder.Configuration["redisPassword"],
+        EndPoints = { builder.Configuration["redisHost"] }
+        
     };
-    option.EndPoints.Add(builder.Configuration["redisHost"]);
 
     return ConnectionMultiplexer.Connect(option);
 });

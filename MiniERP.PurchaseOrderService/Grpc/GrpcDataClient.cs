@@ -1,7 +1,4 @@
-﻿using AutoMapper;
-using Grpc.Core;
-using MiniERP.PurchaseOrderService.Grpc.Protos;
-using MiniERP.PurchaseOrderService.Models;
+﻿using MiniERP.PurchaseOrderService.Grpc.Protos;
 
 namespace MiniERP.PurchaseOrderService.Grpc
 {

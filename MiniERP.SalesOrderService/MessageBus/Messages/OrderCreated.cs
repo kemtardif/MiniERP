@@ -1,7 +1,4 @@
-﻿using System.Data.Common;
-using System.Text.Json.Serialization;
-
-namespace MiniERP.SalesOrderService.MessageBus.Messages
+﻿namespace MiniERP.SalesOrderService.MessageBus.Messages
 {
     public class OrderCreated : MessageBase
     {

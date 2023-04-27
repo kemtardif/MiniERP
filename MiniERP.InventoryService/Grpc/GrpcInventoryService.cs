@@ -1,7 +1,5 @@
 ﻿using AutoMapper;
 using Grpc.Core;
-using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
-using MiniERP.InventoryService.Caching;
 using MiniERP.InventoryService.Data;
 using MiniERP.InventoryService.Models;
 using MiniERP.InventoryService.Protos;

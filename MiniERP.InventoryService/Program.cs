@@ -74,7 +74,14 @@ builder.Services.AddDbContext<AppDbContext>(opts =>
 builder.Services.AddDistributedRedisCache(opts =>
 {
     opts.InstanceName = "invsrv:";
-    opts.Configuration = builder.Configuration.GetConnectionString("inventoryserviceRedis");
+    opts.ConfigurationOptions = new ConfigurationOptions()
+    {
+        AbortOnConnectFail = false,
+        ConnectTimeout = 30000,
+        ResponseTimeout = 30000,
+        Password = builder.Configuration["redisPassword"],
+        EndPoints = { builder.Configuration["redisHost"] },
+    };
 });
 
 builder.Services.AddScoped<ICache, RedisCache>();

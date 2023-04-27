@@ -4,7 +4,6 @@ using FluentValidation.Results;
 using MediatR;
 using MiniERP.SalesOrderService.Commands;
 using MiniERP.SalesOrderService.DTOs;
-using MiniERP.SalesOrderService.Grpc;
 using MiniERP.SalesOrderService.Models;
 
 namespace MiniERP.SalesOrderService.Behaviors.CreateBehavior

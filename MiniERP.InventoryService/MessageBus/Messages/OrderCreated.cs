@@ -1,6 +1,4 @@
-﻿using RabbitMQ.Client;
-
-namespace MiniERP.InventoryService.MessageBus.Messages
+﻿namespace MiniERP.InventoryService.MessageBus.Messages
 {
     public class OrderCreated : MessageBase
     {

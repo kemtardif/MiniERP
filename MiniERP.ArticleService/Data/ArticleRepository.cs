@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
-using MiniERP.ArticleService.Dtos;
+using MiniERP.ArticleService.DTOs;
 using MiniERP.ArticleService.Models;
 
 namespace MiniERP.ArticleService.Data
 {
-    public class ArticleRepository : IArticleRepository
+    public class ArticleRepository : IRepository
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
@@ -48,7 +48,7 @@ namespace MiniERP.ArticleService.Data
         {
             return  _context.SaveChanges() >= 0;
         }
-        public Article UpdateArticle(Article item, JsonPatchDocument<ArticleUpdateDto> json)
+        public Article UpdateArticle(Article item, JsonPatchDocument<UpdateDTO> json)
         {
             if(item is null)
             {
@@ -58,7 +58,8 @@ namespace MiniERP.ArticleService.Data
             {
                 throw new ArgumentNullException(nameof(json));
             }
-            var articleToWrite = _mapper.Map<ArticleUpdateDto>(item);
+            var articleToWrite = _mapper.Map<UpdateDTO>(item);
+
             json.ApplyTo(articleToWrite);
 
             _mapper.Map(articleToWrite, item);

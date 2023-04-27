@@ -35,8 +35,4 @@
 		<Protobuf Include="Grpc\Protos\inventory.proto" GrpcServices="Client" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Behaviors\CloseBehavior\" />
-	</ItemGroup>
-
 </Project>

@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using MiniERP.InventoryService.Data;
-using MiniERP.InventoryService.Dtos;
+using MiniERP.InventoryService.DTOs;
 using MiniERP.InventoryService.Models;
 
 namespace MiniERP.InventoryService.Services
@@ -19,26 +19,26 @@ namespace MiniERP.InventoryService.Services
             _repository = repository;
             _mapper = mapper;
         }
-        public Result<IEnumerable<InventoryItemReadDto>> GetAllInventories()
+        public Result<IEnumerable<InventoryReadDTO>> GetAllInventories()
         {
             IEnumerable<InventoryItem> stocks = _repository.GetAllItems();
-            IEnumerable<InventoryItemReadDto> stockDtos = _mapper.Map<IEnumerable<InventoryItemReadDto>>(stocks);
+            IEnumerable<InventoryReadDTO> stockDtos = _mapper.Map<IEnumerable<InventoryReadDTO>>(stocks);
 
-            return Result<IEnumerable<InventoryItemReadDto>>.Success(stockDtos);
+            return Result<IEnumerable<InventoryReadDTO>>.Success(stockDtos);
         }
 
-        public Result<InventoryItemReadDto> GetInventoryByArticleId(int articleId)
+        public Result<InventoryReadDTO> GetInventoryByArticleId(int articleId)
         {
             InventoryItem? stock = _repository.GetInventoryByArticleId(articleId);
 
             if(stock is null)
             {
-                return Result<InventoryItemReadDto>.Failure(GetNotFoundResult(articleId));
+                return Result<InventoryReadDTO>.Failure(GetNotFoundResult(articleId));
             }
 
-            InventoryItemReadDto readDto = _mapper.Map<InventoryItemReadDto>(stock);
+            InventoryReadDTO readDto = _mapper.Map<InventoryReadDTO>(stock);
 
-            return Result<InventoryItemReadDto>.Success(readDto);
+            return Result<InventoryReadDTO>.Success(readDto);
         }
 
         private IDictionary<string, string[]> GetNotFoundResult(int articleId)

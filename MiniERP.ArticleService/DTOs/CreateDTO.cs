@@ -1,9 +1,9 @@
 ﻿
 using MiniERP.ArticleService.Models;
 
-namespace MiniERP.ArticleService.Dtos
+namespace MiniERP.ArticleService.DTOs
 {
-    public class ArticleCreateDto
+    public class CreateDTO
     {
         public string Name { get; set; } = string.Empty;
         public long EAN { get; set; }

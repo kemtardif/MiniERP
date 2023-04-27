@@ -5,7 +5,6 @@ using MiniERP.SalesOrderService.Grpc;
 using MiniERP.SalesOrderService.Models;
 using MiniERP.SalesOrderService.Protos;
 using StackExchange.Redis;
-using System.Text.Json;
 
 namespace MiniERP.SalesOrderService.Data
 {

@@ -1,8 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.Extensions.Caching.Distributed;
+﻿using Microsoft.Extensions.Caching.Distributed;
 using MiniERP.InventoryService.Caching;
 using MiniERP.InventoryService.Models;
-using System.Collections.Concurrent;
 
 namespace MiniERP.InventoryService.Data
 {

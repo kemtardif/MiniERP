@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using MiniERP.SalesOrderService.DTOs;
 using MiniERP.SalesOrderService.Models;
 using MiniERP.SalesOrderService.Protos;
 
