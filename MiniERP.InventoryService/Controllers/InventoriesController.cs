@@ -4,6 +4,8 @@ using MiniERP.InventoryService.Models;
 using MiniERP.InventoryService.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using MiniERP.InventoryService.Services;
+using MediatR;
+using MiniERP.InventoryService.Queries;
 
 namespace MiniERP.InventoryService.Controllers;
 
@@ -12,18 +14,19 @@ namespace MiniERP.InventoryService.Controllers;
 [Route("/api/inv-srv/[controller]")]
 public class InventoriesController : ControllerBase
 {
-    private readonly IInventoryService _inventoryService;
-    public InventoriesController( IInventoryService inventoryService)
+    private readonly IMediator _mediator;
+
+    public InventoriesController(IMediator mediator)
     {
-        _inventoryService = inventoryService;
+        _mediator = mediator;
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<InventoryReadDTO>> GetAllInventories()
+    public async Task<ActionResult<IEnumerable<InventoryReadDTO>>> GetAllInventories()
     {
         try
         {
-            Result<IEnumerable<InventoryReadDTO>> result = _inventoryService.GetAllInventories();
+            var result = await _mediator.Send(new GetAllInventoryQuery());
 
             return Ok(result.Value);
         }
@@ -34,11 +37,11 @@ public class InventoriesController : ControllerBase
     }
 
     [HttpGet("{articleId}")]
-    public ActionResult<InventoryReadDTO> GetInventoryByArticleId(int articleId)
+    public async Task<ActionResult<InventoryReadDTO>> GetInventoryByArticleId(int articleId)
     {
         try
         {
-            Result<InventoryReadDTO> result = _inventoryService.GetInventoryByArticleId(articleId);
+            var result = await _mediator.Send(new GetInventoryByIdQuery(articleId));
 
             if(!result.IsSuccess)
             {

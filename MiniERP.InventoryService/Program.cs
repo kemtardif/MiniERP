@@ -11,6 +11,7 @@ using System.Net.Mime;
 using System.Reflection;
 using MiniERP.InventoryService.MessageBus.Subscriber.Consumer;
 using StackExchange.Redis;
+using MiniERP.InventoryService.Behaviors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,7 +58,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddGrpc();
-builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+builder.Services.AddMediatR(config => {
+    config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+    config.AddOpenBehavior(typeof(LoggingBehavior<,>));
+});
 
 builder.Services.AddScoped<IRepository, ConcreteRepository>();
 

@@ -40,7 +40,7 @@ namespace MiniERP.SalesOrderService.Controllers
         {
             try
             {
-                Result<SOReadDTO> result = await _mediator.Send(new GetByIdQuery() { Id = id });
+                Result<SOReadDTO> result = await _mediator.Send(new GetByIdQuery(id));
 
                 if (!result.IsSuccess)
                 {
@@ -60,7 +60,7 @@ namespace MiniERP.SalesOrderService.Controllers
         {
             try
             {
-                Result<SOReadDTO> result = await _mediator.Send(new CreateCommand() { SalesOrder = dto });
+                Result<SOReadDTO> result = await _mediator.Send(new CreateCommand(dto) );
 
                 if (!result.IsSuccess)
                 {

@@ -6,7 +6,7 @@ namespace MiniERP.PurchaseOrderService.Commands
 {
     public class CancelCommand : IRequest<Result<POReadDTO>>
     {
-        public int Id { get; set; }
+        public int Id { get; }
         public CancelCommand(int id)
         {
             Id = id;

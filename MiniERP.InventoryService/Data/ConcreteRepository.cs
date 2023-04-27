@@ -71,6 +71,7 @@ namespace MiniERP.InventoryService.Data
             {
                 _cache.Invalidate(invalidate);
             }
+            _invalidates.Clear();
         }
 
         public IEnumerable<InventoryMovement> GetMovementsByOrder(RelatedOrderType orderType, int orderId)

@@ -7,8 +7,8 @@ namespace MiniERP.InventoryService.Data
     public class RedisCache : ICache
     {
         private readonly IDistributedCache _cache;
-        private AppDbContext _context;
         private readonly ILogger<RedisCache> _logger;
+        private AppDbContext _context;
 
         public RedisCache(IDistributedCache cache,
                           AppDbContext context,
@@ -23,19 +23,17 @@ namespace MiniERP.InventoryService.Data
 
             AvailableInventoryView? item = _cache.GetRecord<AvailableInventoryView>(articleId.ToString());
 
+            _logger.LogInformation("------> REDIS : Cache {value} for {id}",
+                                        item is null ? "MISS" : "HIT",
+                                        articleId);
             if (item is null)
             {
-                _logger.LogInformation("------> REDIS : Cache MISS for {id}", articleId);
                 item = _context.AvailableInventoryView.FirstOrDefault(x => x.ArticleId == articleId);
 
                 if (item is not null)
                 {
                     _cache.SetRecord(articleId.ToString(), item);
                 }
-            }
-            else
-            {
-                _logger.LogInformation("------> REDIS : Cache HIT for {id}", articleId);
             }
 
             return item;
