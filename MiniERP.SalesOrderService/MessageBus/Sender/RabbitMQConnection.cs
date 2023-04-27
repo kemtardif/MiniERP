@@ -5,8 +5,11 @@ namespace MiniERP.SalesOrderService.MessageBus.Sender
 {
     public class RabbitMQConnection : IRabbitMQConnection
     {
-        private readonly ILogger<RabbitMQConnection> _logger;
+        private const string CreatedLogFormat = "---------> RabbitMQ : Client Connection Created";
+        private const string RecoveryLogFormat = "---------> RabbitMQ : Client Connection Recovery Success";
+        private const string ShutdownLogFormat = "---------> RabbitMQ : Client Connection Shutting Down";
 
+        private readonly ILogger<RabbitMQConnection> _logger;
         public IConnection Connection { get; }
         public RabbitMQConnection(IConfiguration configuration,
                                   ILogger<RabbitMQConnection> logger)
@@ -30,17 +33,17 @@ namespace MiniERP.SalesOrderService.MessageBus.Sender
 
             Connection = connection;
 
-            _logger.LogInformation("---------> RabbitMQ : Client Connection Created");
+            _logger.LogInformation(CreatedLogFormat);
         }
 
         private void Connection_RecoverySucceeded(object? sender, EventArgs e)
         {
-            _logger.LogInformation("---------> RabbitMQ : Client Connection Recovery Success");
+            _logger.LogInformation(RecoveryLogFormat);
         }
 
         private void Connection_ConnectionShutdown(object? sender, ShutdownEventArgs e)
         {
-                _logger.LogInformation("---------> RabbitMQ : Client Connection Shutting Down");
+                _logger.LogInformation(ShutdownLogFormat);
         }
     }
 }

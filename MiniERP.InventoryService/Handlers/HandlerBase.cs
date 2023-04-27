@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using MiniERP.InventoryService.Data;
 
 namespace MiniERP.InventoryService.Handlers
 {

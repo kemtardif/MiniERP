@@ -1,7 +1,7 @@
 ﻿using StackExchange.Redis;
 using System.Text.Json;
 
-namespace MiniERP.SalesOrderService.Caching
+namespace MiniERP.SalesOrderService.Extensions
 {
     public static class DatabaseExtensions
     {

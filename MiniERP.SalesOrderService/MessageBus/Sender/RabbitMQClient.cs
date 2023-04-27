@@ -9,9 +9,11 @@ namespace MiniERP.SalesOrderService.MessageBus.Sender
 {
     public class RabbitMQClient : IRabbitMQClient, IDisposable
     {
+        private const string PublishedLogFormat = "RabbitMQ : Inventory Message Published : {type} {date}";
+        private const string INVENTORY_EXCHANGE = "inventory";
+
         private readonly IModel _channel;
         private readonly ILogger<RabbitMQClient> _logger;
-        private const string INVENTORY_EXCHANGE = "inventory";
         public RabbitMQClient(IRabbitMQConnection rabbitMQConnection,
                               ILogger<RabbitMQClient> logger)
         {
@@ -43,7 +45,7 @@ namespace MiniERP.SalesOrderService.MessageBus.Sender
                                   basicProperties: properties,
                                   body: messageByte);
 
-            _logger.LogInformation("RabbitMQ : Inventory Message Published : {type} {date}",
+            _logger.LogInformation(PublishedLogFormat,
                                     message.GetType(),
                                     DateTime.UtcNow);
         }

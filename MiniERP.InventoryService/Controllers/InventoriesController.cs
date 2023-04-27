@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MiniERP.InventoryService.DTOs;
-using MiniERP.InventoryService.Models;
 using MiniERP.InventoryService.Exceptions;
 using Microsoft.AspNetCore.Authorization;
-using MiniERP.InventoryService.Services;
 using MediatR;
 using MiniERP.InventoryService.Queries;
 

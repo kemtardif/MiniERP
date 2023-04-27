@@ -1,47 +1,57 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
-using MiniERP.SalesOrderService.Data;
+using MiniERP.SalesOrderService.DTOs;
 using MiniERP.SalesOrderService.Models;
-using MiniERP.SalesOrderService.Protos;
+using MiniERP.SalesOrderService.Services.Contracts;
 
 namespace MiniERP.SalesOrderService.Validators
 {
-    public class InventoryValidator : AbstractValidator<Inventory>
+    public class InventoryValidator : AbstractValidator<SOCreateDTO>
     {
-        private readonly ICache _cache;
+        private readonly ICacheService _cacheService;
+        private readonly IRPCService _rpcService;
 
-        public InventoryValidator(ICache cache)
+        public InventoryValidator(ICacheService cacheService,
+                                  IRPCService rpcService)
         {
-            _cache = cache;
+            _cacheService= cacheService;
+            _rpcService= rpcService;
 
             RuleFor(x => x)
                 .Custom(ValidateInventory);
         }
 
-        private void ValidateInventory(Inventory inventory, ValidationContext<Inventory> context)
+        private void ValidateInventory(SOCreateDTO create, ValidationContext<SOCreateDTO> context)
         {
-            foreach (InventoryItem item in inventory.Items)
+            foreach (SODetailCreateDTO item in create.Details)
             {
-                StockModel? model = _cache.GetCachedStockModel(item.Id);
+                InventoryItem? model = GetInventoryItem(item.ArticleId);
 
                 if (model is null)
                 {
-                    context.AddFailure(new ValidationFailure($"[{item.Id}]", "Item not found"));
+                    context.AddFailure(new ValidationFailure($"[{item.ArticleId}]", "Item not found"));
                     continue;
                 }
 
                 if (model.Status != 1)
                 {
-                    context.AddFailure(new ValidationFailure($"[{item.Id}]", "Item unavailable"));
+                    context.AddFailure(new ValidationFailure($"[{item.ArticleId}]", "Item unavailable"));
                     continue;
                 }
 
                 if (model.Quantity < item.Quantity)
                 {
-                    context.AddFailure(new ValidationFailure($"[{item.Id}]", "Quantity unavailable"));
+                    context.AddFailure(new ValidationFailure($"[{item.ArticleId}]", "Quantity unavailable"));
                     continue;
                 }
             }
         }
+        private InventoryItem? GetInventoryItem(int id)
+        {
+            InventoryItem? item = _cacheService.GetItemById(id);
+            item ??= _rpcService.GetItemById(id);
+
+            return item;
         }
     }
+}

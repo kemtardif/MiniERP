@@ -9,6 +9,6 @@
         public int SupplierId { get; set; }
         public double Quantity { get; set; }
         public decimal UnitCost { get; set; }
-        public decimal Amount { get; set; }     
+        public decimal Amount { get; set; }
     }
 }
