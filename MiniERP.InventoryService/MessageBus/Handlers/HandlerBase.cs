@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using MiniERP.InventoryService.Data;
-using MiniERP.InventoryService.MessageBus.Messages;
 
 namespace MiniERP.InventoryService.MessageBus.Handlers
 {

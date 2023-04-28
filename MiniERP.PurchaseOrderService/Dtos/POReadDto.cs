@@ -11,7 +11,7 @@ namespace MiniERP.PurchaseOrderService.DTOs
         public PurchaseOrderStatus Status { get; set; }
         public DateTime OrderDate { get; set; }
         public DateTime DeliveryDate { get; set; }
-        public decimal TotalAmount { get; set; }
+        public double TotalAmount { get; set; }
         public IEnumerable<PODetailReadDTO> Details { get; set; } = new List<PODetailReadDTO>();
     }
 }

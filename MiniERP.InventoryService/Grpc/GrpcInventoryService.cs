@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Grpc.Core;
 using Microsoft.Extensions.Caching.Distributed;
-using MiniERP.InventoryService.Caching;
 using MiniERP.InventoryService.Data;
 using MiniERP.InventoryService.Extensions;
 using MiniERP.InventoryService.Models;
@@ -48,18 +47,7 @@ namespace MiniERP.InventoryService.Grpc
                     return Task.FromResult(NotFoundResponse(request.ArticleId));
                 }
 
-                //Catch timeout error if cache is down. We don't want to stop Service.
-                try
-                {
-                    var pollyContext = new Context().WithLogger<ILogger<GrpcInventoryService>>(_logger);
-
-                     _cachePolicy.Execute((cntx) =>
-                        _cache.SetRecord(inventory.ArticleId.ToString(), inventory), pollyContext);
-                } 
-                catch(RedisTimeoutException timeoutEx)
-                {
-                    _logger.LogError(timeoutEx, TimeoutExceptionLogFormat, request.ArticleId);
-                }
+                SetCache(inventory);
 
                 StockModel sm = _mapper.Map<StockModel>(inventory);
 
@@ -76,6 +64,22 @@ namespace MiniERP.InventoryService.Grpc
                                     nameof(GetInventory),
                                     DateTime.UtcNow);
                 return Task.FromResult(NotFoundResponse(request.ArticleId));
+            }
+        }
+
+        private void SetCache(AvailableInventoryView inventory)
+        {
+            //Catch timeout error if cache is down. We don't want to stop Service.
+            try
+            {
+                var pollyContext = new Context().WithLogger<ILogger<GrpcInventoryService>>(_logger);
+
+                _cachePolicy.Execute((cntx) =>
+                   _cache.SetRecord(inventory.ArticleId.ToString(), inventory), pollyContext);
+            }
+            catch (RedisTimeoutException timeoutEx)
+            {
+                _logger.LogError(timeoutEx, TimeoutExceptionLogFormat, inventory.ArticleId);
             }
         }
 

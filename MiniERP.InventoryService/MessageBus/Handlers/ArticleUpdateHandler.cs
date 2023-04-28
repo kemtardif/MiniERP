@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
-using MediatR;
 using MiniERP.InventoryService.Data;
 using MiniERP.InventoryService.MessageBus.Messages;
 using MiniERP.InventoryService.Models;
-using System.Globalization;
 
 namespace MiniERP.InventoryService.MessageBus.Handlers
 {

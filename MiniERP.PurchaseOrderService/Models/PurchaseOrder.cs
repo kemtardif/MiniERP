@@ -9,7 +9,7 @@
         public PurchaseOrderStatus Status { get; set; }
         public DateTime OrderDate { get; set; }
         public DateTime DeliveryDate { get; set; }
-        public decimal TotalAmount { get; set; }
+        public double TotalAmount { get; set; }
         public IEnumerable<PODetail> Details { get; set; } = new List<PODetail>();
     }
     public enum PurchaseOrderStatus

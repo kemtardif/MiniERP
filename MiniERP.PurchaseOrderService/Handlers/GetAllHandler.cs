@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using MediatR;
 using MiniERP.PurchaseOrderService.Data;
 using MiniERP.PurchaseOrderService.DTOs;
 using MiniERP.PurchaseOrderService.Models;

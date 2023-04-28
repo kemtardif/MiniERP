@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using MediatR;
 using MiniERP.ArticleService.Data;
 using MiniERP.ArticleService.DTOs;
 using MiniERP.ArticleService.Models;

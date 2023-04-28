@@ -1,19 +1,18 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
-using MiniERP.SalesOrderService.Caching;
-using MiniERP.SalesOrderService.DTOs;
-using MiniERP.SalesOrderService.Grpc;
-using MiniERP.SalesOrderService.Models;
+using MiniERP.PurchaseOrderService.Caching;
+using MiniERP.PurchaseOrderService.DTOs;
+using MiniERP.PurchaseOrderService.Grpc;
+using MiniERP.PurchaseOrderService.Models;
 
-namespace MiniERP.SalesOrderService.Validators
+namespace MiniERP.PurchaseOrderService.Validators
 {
-    public class InventoryValidator : AbstractValidator<SOCreateDTO>
+    public class InventoryValidator : AbstractValidator<POCreateDTO>
     {
 
         private const string KeyFormat = "[{0}]";
         private const string NotFoundMessage = "Item not found";
         private const string UnavailableMessage = "Item unavailable";
-        private const string QuantityMessage = "Quantity unavailable";
 
         private readonly ICacheService _cacheService;
         private readonly IRPCService _rpcService;
@@ -21,16 +20,15 @@ namespace MiniERP.SalesOrderService.Validators
         public InventoryValidator(ICacheService cacheService,
                                   IRPCService rpcService)
         {
-            _cacheService= cacheService;
-            _rpcService= rpcService;
+            _cacheService = cacheService;
+            _rpcService = rpcService;
 
             RuleFor(x => x)
                 .Custom(ValidateInventory);
         }
 
-        private void ValidateInventory(SOCreateDTO create, ValidationContext<SOCreateDTO> context)
+        private void ValidateInventory(POCreateDTO create, ValidationContext<POCreateDTO> context)
         {
-
             foreach (ValidationItem item in GetValidationItems(create))
             {
                 int id = item.Id;
@@ -46,24 +44,20 @@ namespace MiniERP.SalesOrderService.Validators
                     context.AddFailure(new ValidationFailure(string.Format(KeyFormat, id), UnavailableMessage));
                     continue;
                 }
-                if (model.Quantity < item.Quantity)
-                {
-                    context.AddFailure(new ValidationFailure(string.Format(KeyFormat, id), QuantityMessage));
-                    continue;
-                }
             }
         }
-        private List<ValidationItem> GetValidationItems(SOCreateDTO create)
+
+        private List<ValidationItem> GetValidationItems(POCreateDTO create)
         {
             return create.Details
-                        .GroupBy(x => x.ArticleId)
+                        .GroupBy(x => x.Productd)
                         .Select(x => new ValidationItem() { Id = x.Key, Quantity = x.Sum(y => y.Quantity) })
                         .ToList();
         }
         private InventoryItem? GetInventoryItem(int id)
         {
-            InventoryItem? item = _cacheService.GetItemById(id);
-            item ??= _rpcService.GetItemById(id);
+            InventoryItem? item = _cacheService.GetInventoryById(id);
+            item ??= _rpcService.GetInventoryById(id);
 
             return item;
         }

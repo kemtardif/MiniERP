@@ -1,5 +1,4 @@
-﻿using MediatR;
-using MiniERP.InventoryService.Data;
+﻿using MiniERP.InventoryService.Data;
 using MiniERP.InventoryService.MessageBus.Messages;
 using MiniERP.InventoryService.Models;
 

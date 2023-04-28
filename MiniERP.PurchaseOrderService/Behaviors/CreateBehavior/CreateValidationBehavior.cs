@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using FluentValidation;
+﻿using FluentValidation;
 using FluentValidation.Results;
 using MediatR;
 using MiniERP.PurchaseOrderService.Commands;
@@ -10,22 +9,20 @@ namespace MiniERP.PurchaseOrderService.Behaviors.CreateBehavior
 {
     public class CreateValidationBehavior : IPipelineBehavior<CreateCommand, Result<POReadDTO>>
     {
-        private readonly IValidator<PurchaseOrder> _baseValidator;
-        private readonly IMapper _mapper;
-        public CreateValidationBehavior(IValidator<PurchaseOrder> baseValidator,                                  
-                                        IMapper mapper)
+        private readonly IEnumerable<IValidator<POCreateDTO>> _validators;
+        public CreateValidationBehavior(IEnumerable<IValidator<POCreateDTO>> validators)
         {
-            _baseValidator = baseValidator;
-            _mapper = mapper;
+            _validators = validators;
         }
         public async Task<Result<POReadDTO>> Handle(CreateCommand request, RequestHandlerDelegate<Result<POReadDTO>> next, CancellationToken cancellationToken)
         {
-            var salesOrder = _mapper.Map<PurchaseOrder>(request.PurchaseOrder);
-
-            ValidationResult validationResult = _baseValidator.Validate(salesOrder);
-            if (!validationResult.IsValid)
+            foreach(IValidator<POCreateDTO> validator in _validators)
             {
-                return Result<POReadDTO>.Failure(validationResult.ToDictionary());
+                ValidationResult validationResult = validator.Validate(request.PurchaseOrder);
+                if (!validationResult.IsValid)
+                {
+                    return Result<POReadDTO>.Failure(validationResult.ToDictionary());
+                }
             }
 
             return await next();
