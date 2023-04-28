@@ -6,6 +6,7 @@ namespace MiniERP.InventoryService.Data
     {
         IEnumerable<InventoryItem> GetAllItems();
         InventoryItem? GetInventoryByArticleId(int articleId);
+        AvailableInventoryView? GetAvailableByArticleId(int articleId);
         IEnumerable<InventoryMovement> GetMovementsByOrder(RelatedOrderType orderType, int orderId);
         void AddItem(InventoryMovement item);
         void AddItem(InventoryItem item);
@@ -13,6 +14,6 @@ namespace MiniERP.InventoryService.Data
 
         void Update(InventoryItem item);
         void Update(InventoryMovement item);
-        void SaveChanges();
+        Task SaveChanges();
     }
 }

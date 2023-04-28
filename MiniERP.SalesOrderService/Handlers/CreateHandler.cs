@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using MediatR;
 using MiniERP.SalesOrderService.Commands;
 using MiniERP.SalesOrderService.Data;
 using MiniERP.SalesOrderService.DTOs;
@@ -8,13 +7,10 @@ using MiniERP.SalesOrderService.Models;
 
 namespace MiniERP.SalesOrderService.Handlers
 {
-    public class CreateHandler : HandlerBase, IRequestHandler<CreateCommand, Result<SOReadDTO>>
+    public class CreateHandler : HandlerBase<CreateCommand, Result<SOReadDTO>>
     {
-        public CreateHandler(IRepository repository, IMapper mapper) : base(repository, mapper)
-        {
-
-        }
-        public Task<Result<SOReadDTO>> Handle(CreateCommand request, CancellationToken cancellationToken)
+        public CreateHandler(IRepository repository, IMapper mapper) : base(repository, mapper){ }
+        public override Task<Result<SOReadDTO>> Handle(CreateCommand request, CancellationToken cancellationToken)
         {
             var so = _mapper.Map<SalesOrder>(request.SalesOrder);
 

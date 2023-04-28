@@ -1,11 +1,10 @@
 ﻿using AutoMapper;
 using MiniERP.SalesOrderService.Extensions;
 using MiniERP.SalesOrderService.Models;
-using MiniERP.SalesOrderService.Services.Contracts;
 using Polly;
 using StackExchange.Redis;
 
-namespace MiniERP.SalesOrderService.Services
+namespace MiniERP.SalesOrderService.Caching
 {
     public class RedisCacheService : ICacheService
     {
@@ -32,7 +31,7 @@ namespace MiniERP.SalesOrderService.Services
             InventoryItem? item = null;
             try
             {
-                var context = new Context().WithLogger<ILogger<GRPCService>>(_logger);
+                var context = new Context().WithLogger<ILogger<RedisCacheService>>(_logger);
 
                 InventoryItemCache? cached = _cachePolicy.Execute((cntx) =>
                     _database.GetRecord<InventoryItemCache>(id.ToString()), context);
@@ -47,8 +46,8 @@ namespace MiniERP.SalesOrderService.Services
                 _logger.LogError(timeoutEx, TimeoutExceptionLogFormat, id);
             }
 
-            _logger.LogInformation(CacheHitLogFormat, 
-                            item is null? "MISS" : "HIT",
+            _logger.LogInformation(CacheHitLogFormat,
+                            item is null ? "MISS" : "HIT",
                             id);
             return item;
         }

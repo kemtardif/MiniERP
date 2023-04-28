@@ -3,61 +3,30 @@ using MediatR;
 using MiniERP.InventoryService.Data;
 using MiniERP.InventoryService.MessageBus.Messages;
 using MiniERP.InventoryService.Models;
+using System.Globalization;
 
 namespace MiniERP.InventoryService.MessageBus.Handlers
 {
-    public class ArticleUpdateHandler : IRequestHandler<ArticleUpdate>
+    public class ArticleUpdateHandler : HandlerBase<ArticleUpdate>
     {
-        private readonly ILogger<ArticleCreateHandler> _logger;
         private readonly IMapper _mapper;
-        private readonly IRepository _repository;
-        public ArticleUpdateHandler(ILogger<ArticleCreateHandler> logger,
+        public ArticleUpdateHandler(ILogger<ArticleUpdate> logger,
                                     IMapper mapper,
-                                    IRepository repository)
+                                    IRepository repository) : base(logger, repository)
         {
-            _logger = logger;
             _mapper = mapper;
-            _repository = repository;
         }
-        public Task Handle(ArticleUpdate request, CancellationToken cancellationToken)
-        {
-            try
-            {
-                Update(request);
 
-                _logger.LogInformation("---> RabbitMQ : Message Handled : {handler} : {id} : {date}",
-                                       nameof(ArticleUpdateHandler),
-                                       request.Id,
-                                       DateTime.UtcNow);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "--->RabbitMQ Exception : {Instance} : {name} : {date}",
-                                nameof(ArticleUpdateHandler),
-                                nameof(Handle),
-                                DateTime.UtcNow);
-            }
-            return Task.CompletedTask;
-        }
-        private void Update(ArticleUpdate request)
+        protected override async Task ProtectedHandle(ArticleUpdate request)
         {
-            InventoryItem? item = _repository.GetInventoryByArticleId(request.Id);
-
-            if(item is null)
-            {
-                _logger.LogWarning("--->RabbitMQ Exception : {Instance} : Could not find item : {id} : {date}",
-                                nameof(ArticleUpdateHandler),
-                                request.Id,
-                                DateTime.UtcNow);
-                return;
-            }
+            InventoryItem? item = _repository.GetInventoryByArticleId(request.Id) ??
+                throw new ArgumentException(string.Format(NotFoundLogFrmat, request.Id));
 
             _mapper.Map(request, item);
 
             _repository.Update(item);
 
-            _repository.SaveChanges();
+            await _repository.SaveChanges();
         }
-
     }
 }

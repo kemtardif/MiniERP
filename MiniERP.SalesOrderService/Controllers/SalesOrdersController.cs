@@ -14,8 +14,13 @@ namespace MiniERP.SalesOrderService.Controllers
     [Route("api/so-srv/[controller]")]
     public class SalesOrdersController : ControllerBase
     {
-        private readonly IMediator _mediator;
+        private const string GetAllMessage = "An error occured while getting all Sales Orders";
+        private const string GetByIdMessage = "An error occured while getting Sales Order : ID={0}";
+        private const string CreateMessage = "An error occured while creating Sales Order";
+        private const string CloseMessage = "An error occured while closing Sales Order";
+        private const string CancelMessage = "An error occured while cancelling Sales Order";
 
+        private readonly IMediator _mediator;
         public SalesOrdersController(IMediator mediator)
         {
             _mediator = mediator;
@@ -32,7 +37,7 @@ namespace MiniERP.SalesOrderService.Controllers
             }
             catch (Exception ex)
             {
-                throw new HttpFriendlyException($"An error occured while getting all Sales Orders", ex);
+                throw new HttpFriendlyException(GetAllMessage, ex);
             }
         }
         [HttpGet("{id}", Name = nameof(GetSalesOrderById))]
@@ -51,7 +56,7 @@ namespace MiniERP.SalesOrderService.Controllers
             }
             catch (Exception ex)
             {
-                throw new HttpFriendlyException($"An error occured while getting Sales Order : ID={id}", ex);
+                throw new HttpFriendlyException(string.Format(GetByIdMessage, id), ex);
             }
         }
 
@@ -71,7 +76,7 @@ namespace MiniERP.SalesOrderService.Controllers
             }
             catch (Exception ex)
             {
-                throw new HttpFriendlyException("An error occured while creating Sales Order", ex);
+                throw new HttpFriendlyException(CreateMessage, ex);
             }
         }
 
@@ -95,7 +100,7 @@ namespace MiniERP.SalesOrderService.Controllers
             }
             catch (Exception ex)
             {
-                throw new HttpFriendlyException($"An error occured while closing Sales Order", ex);
+                throw new HttpFriendlyException(CloseMessage, ex);
             }
         }
 
@@ -119,7 +124,7 @@ namespace MiniERP.SalesOrderService.Controllers
             }
             catch (Exception ex)
             {
-                throw new HttpFriendlyException($"An error occured while cancelling Sales Order", ex);
+                throw new HttpFriendlyException(CancelMessage, ex);
             }
         }
 

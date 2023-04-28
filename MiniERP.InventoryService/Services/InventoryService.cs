@@ -7,6 +7,8 @@ namespace MiniERP.InventoryService.Services
 {
     public class InventoryService : IInventoryService
     {
+        private const string NotFoundLogFormat = "Inventory Item not found : ArticleID = {0}";
+
         private readonly ILogger<InventoryService> _logger;
         private readonly IRepository _repository;
         private readonly IMapper _mapper;
@@ -45,7 +47,7 @@ namespace MiniERP.InventoryService.Services
         {
             return new Dictionary<string, string[]>
             {
-                [nameof(InventoryItem)] = new string[] { $"Inventory Item not found : ArticleID = {articleId}" }
+                [nameof(InventoryItem)] = new string[] { string.Format(NotFoundLogFormat, articleId) }
             };
         }
     }

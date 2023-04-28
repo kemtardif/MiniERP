@@ -8,12 +8,10 @@ using MiniERP.PurchaseOrderService.Models;
 
 namespace MiniERP.PurchaseOrderService.Handlers
 {
-    public class CreateHandler : HandlerBase, IRequestHandler<CreateCommand, Result<POReadDTO>>
+    public class CreateHandler : HandlerBase<CreateCommand, Result<POReadDTO>>
     {
-        public CreateHandler(IRepository repository, IMapper mapper) : base(repository, mapper)
-        {
-        }
-        public Task<Result<POReadDTO>> Handle(CreateCommand request, CancellationToken cancellationToken)
+        public CreateHandler(IRepository repository, IMapper mapper) : base(repository, mapper){}
+        public override Task<Result<POReadDTO>> Handle(CreateCommand request, CancellationToken cancellationToken)
         {
             var purchaseOrder = _mapper.Map<PurchaseOrder>(request.PurchaseOrder);
 

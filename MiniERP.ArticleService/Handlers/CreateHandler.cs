@@ -8,12 +8,11 @@ using MiniERP.ArticleService.Models;
 
 namespace MiniERP.ArticleService.Handlers
 {
-    public class CreateHandler : HandlerBase, IRequestHandler<CreateCommand, Result<ReadDTO>>
+    public class CreateHandler : HandlerBase<CreateCommand, Result<ReadDTO>>
     {
-        public CreateHandler(IRepository repository, IMapper mapper) : base(repository, mapper)
-        { }
+        public CreateHandler(IRepository repository, IMapper mapper) : base(repository, mapper){ }
 
-        public Task<Result<ReadDTO>> Handle(CreateCommand request, CancellationToken cancellationToken)
+        public override Task<Result<ReadDTO>> Handle(CreateCommand request, CancellationToken cancellationToken)
         {
             var item = _mapper.Map<Article>(request.Item);
 

@@ -8,12 +8,10 @@ using MiniERP.PurchaseOrderService.Models;
 
 namespace MiniERP.PurchaseOrderService.Handlers
 {
-    public class CancelHandler : HandlerBase, IRequestHandler<CancelCommand, Result<POReadDTO>>
+    public class CancelHandler : HandlerBase<CancelCommand, Result<POReadDTO>>
     {
-        public CancelHandler(IRepository repository, IMapper mapper) : base(repository, mapper)
-        {
-        }
-        public Task<Result<POReadDTO>> Handle(CancelCommand request, CancellationToken cancellationToken)
+        public CancelHandler(IRepository repository, IMapper mapper) : base(repository, mapper){ }
+        public override Task<Result<POReadDTO>> Handle(CancelCommand request, CancellationToken cancellationToken)
         {
             var po = _repository.GetPOById(request.Id);
 
@@ -24,7 +22,7 @@ namespace MiniERP.PurchaseOrderService.Handlers
 
             if (po.Status == PurchaseOrderStatus.Cancelled)
             {
-                return Task.FromResult(Result<POReadDTO>.Failure(GetALreadyCancelled(request.Id)));
+                return Task.FromResult(Result<POReadDTO>.Failure(GetAlreadyCancelled(request.Id)));
             }
 
             po.Status = PurchaseOrderStatus.Cancelled;
@@ -38,7 +36,7 @@ namespace MiniERP.PurchaseOrderService.Handlers
             return Task.FromResult(Result<POReadDTO>.Success(dto, new OrderCancelled(request.Id)));
         }
 
-        private IDictionary<string, string[]> GetALreadyCancelled(int id)
+        private IDictionary<string, string[]> GetAlreadyCancelled(int id)
         {
             return new Dictionary<string, string[]>
             {

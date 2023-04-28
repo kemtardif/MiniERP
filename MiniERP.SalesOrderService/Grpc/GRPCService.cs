@@ -3,10 +3,9 @@ using Grpc.Core;
 using MiniERP.SalesOrderService.Extensions;
 using MiniERP.SalesOrderService.Models;
 using MiniERP.SalesOrderService.Protos;
-using MiniERP.SalesOrderService.Services.Contracts;
 using Polly;
 
-namespace MiniERP.SalesOrderService.Services
+namespace MiniERP.SalesOrderService.Grpc
 {
     public class GRPCService : IRPCService
     {
@@ -24,8 +23,8 @@ namespace MiniERP.SalesOrderService.Services
                           ILogger<GRPCService> logger)
         {
             _grpcClient = grpcClient ?? throw new ArgumentNullException(nameof(grpcClient));
-            _grpcPolicy = grpcPolicy ?? throw new ArgumentNullException(nameof(grpcPolicy)); 
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper)); 
+            _grpcPolicy = grpcPolicy ?? throw new ArgumentNullException(nameof(grpcPolicy));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
         public InventoryItem? GetItemById(int id)
@@ -41,7 +40,7 @@ namespace MiniERP.SalesOrderService.Services
 
                 if (response.IsFound)
                 {
-                    item =  _mapper.Map<InventoryItem>(response.Item);
+                    item = _mapper.Map<InventoryItem>(response.Item);
                 }
             }
             catch (RpcException rpcEx)

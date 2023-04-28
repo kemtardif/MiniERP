@@ -1,18 +1,21 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
-using MiniERP.InventoryService.Caching;
+using MiniERP.InventoryService.Data;
+using MiniERP.InventoryService.Extensions;
 using MiniERP.InventoryService.Models;
 
-namespace MiniERP.InventoryService.Data
+namespace MiniERP.InventoryService.Caching
 {
-    public class RedisCache : ICache
+    public class RedisCacheService : ICacheService
     {
-        private readonly IDistributedCache _cache;
-        private readonly ILogger<RedisCache> _logger;
-        private AppDbContext _context;
+        private const string CacheHitLogFormat = "------> REDIS : Cache {value} for {id}";
+        private const string InvalidationLogFormat = "------> REDIS : Cache INVALIDATION for {id}";
 
-        public RedisCache(IDistributedCache cache,
+        private readonly IDistributedCache _cache;
+        private readonly ILogger<RedisCacheService> _logger;
+        private AppDbContext _context;
+        public RedisCacheService(IDistributedCache cache,
                           AppDbContext context,
-                          ILogger<RedisCache> logger)
+                          ILogger<RedisCacheService> logger)
         {
             _cache = cache;
             _context = context;
@@ -23,7 +26,7 @@ namespace MiniERP.InventoryService.Data
 
             AvailableInventoryView? item = _cache.GetRecord<AvailableInventoryView>(articleId.ToString());
 
-            _logger.LogInformation("------> REDIS : Cache {value} for {id}",
+            _logger.LogInformation(CacheHitLogFormat,
                                         item is null ? "MISS" : "HIT",
                                         articleId);
             if (item is null)
@@ -43,7 +46,7 @@ namespace MiniERP.InventoryService.Data
         {
 
             _cache.Remove(articleId.ToString());
-            _logger.LogInformation("------> REDIS : Cache INVALIDATION for {id}", articleId);
+            _logger.LogInformation(InvalidationLogFormat, articleId);
         }
 
     }

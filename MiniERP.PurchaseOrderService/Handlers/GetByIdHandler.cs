@@ -7,14 +7,11 @@ using MiniERP.PurchaseOrderService.Queries;
 
 namespace MiniERP.PurchaseOrderService.Handlers
 {
-    public class GetByIdHandler : HandlerBase, IRequestHandler<GetByIdQuery, Result<POReadDTO>>
+    public class GetByIdHandler : HandlerBase<GetByIdQuery, Result<POReadDTO>>
     {
 
-        public GetByIdHandler(IRepository repository, IMapper mapper) : base(repository, mapper)
-        {
-
-        }
-        public Task<Result<POReadDTO>> Handle(GetByIdQuery request, CancellationToken cancellationToken)
+        public GetByIdHandler(IRepository repository, IMapper mapper) : base(repository, mapper) { }
+        public override Task<Result<POReadDTO>> Handle(GetByIdQuery request, CancellationToken cancellationToken)
         {
             var model = _repository.GetPOById(request.Id);
 

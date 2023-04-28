@@ -15,13 +15,15 @@ namespace MiniERP.ArticleService.Controllers;
 [Route("api/art-srv/[controller]")]
 public class ArticlesController : ControllerBase
 {
-    private readonly ILogger<ArticlesController> _logger;
-    private readonly IMediator _mediator;
+    private const string GetAllMessage = "An error occured while getting all articles";
+    private const string GetByIdMessage = "An error occured while getting article : ID = {0}";
+    private const string CreateMessage = "An error occured while creating article";
+    private const string DeleteMessage = "An error occured while removing article : {0}";
+    private const string UpdateMessage = "An error occured while updating article : {0}";
 
-    public ArticlesController(ILogger<ArticlesController> logger,
-                              IMediator mediator)
+    private readonly IMediator _mediator;
+    public ArticlesController(IMediator mediator)
     {
-        _logger = logger;
         _mediator = mediator;
     }
 
@@ -36,11 +38,7 @@ public class ArticlesController : ControllerBase
         } 
         catch(Exception ex)
         {
-            _logger.LogError("{id} : An error occured while getting all articles : {error} : {date}",
-                                HttpContext.TraceIdentifier,
-                                ex.Message,
-                                DateTime.UtcNow);
-            throw new HttpFriendlyException("An error occured while getting all articles", ex);
+            throw new HttpFriendlyException(GetAllMessage, ex);
         }
     }
 
@@ -60,7 +58,7 @@ public class ArticlesController : ControllerBase
         } 
         catch(Exception ex)
         {
-            throw new HttpFriendlyException($"An error occured while getting article : ID = {id}", ex);
+            throw new HttpFriendlyException(string.Format(GetByIdMessage, id), ex);
         }
     }
 
@@ -80,7 +78,7 @@ public class ArticlesController : ControllerBase
         } 
         catch(Exception ex)
         {
-            throw new HttpFriendlyException($"An error occured while creating article", ex);
+            throw new HttpFriendlyException(CreateMessage, ex);
         }       
     }
 
@@ -100,7 +98,7 @@ public class ArticlesController : ControllerBase
         }
         catch(Exception ex)
         {
-            throw new HttpFriendlyException($"An error occured while removing article : {id}", ex);
+            throw new HttpFriendlyException(string.Format(DeleteMessage, id), ex);
         }
     }
 
@@ -128,7 +126,7 @@ public class ArticlesController : ControllerBase
         } 
         catch(Exception ex)
         {
-            throw new HttpFriendlyException($"An error occured while updating article : {id}", ex);
+            throw new HttpFriendlyException(string.Format(UpdateMessage, id), ex);
         }       
     }
 }

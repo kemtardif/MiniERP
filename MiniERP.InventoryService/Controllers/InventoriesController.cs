@@ -12,8 +12,9 @@ namespace MiniERP.InventoryService.Controllers;
 [Route("/api/inv-srv/[controller]")]
 public class InventoriesController : ControllerBase
 {
+    private const string GetAllMessage = "An error occured while getting all stocks";
+    private const string GetByIdMessage = "An error occured while getting stock : ID={0}";
     private readonly IMediator _mediator;
-
     public InventoriesController(IMediator mediator)
     {
         _mediator = mediator;
@@ -30,7 +31,7 @@ public class InventoriesController : ControllerBase
         }
         catch (Exception ex)
         {
-            throw new HttpFriendlyException($"An error occured while getting all stocks", ex);
+            throw new HttpFriendlyException(GetAllMessage, ex);
         }
     }
 
@@ -50,7 +51,7 @@ public class InventoriesController : ControllerBase
         }
         catch (Exception ex)
         {
-            throw new HttpFriendlyException($"An error occured while getting stock : ArticlID={articleId}", ex);
+            throw new HttpFriendlyException(string.Format(GetByIdMessage, articleId), ex);
         }
     }
 }

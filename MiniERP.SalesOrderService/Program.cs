@@ -22,8 +22,8 @@ using Polly.Contrib.WaitAndRetry;
 using MiniERP.SalesOrderService.Extensions;
 using Grpc.Core;
 using MiniERP.SalesOrderService.Models;
-using MiniERP.SalesOrderService.Services;
-using MiniERP.SalesOrderService.Services.Contracts;
+using MiniERP.SalesOrderService.Grpc;
+using MiniERP.SalesOrderService.Caching;
 
 var builder = WebApplication.CreateBuilder(args);
 

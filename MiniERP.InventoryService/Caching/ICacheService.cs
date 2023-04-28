@@ -1,8 +1,8 @@
 ﻿using MiniERP.InventoryService.Models;
 
-namespace MiniERP.InventoryService.Data
+namespace MiniERP.InventoryService.Caching
 {
-    public interface ICache
+    public interface ICacheService
     {
         AvailableInventoryView? GetById(int articleId);
         void Invalidate(int articleId);

@@ -14,8 +14,13 @@ namespace MiniERP.PurchaseOrderService.Controllers
     [Route("api/po-srv/[controller]")]
     public class PurchaseOrdersController : ControllerBase
     {
-        private readonly IMediator _mediator;
+        private const string GetAllMessage = "An error occured while getting all Purchase Orders";
+        private const string GetByIdMessage = "An error occured while getting Purchase Order : ID={0}";
+        private const string CreateMessage = "An error occured while creating Purchase Order";
+        private const string CloseMessage = "An error occured while closing Purchase Order";
+        private const string CancelMessage = "An error occured while cancelling Purchase Order";
 
+        private readonly IMediator _mediator;
         public PurchaseOrdersController(IMediator mediator)
         {
             _mediator = mediator;
@@ -32,7 +37,7 @@ namespace MiniERP.PurchaseOrderService.Controllers
             }
             catch (Exception ex)
             {
-                throw new HttpFriendlyException($"An error occured while getting all Purchase Orders", ex);
+                throw new HttpFriendlyException(GetAllMessage, ex);
             }
         }
 
@@ -52,7 +57,7 @@ namespace MiniERP.PurchaseOrderService.Controllers
             }
             catch (Exception ex)
             {
-                throw new HttpFriendlyException($"An error occured while getting Purchase Order : ID={id}", ex);
+                throw new HttpFriendlyException(string.Format(GetByIdMessage, id), ex);
             }
         }
 
@@ -72,7 +77,7 @@ namespace MiniERP.PurchaseOrderService.Controllers
             }
             catch (Exception ex)
             {
-                throw new HttpFriendlyException($"An error occured while creating Purchase Order", ex);
+                throw new HttpFriendlyException(CreateMessage, ex);
             }
         }
 
@@ -96,7 +101,7 @@ namespace MiniERP.PurchaseOrderService.Controllers
             }
             catch (Exception ex)
             {
-                throw new HttpFriendlyException($"An error occured while closing Purchase Order", ex);
+                throw new HttpFriendlyException(CloseMessage, ex);
             }
         }
 
@@ -120,7 +125,7 @@ namespace MiniERP.PurchaseOrderService.Controllers
             }
             catch (Exception ex)
             {
-                throw new HttpFriendlyException($"An error occured while cancelling Purchase Order", ex);
+                throw new HttpFriendlyException(CancelMessage, ex);
             }
         }
     }

@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using MediatR;
 using MiniERP.SalesOrderService.Data;
 using MiniERP.SalesOrderService.DTOs;
 using MiniERP.SalesOrderService.Models;
@@ -7,13 +6,11 @@ using MiniERP.SalesOrderService.Queries;
 
 namespace MiniERP.SalesOrderService.Handlers
 {
-    public class GetByIdHandler : HandlerBase, IRequestHandler<GetByIdQuery, Result<SOReadDTO>>
+    public class GetByIdHandler : HandlerBase<GetByIdQuery, Result<SOReadDTO>>
     {
-        public GetByIdHandler(IRepository repository, IMapper mapper) : base(repository, mapper) 
-        {
-        }
+        public GetByIdHandler(IRepository repository, IMapper mapper) : base(repository, mapper) { }
 
-        public Task<Result<SOReadDTO>> Handle(GetByIdQuery request, CancellationToken cancellationToken)
+        public override Task<Result<SOReadDTO>> Handle(GetByIdQuery request, CancellationToken cancellationToken)
         {
             SalesOrder? so = _repository.GetSOById(request.Id);
 
@@ -27,12 +24,12 @@ namespace MiniERP.SalesOrderService.Handlers
             return Task.FromResult(Result<SOReadDTO>.Success(dto));
         }
 
-        private IDictionary<string, string[]> GetNotFoundResult(int id)
-        {
-            return new Dictionary<string, string[]>
-            {
-                [nameof(SalesOrder)] = new string[] { $"Sales Order not found : ID = {id}" }
-            };
-        }
+        //private IDictionary<string, string[]> GetNotFoundResult(int id)
+        //{
+        //    return new Dictionary<string, string[]>
+        //    {
+        //        [nameof(SalesOrder)] = new string[] { $"Sales Order not found : ID = {id}" }
+        //    };
+        //}
     }
 }

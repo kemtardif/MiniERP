@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
+using MiniERP.InventoryService.Commands;
 using MiniERP.InventoryService.Models;
 
 namespace MiniERP.InventoryService.Data
@@ -7,14 +9,14 @@ namespace MiniERP.InventoryService.Data
     public class ConcreteRepository : IRepository
     {
         private readonly AppDbContext _context;
-        private readonly ICache _cache;
+        private readonly IMediator _mediator;
 
         private readonly HashSet<int> _invalidates = new();
         public ConcreteRepository(AppDbContext context,
-                                   ICache cache)
+                                  IMediator mediator)
         {
             _context = context;
-            _cache = cache;
+            _mediator = mediator;
         }
 
         public void AddItem(InventoryItem item)
@@ -47,6 +49,11 @@ namespace MiniERP.InventoryService.Data
             return _context.InventoryItems.FirstOrDefault(x => x.ArticleId == articleId);
         }
 
+        public AvailableInventoryView? GetAvailableByArticleId(int articleId)
+        {
+            return _context.AvailableInventoryView.FirstOrDefault(x => x.ArticleId == articleId);
+        }
+
         public void CloseItem(int articleId)
         {
             InventoryItem? item = _context.InventoryItems.FirstOrDefault(x => x.ArticleId == articleId);
@@ -62,14 +69,14 @@ namespace MiniERP.InventoryService.Data
 
         }
 
-        public void SaveChanges()
+        public async Task SaveChanges()
         {
 
             _context.SaveChanges();
 
             foreach(int invalidate in _invalidates)
             {
-                _cache.Invalidate(invalidate);
+                await _mediator.Send(new InvalidateCacheCommand(invalidate));
             }
             _invalidates.Clear();
         }

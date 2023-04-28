@@ -5,14 +5,14 @@ namespace MiniERP.InventoryService.MessageBus.Subscriber
 {
     public class RabbitMQSubscriber : BackgroundService
     {
-        private readonly ILogger<RabbitMQSubscriber> _logger;
-        private readonly IConsumerFactory _consumerFactory;
-        private readonly IConnection _connection;
-        private readonly IModel _channel;
-
+        private const string COnnectedLogFormat = "---> Connected to RabbitMQ Message Bus : {date}";
         private const string Article_EXCHANGE = "article";
         private const string INVENTORY_EXCHANGE = "inventory";
 
+        private readonly ILogger<RabbitMQSubscriber> _logger;
+        private readonly IConsumerFactory _consumerFactory;
+        private readonly IConnection _connection;
+        private readonly IModel _channel;     
         public RabbitMQSubscriber(IConfiguration configuration,
                                   ILogger<RabbitMQSubscriber> logger,
                                   IConsumerFactory consumerFactory)
@@ -25,7 +25,7 @@ namespace MiniERP.InventoryService.MessageBus.Subscriber
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
 
-            _logger.LogInformation("---> Connected to RabbitMQ Message Bus : {date}", DateTime.UtcNow);
+            _logger.LogInformation(COnnectedLogFormat, DateTime.UtcNow);
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)

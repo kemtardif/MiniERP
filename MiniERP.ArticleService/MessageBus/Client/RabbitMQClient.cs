@@ -9,10 +9,11 @@ namespace MiniERP.ArticleService.MessageBus.Sender
 {
     public class RabbitMQClient : IRabbitMQClient, IDisposable
     {
-        private readonly IModel _channel;
-        private readonly ILogger<RabbitMQClient> _logger;
+        private const string PublishedLogFormat = "RabbitMQ : Article Message Published : {type} {date}";
         private readonly string ARTICLE_EXCHANGE = "article";
 
+        private readonly IModel _channel;
+        private readonly ILogger<RabbitMQClient> _logger;       
         public RabbitMQClient(IRabbitMQConnection rabbitMQConnection, ILogger<RabbitMQClient> logger)
         {
             _logger = logger;
@@ -51,7 +52,7 @@ namespace MiniERP.ArticleService.MessageBus.Sender
                                 basicProperties: properties,
                                 body: body);
 
-            _logger.LogInformation("RabbitMQ : Article Message Published : {type} {date}",
+            _logger.LogInformation(PublishedLogFormat,
                                     message.GetType(),
                                     DateTime.UtcNow);
 

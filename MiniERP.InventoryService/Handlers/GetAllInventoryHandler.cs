@@ -7,15 +7,10 @@ using MiniERP.InventoryService.Queries;
 
 namespace MiniERP.InventoryService.Handlers
 {
-    public class GetAllInventoryHandler : HandlerBase,  IRequestHandler<GetAllInventoryQuery, Result<IEnumerable<InventoryReadDTO>>>
+    public class GetAllInventoryHandler : HandlerBase<GetAllInventoryQuery, Result<IEnumerable<InventoryReadDTO>>>
     {
-        private readonly IRepository _repository;
-
-        public GetAllInventoryHandler(IRepository repository, IMapper mapper) : base(mapper) 
-        {
-            _repository = repository;
-        }
-        public Task<Result<IEnumerable<InventoryReadDTO>>> Handle(GetAllInventoryQuery request, CancellationToken cancellationToken)
+        public GetAllInventoryHandler(IRepository repository, IMapper mapper) : base(repository, mapper) { }
+        public override Task<Result<IEnumerable<InventoryReadDTO>>> Handle(GetAllInventoryQuery request, CancellationToken cancellationToken)
         {
             var models = _repository.GetAllItems();
 

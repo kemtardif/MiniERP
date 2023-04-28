@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using MediatR;
 using MiniERP.SalesOrderService.Commands;
 using MiniERP.SalesOrderService.Data;
 using MiniERP.SalesOrderService.DTOs;
@@ -8,12 +7,10 @@ using MiniERP.SalesOrderService.Models;
 
 namespace MiniERP.SalesOrderService.Handlers
 {
-    public class CloseHandler : HandlerBase, IRequestHandler<CloseCommand, Result<SOReadDTO>>
+    public class CloseHandler : HandlerBase<CloseCommand, Result<SOReadDTO>>
     {
-        public CloseHandler(IRepository repository, IMapper mapper) : base(repository, mapper)
-        {
-        }
-        public Task<Result<SOReadDTO>> Handle(CloseCommand request, CancellationToken cancellationToken)
+        public CloseHandler(IRepository repository, IMapper mapper) : base(repository, mapper){ }
+        public override Task<Result<SOReadDTO>> Handle(CloseCommand request, CancellationToken cancellationToken)
         {
             var so = _repository.GetSOById(request.Id);
 

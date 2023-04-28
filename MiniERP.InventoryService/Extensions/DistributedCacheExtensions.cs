@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
 
-namespace MiniERP.InventoryService.Caching
+namespace MiniERP.InventoryService.Extensions
 {
-    public static class DistributedCacheExtension
+    public static class DistributedCacheExtensions
     {
         public static void SetRecord<T>(this IDistributedCache cache,
            string key,

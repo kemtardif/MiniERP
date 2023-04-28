@@ -5,42 +5,12 @@ using MiniERP.InventoryService.Models;
 
 namespace MiniERP.InventoryService.MessageBus.Handlers
 {
-    public class OrderCreatedHandler : IRequestHandler<OrderCreated>
+    public class OrderCreatedHandler : HandlerBase<OrderCreated>
     {
-        private readonly ILogger<OrderCreatedHandler> _logger;
-        private readonly IRepository _repository;
+        public OrderCreatedHandler(ILogger<OrderCreated> logger, IRepository repository)
+                                : base(logger, repository) { }
 
-        public OrderCreatedHandler(ILogger<OrderCreatedHandler> logger,
-                                   IRepository repository)
-        {
-            _logger = logger;
-            _repository = repository;
-        }
-        public Task Handle(OrderCreated request, CancellationToken cancellationToken)
-        {
-            try
-            {
-                HandleOrderCreated(request);
-
-                _logger.LogInformation("---> RabbitMQ : Message Handled : {handler} : {id} : {type} : {guid}",
-                                       nameof(OrderCreatedHandler),
-                                       request.OrderId,
-                                       Enum.GetName((RelatedOrderType)request.OrderType),
-                                       request.TransactionId);
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "---> RabbitMQ : Message Exception : {handler} : {id} : {type} : {guid}",
-                                        nameof(OrderCreatedHandler),
-                                       request.OrderId,
-                                       Enum.GetName((RelatedOrderType)request.OrderType),
-                                       request.TransactionId);
-            }
-            return Task.CompletedTask;
-        }
-
-        private void HandleOrderCreated(OrderCreated request)
+        protected override async Task ProtectedHandle(OrderCreated request)
         {
             int orderId = request.OrderId;
             RelatedOrderType orderType = (RelatedOrderType)request.OrderType;
@@ -50,7 +20,7 @@ namespace MiniERP.InventoryService.MessageBus.Handlers
             {
 
                 InventoryItem article = _repository.GetInventoryByArticleId(item.ArticleId) ?? 
-                    throw new ArgumentNullException($"Inventory ID={item.ArticleId} not found");
+                    throw new ArgumentNullException(string.Format(NotFoundLogFrmat, item.ArticleId));
 
                 InventoryMovement movement = new()
                 {
@@ -67,7 +37,7 @@ namespace MiniERP.InventoryService.MessageBus.Handlers
                 _repository.AddItem(movement);
             }
 
-            _repository.SaveChanges();
+            await _repository.SaveChanges();
         }
     }
 }

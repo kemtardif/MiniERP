@@ -1,13 +1,20 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using MiniERP.SalesOrderService.Caching;
 using MiniERP.SalesOrderService.DTOs;
+using MiniERP.SalesOrderService.Grpc;
 using MiniERP.SalesOrderService.Models;
-using MiniERP.SalesOrderService.Services.Contracts;
 
 namespace MiniERP.SalesOrderService.Validators
 {
     public class InventoryValidator : AbstractValidator<SOCreateDTO>
     {
+
+        private const string KeyFormat = "[{0}]";
+        private const string NotFoundMessage = "Item not found";
+        private const string UnavailableMessage = "Item unavailable";
+        private const string QuantityMessage = "Quantity unavailable";
+
         private readonly ICacheService _cacheService;
         private readonly IRPCService _rpcService;
 
@@ -25,23 +32,22 @@ namespace MiniERP.SalesOrderService.Validators
         {
             foreach (SODetailCreateDTO item in create.Details)
             {
-                InventoryItem? model = GetInventoryItem(item.ArticleId);
+                int id = item.ArticleId;
+                InventoryItem? model = GetInventoryItem(id);
 
                 if (model is null)
                 {
-                    context.AddFailure(new ValidationFailure($"[{item.ArticleId}]", "Item not found"));
+                    context.AddFailure(new ValidationFailure(string.Format(KeyFormat, id), NotFoundMessage));
                     continue;
                 }
-
                 if (model.Status != 1)
                 {
-                    context.AddFailure(new ValidationFailure($"[{item.ArticleId}]", "Item unavailable"));
+                    context.AddFailure(new ValidationFailure(string.Format(KeyFormat, id), UnavailableMessage));
                     continue;
                 }
-
                 if (model.Quantity < item.Quantity)
                 {
-                    context.AddFailure(new ValidationFailure($"[{item.ArticleId}]", "Quantity unavailable"));
+                    context.AddFailure(new ValidationFailure(string.Format(KeyFormat, id), QuantityMessage));
                     continue;
                 }
             }

@@ -59,8 +59,6 @@ builder.Services.AddGrpcClient<GrpcInventoryService.GrpcInventoryServiceClient>(
 });
 
 
-
-
 builder.Services.AddControllers()
 .ConfigureApiBehaviorOptions(options =>
 {

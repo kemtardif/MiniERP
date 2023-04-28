@@ -8,12 +8,10 @@ using MiniERP.PurchaseOrderService.Models;
 
 namespace MiniERP.PurchaseOrderService.Handlers
 {
-    public class CloseHandler : HandlerBase, IRequestHandler<CloseCommand, Result<POReadDTO>>
+    public class CloseHandler : HandlerBase<CloseCommand, Result<POReadDTO>>
     {
-        public CloseHandler(IRepository repository, IMapper mapper) : base(repository, mapper) 
-        {
-        }
-        public Task<Result<POReadDTO>> Handle(CloseCommand request, CancellationToken cancellationToken)
+        public CloseHandler(IRepository repository, IMapper mapper) : base(repository, mapper) { }
+        public override Task<Result<POReadDTO>> Handle(CloseCommand request, CancellationToken cancellationToken)
         {
             var po = _repository.GetPOById(request.Id);
 

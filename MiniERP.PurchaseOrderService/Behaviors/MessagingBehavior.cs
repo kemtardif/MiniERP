@@ -8,6 +8,8 @@ namespace MiniERP.PurchaseOrderService.Behaviors
                                         where TRequest : IRequest<TResponse>
                                         where TResponse : Result
     {
+        private const string PublishedLogFormat = "Message published : {message} for request {request} and response {response}";
+
         private readonly ILogger<MessagingBehavior<TRequest, TResponse>> _logger;
         private readonly IRabbitMQClient _rabbitMQClient;
 
@@ -28,7 +30,7 @@ namespace MiniERP.PurchaseOrderService.Behaviors
             {
                 _rabbitMQClient.Publish(response.Message);
 
-                _logger.LogInformation("Message published : {message} for request {request} and response {response}",
+                _logger.LogInformation(PublishedLogFormat,
                                     response.Message.GetType().Name,
                                     typeof(TRequest).Name,
                                     typeof(TResponse).GetGenericArguments()[0].Name

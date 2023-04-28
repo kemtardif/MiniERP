@@ -10,6 +10,11 @@ namespace MiniERP.InventoryService.Controllers
     [ApiExplorerSettings(IgnoreApi = true)]
     public class ErrorsController : ControllerBase
     {
+        private const string CriticalLogFormat = "Critical error : {err} : {id} : {date}";
+        private const string FriendlyLogFormat = "{friendly} : {message} : {id} : {date}";
+        private const string InternalLogFormat = "Internal error : {id} : {date}";
+        private const string CritialInternalError = "Critical internal error";
+
         private readonly ILogger<ErrorsController> _logger;
         public ErrorsController(ILogger<ErrorsController> logger)
         {
@@ -23,11 +28,11 @@ namespace MiniERP.InventoryService.Controllers
             var context = HttpContext.Features.Get<IExceptionHandlerFeature>();
             if (context is null)
             {
-                _logger.LogCritical("Critical error : {err} : {id} : {date}",
+                _logger.LogCritical(CriticalLogFormat,
                                     nameof(IExceptionHandlerFeature),
                                     HttpContext.TraceIdentifier,
                                     DateTime.UtcNow);
-                return new ErrorResponse("Critical internal error");
+                return new ErrorResponse(CritialInternalError);
             }
 
             Exception exception = context.Error;
@@ -35,18 +40,17 @@ namespace MiniERP.InventoryService.Controllers
             switch (exception)
             {
                 case HttpFriendlyException friendly:
-                    _logger.LogError("{friendly} : {message} : {id} : {date}",
+                    _logger.LogError(FriendlyLogFormat,
                                       exception.Message,
                                       exception.InnerException?.Message,
                                       HttpContext.TraceIdentifier,
                                       DateTime.UtcNow);
                     return new ErrorResponse(exception.Message);
                 default:
-                    _logger.LogError("{ex} : {id} : {date}",
-                                      exception.Message,
+                    _logger.LogError(exception, InternalLogFormat,
                                       HttpContext.TraceIdentifier,
                                       DateTime.UtcNow);
-                    return new ErrorResponse("Critical internal error");
+                    return new ErrorResponse(CritialInternalError);
             }
         }
     }

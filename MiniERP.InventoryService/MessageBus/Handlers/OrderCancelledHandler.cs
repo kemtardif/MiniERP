@@ -5,38 +5,12 @@ using MiniERP.InventoryService.Models;
 
 namespace MiniERP.InventoryService.MessageBus.Handlers
 {
-    public class OrderCancelledHandler : IRequestHandler<OrderCancelled>
+    public class OrderCancelledHandler : HandlerBase<OrderCancelled>
     {
-        private readonly ILogger<OrderCancelledHandler> _logger;
-        private readonly IRepository _repository;
+        public OrderCancelledHandler(ILogger<OrderCancelled> logger, IRepository repository)
+                                : base(logger, repository) { }
 
-        public OrderCancelledHandler(ILogger<OrderCancelledHandler> logger,
-                                   IRepository repository)
-        {
-            _logger = logger;
-            _repository = repository;
-        }
-        public Task Handle(OrderCancelled request, CancellationToken cancellationToken)
-        {
-            try
-            {
-                HandleOrderCancelled(request);
-
-                _logger.LogInformation("---> RabbitMQ : Message Handled : {handler} : {id}",
-                                       nameof(OrderCancelledHandler),
-                                       request.Id);
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "---> RabbitMQ : Message Exception : {handler} : {id}",
-                                        nameof(OrderCancelledHandler),
-                                       request.Id);
-            }
-            return Task.CompletedTask;
-        }
-
-        private void HandleOrderCancelled(OrderCancelled request)
+        protected override async Task ProtectedHandle(OrderCancelled request)
         {
             var items = _repository.GetMovementsByOrder((RelatedOrderType)request.Type, request.Id)
                                    .ToList();
@@ -47,7 +21,7 @@ namespace MiniERP.InventoryService.MessageBus.Handlers
                 _repository.Update(item);
             }
 
-            _repository.SaveChanges();
+            await _repository.SaveChanges();
         }
     }
 }

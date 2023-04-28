@@ -8,6 +8,10 @@ namespace MiniERP.InventoryService.MessageBus.Subscriber.Consumer
 {
     public class RabbitMQConsumer : EventingBasicConsumer
     {
+        private const string ReceivedLogFormat = "----> RabbitMQ : Message Received : {tag} : {date}";
+        private const string NoHeaderLogFormat = "----> RabbitMQ : No header present to route message : {tag} : {date}";
+        private const string NoHandlerLogFormat = "----> RabbitMQ : Could not find handler for message type : {header} : {key} : {date}";
+
         private readonly ILogger<RabbitMQConsumer> _logger;
         private readonly IMediator _mediator;
 
@@ -26,13 +30,13 @@ namespace MiniERP.InventoryService.MessageBus.Subscriber.Consumer
 
         private void ReceivedHandler(object? consumer, BasicDeliverEventArgs args)
         {
-            _logger.LogInformation("----> RabbitMQ : Message Received : {tag} : {date}",
+            _logger.LogInformation(ReceivedLogFormat,
                                         args.DeliveryTag,
                                         DateTime.UtcNow);
 
             if(!AreHeaderPresent(args))
             {
-                _logger.LogWarning("----> RabbitMQ : No header present to route message : {tag} : {date}",
+                _logger.LogWarning(NoHeaderLogFormat,
                                         args.DeliveryTag,
                                         DateTime.UtcNow);
                 return;
@@ -43,7 +47,7 @@ namespace MiniERP.InventoryService.MessageBus.Subscriber.Consumer
             Type? type = GetMessageType(header);
             if(type is null)
             {
-                _logger.LogWarning("----> RabbitMQ : Could not find handler for message type : {header} : {key} : {date}",
+                _logger.LogWarning(NoHandlerLogFormat,
                                         header, 
                                         args.DeliveryTag,
                                         DateTime.UtcNow);

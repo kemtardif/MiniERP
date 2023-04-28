@@ -17,13 +17,13 @@ namespace MiniERP.SalesOrderService.Behaviors
 
         public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
         {
-            _logger.LogInformation(ProcessingLogFormat, typeof(TRequest));
+            _logger.LogInformation(ProcessingLogFormat, typeof(TRequest).Name);
 
             TResponse response = await next();
 
             _logger.LogInformation(ProcessedLogFormat, 
                                     typeof(TRequest).Name,
-                                    typeof(TResponse).GetGenericArguments()[0]);
+                                    typeof(TResponse).GetGenericArguments()[0].Name);
             return response;
         }
     }

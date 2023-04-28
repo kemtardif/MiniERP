@@ -8,12 +8,11 @@ using MiniERP.ArticleService.Models;
 
 namespace MiniERP.ArticleService.Handlers
 {
-    public class DeleteHandler : HandlerBase, IRequestHandler<DeleteCommand, Result<ReadDTO>>
+    public class DeleteHandler : HandlerBase<DeleteCommand, Result<ReadDTO>>
     {
-        public DeleteHandler(IRepository repository, IMapper mapper) : base(repository, mapper)
-        { }
+        public DeleteHandler(IRepository repository, IMapper mapper) : base(repository, mapper){ }
 
-        public Task<Result<ReadDTO>> Handle(DeleteCommand request, CancellationToken cancellationToken)
+        public override Task<Result<ReadDTO>> Handle(DeleteCommand request, CancellationToken cancellationToken)
         {
             var item = _repository.GetArticleById(request.Id);
 

@@ -7,11 +7,11 @@ using MiniERP.ArticleService.Queries;
 
 namespace MiniERP.ArticleService.Handlers
 {
-    public class GetByIdHandler : HandlerBase, IRequestHandler<GetByIdQuery, Result<ReadDTO>>
+    public class GetByIdHandler : HandlerBase<GetByIdQuery, Result<ReadDTO>>
     {
-        public GetByIdHandler(IRepository repository, IMapper mapper) : base(repository, mapper)
-        { }
-        public Task<Result<ReadDTO>> Handle(GetByIdQuery request, CancellationToken cancellationToken)
+        public GetByIdHandler(IRepository repository, IMapper mapper) : base(repository, mapper) { }
+
+        public override Task<Result<ReadDTO>> Handle(GetByIdQuery request, CancellationToken cancellationToken)
         {
             Article? item = _repository.GetArticleById(request.Id);
 

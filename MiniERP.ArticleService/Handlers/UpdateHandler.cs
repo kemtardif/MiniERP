@@ -8,12 +8,11 @@ using MiniERP.ArticleService.Models;
 
 namespace MiniERP.ArticleService.Handlers
 {
-    public class UpdateHandler : HandlerBase, IRequestHandler<UpdateCommand, Result<ReadDTO>>
+    public class UpdateHandler : HandlerBase<UpdateCommand, Result<ReadDTO>>
     {
-        public UpdateHandler(IRepository repository, IMapper mapper) : base(repository, mapper)
-        { }
+        public UpdateHandler(IRepository repository, IMapper mapper) : base(repository, mapper) { }
 
-        public Task<Result<ReadDTO>> Handle(UpdateCommand request, CancellationToken cancellationToken)
+        public override Task<Result<ReadDTO>> Handle(UpdateCommand request, CancellationToken cancellationToken)
         {
             var item = _repository.GetArticleById(request.Id);
 
@@ -31,14 +30,6 @@ namespace MiniERP.ArticleService.Handlers
             var message = _mapper.Map<ArticleUpdateMessage>(item);
 
             return Task.FromResult(Result<ReadDTO>.Success(dto, message));
-        }
-
-        private IDictionary<string, string[]> GetCaughtExceptionResult(string message)
-        {
-            return new Dictionary<string, string[]>
-            {
-                ["message"] = new string[] { message }
-            };
         }
     }
 }

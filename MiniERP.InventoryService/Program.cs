@@ -12,6 +12,9 @@ using System.Reflection;
 using MiniERP.InventoryService.MessageBus.Subscriber.Consumer;
 using StackExchange.Redis;
 using MiniERP.InventoryService.Behaviors;
+using MiniERP.InventoryService.Extensions;
+using Polly.Contrib.WaitAndRetry;
+using Polly;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,9 +61,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddGrpc();
+
 builder.Services.AddMediatR(config => {
     config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
     config.AddOpenBehavior(typeof(LoggingBehavior<,>));
+});
+
+builder.Services.AddScoped<ISyncPolicy>(provider =>
+{
+    return Policy
+        .Handle<RedisTimeoutException>()
+        .WaitAndRetry(
+            Backoff.DecorrelatedJitterBackoffV2(TimeSpan.FromSeconds(1), 3),
+            onRetry: (outcome, timespan, retryAttempt, context) =>
+            {
+                context.GetLogger()?
+                    .LogWarning("Delaying Cache call for {delay}ms, then making retry {retry}.", timespan.TotalMilliseconds, retryAttempt);
+            });
 });
 
 builder.Services.AddScoped<IRepository, ConcreteRepository>();
@@ -87,9 +104,6 @@ builder.Services.AddDistributedRedisCache(opts =>
         EndPoints = { builder.Configuration["redisHost"] },
     };
 });
-
-builder.Services.AddScoped<ICache, RedisCache>();
-
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

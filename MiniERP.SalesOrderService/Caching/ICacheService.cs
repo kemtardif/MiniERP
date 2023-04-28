@@ -1,8 +1,8 @@
 ﻿using MiniERP.SalesOrderService.Models;
 
-namespace MiniERP.SalesOrderService.Services.Contracts
+namespace MiniERP.SalesOrderService.Caching
 {
-    public interface IRPCService
+    public interface ICacheService
     {
         InventoryItem? GetItemById(int articleId);
     }
