@@ -1,6 +1,6 @@
-﻿namespace MiniERP.InventoryService.Models
+﻿namespace MiniERP.InventoryService.Models.Views
 {
-    public class AvailableInventoryView
+    public class PendingStockView
     {
         public int ArticleId { get; set; }
         public int Status { get; set; }

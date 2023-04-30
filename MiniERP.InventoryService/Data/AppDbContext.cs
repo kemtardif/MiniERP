@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MiniERP.InventoryService.Models;
+using MiniERP.InventoryService.Models.Views;
 
 namespace MiniERP.InventoryService.Data
 {
@@ -9,9 +10,8 @@ namespace MiniERP.InventoryService.Data
 
         public DbSet<InventoryItem> InventoryItems { get; set; }
         public DbSet<InventoryMovement> StockMovements { get; set; }
-
         public DbSet<AvailableInventoryView> AvailableInventoryView { get; set; }
-        public DbSet<PendingInventoryView> PendingInventoryView { get; set; }
+        public DbSet<PendingStockView> PendingStockView { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -41,11 +41,12 @@ namespace MiniERP.InventoryService.Data
                 .HasKey(x => x.ArticleId);
             });
 
-            builder.Entity<PendingInventoryView>(piv =>
+            builder.Entity<PendingStockView>(ism =>
             {
-                piv.ToView(nameof(PendingInventoryView))
+                ism.ToView(nameof(PendingStockView))
                 .HasKey(x => x.ArticleId);
             });
+
         }
     }
 }

@@ -1,13 +1,12 @@
 ﻿using RabbitMQ.Client;
-using MiniERP.InventoryService.MessageBus.Subscriber.Consumer;
+using MiniERP.PurchaseOrderService.MessageBus.Subscriber.Consumer;
 
-namespace MiniERP.InventoryService.MessageBus.Subscriber
+namespace MiniERP.PurchaseOrderService.MessageBus.Subscriber
 {
     public class RabbitMQSubscriber : BackgroundService
     {
         private const string COnnectedLogFormat = "---> Connected to RabbitMQ Message Bus : {date}";
-        private const string Article_EXCHANGE = "article";
-        private const string INVENTORY_EXCHANGE = "inventory";
+        private const string PO_EXCHANGE = "purchaseorder";
 
         private readonly ILogger<RabbitMQSubscriber> _logger;
         private readonly IConsumerFactory _consumerFactory;
@@ -32,11 +31,8 @@ namespace MiniERP.InventoryService.MessageBus.Subscriber
         {
             stoppingToken.ThrowIfCancellationRequested();
 
-            string articleQueue = BindQueue(Article_EXCHANGE, string.Empty);
-            ConsumeQueue(articleQueue);
-
-            string inventoryQueue = BindQueue(INVENTORY_EXCHANGE, string.Empty);
-            ConsumeQueue(inventoryQueue);
+            string poQueue = BindQueue(PO_EXCHANGE, string.Empty);
+            ConsumeQueue(poQueue);
 
             return Task.CompletedTask;
         }
@@ -78,6 +74,7 @@ namespace MiniERP.InventoryService.MessageBus.Subscriber
                 Password = configuration["RabbitMQPassword"],
                 VirtualHost = "/",
                 AutomaticRecoveryEnabled = true
+
             };
         }
     }

@@ -12,8 +12,8 @@ namespace MiniERP.InventoryService.Controllers;
 [Route("/api/inv-srv/[controller]")]
 public class InventoriesController : ControllerBase
 {
-    private const string GetAllMessage = "An error occured while getting all stocks";
-    private const string GetByIdMessage = "An error occured while getting stock : ID={0}";
+    private const string GetAllMessage = "An error occured while getting all inventories";
+    private const string GetByIdMessage = "An error occured while getting inventory : ID={0}";
     private readonly IMediator _mediator;
     public InventoriesController(IMediator mediator)
     {

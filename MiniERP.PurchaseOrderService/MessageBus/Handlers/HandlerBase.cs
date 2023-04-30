@@ -1,7 +1,7 @@
 ﻿using MediatR;
-using MiniERP.InventoryService.Data;
+using MiniERP.PurchaseOrderService.Data;
 
-namespace MiniERP.InventoryService.MessageBus.Handlers
+namespace MiniERP.PurchaseOrderService.MessageBus.Handlers
 {
     public abstract class HandlerBase<T> : IRequestHandler<T> where T : IRequest
     {
@@ -10,10 +10,10 @@ namespace MiniERP.InventoryService.MessageBus.Handlers
         protected const string NotFoundLogFrmat = "ID={0} not found";
 
         protected ILogger<T> _logger;
-        protected readonly IInventoryRepository _repository;
+        protected readonly IRepository _repository;
 
         public HandlerBase(ILogger<T> logger,
-                           IInventoryRepository repository)
+                           IRepository repository)
         {
             _logger = logger;
             _repository = repository;

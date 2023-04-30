@@ -10,14 +10,14 @@ namespace MiniERP.InventoryService.MessageBus.Handlers
         private readonly IMapper _mapper;
         public ArticleUpdateHandler(ILogger<ArticleUpdate> logger,
                                     IMapper mapper,
-                                    IRepository repository) : base(logger, repository)
+                                    IInventoryRepository repository) : base(logger, repository)
         {
             _mapper = mapper;
         }
 
         protected override async Task ProtectedHandle(ArticleUpdate request)
         {
-            InventoryItem? item = _repository.GetInventoryByArticleId(request.Id) ??
+            InventoryItem? item = _repository.GetInventoryById(request.Id) ??
                 throw new ArgumentException(string.Format(NotFoundLogFrmat, request.Id));
 
             _mapper.Map(request, item);

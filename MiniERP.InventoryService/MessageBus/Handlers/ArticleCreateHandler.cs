@@ -10,7 +10,7 @@ namespace MiniERP.InventoryService.MessageBus.Handlers
         private readonly IMapper _mapper;
         public ArticleCreateHandler(ILogger<ArticleCreate> logger,
                                     IMapper mapper,
-                                    IRepository repository) : base(logger, repository)
+                                    IInventoryRepository repository) : base(logger, repository)
         {
             _mapper = mapper;
         }

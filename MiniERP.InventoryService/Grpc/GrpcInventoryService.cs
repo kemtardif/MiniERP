@@ -19,19 +19,19 @@ namespace MiniERP.InventoryService.Grpc
         private readonly ILogger<GrpcInventoryService> _logger;
         private readonly IMapper _mapper;
         private readonly IDistributedCache _cache;
-        private readonly IRepository _repository;
+        private readonly IStockSourcing _source;
         private readonly ISyncPolicy _cachePolicy;
 
         public GrpcInventoryService(ILogger<GrpcInventoryService> logger,
                                     IMapper mapper,
                                     IDistributedCache cache,
-                                    IRepository repository,
+                                    IStockSourcing source,
                                     ISyncPolicy cachePolicy)
         {
             _logger = logger;
             _mapper = mapper;
             _cache = cache;
-            _repository = repository;
+            _source = source;
             _cachePolicy = cachePolicy;
         }
 
@@ -39,17 +39,17 @@ namespace MiniERP.InventoryService.Grpc
         {
             try
             {
-                //Get from inventory => THis ia a backup service
-                AvailableInventoryView? inventory = _repository.GetAvailableByArticleId(request.ArticleId);
+                //Get from inventory => This ia a backup service
+                Stock? stock = _source.GetMinForecastById(request.ArticleId);
 
-                if (inventory is null)
+                if (stock is null)
                 {
                     return Task.FromResult(NotFoundResponse(request.ArticleId));
                 }
 
-                SetCache(inventory);
+                SetCache(stock);
 
-                StockModel sm = _mapper.Map<StockModel>(inventory);
+                StockModel sm = _mapper.Map<StockModel>(stock);
 
                 _logger.LogInformation(CallLogFormat,
                                     nameof(GetInventory),
@@ -67,7 +67,7 @@ namespace MiniERP.InventoryService.Grpc
             }
         }
 
-        private void SetCache(AvailableInventoryView inventory)
+        private void SetCache(Stock stock)
         {
             //Catch timeout error if cache is down. We don't want to stop Service.
             try
@@ -75,11 +75,11 @@ namespace MiniERP.InventoryService.Grpc
                 var pollyContext = new Context().WithLogger<ILogger<GrpcInventoryService>>(_logger);
 
                 _cachePolicy.Execute((cntx) =>
-                   _cache.SetRecord(inventory.ArticleId.ToString(), inventory), pollyContext);
+                   _cache.SetRecord(stock.ArticleId.ToString(), stock), pollyContext);
             }
             catch (RedisTimeoutException timeoutEx)
             {
-                _logger.LogError(timeoutEx, TimeoutExceptionLogFormat, inventory.ArticleId);
+                _logger.LogError(timeoutEx, TimeoutExceptionLogFormat, stock.ArticleId);
             }
         }
 

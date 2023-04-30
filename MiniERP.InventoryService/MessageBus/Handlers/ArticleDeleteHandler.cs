@@ -5,7 +5,7 @@ namespace MiniERP.InventoryService.MessageBus.Handlers
 {
     public class ArticleDeleteHandler : HandlerBase<ArticleDelete>
     {
-        public ArticleDeleteHandler(ILogger<ArticleDelete> logger, IRepository repository) 
+        public ArticleDeleteHandler(ILogger<ArticleDelete> logger, IInventoryRepository repository) 
             : base(logger, repository) { }
 
         protected override async Task ProtectedHandle(ArticleDelete request)

@@ -6,7 +6,7 @@ namespace MiniERP.InventoryService.MessageBus.Handlers
 {
     public class OrderCreatedHandler : HandlerBase<OrderCreated>
     {
-        public OrderCreatedHandler(ILogger<OrderCreated> logger, IRepository repository)
+        public OrderCreatedHandler(ILogger<OrderCreated> logger, IInventoryRepository repository)
                                 : base(logger, repository) { }
 
         protected override async Task ProtectedHandle(OrderCreated request)
@@ -18,7 +18,7 @@ namespace MiniERP.InventoryService.MessageBus.Handlers
             foreach (var item in request.Items)
             {
 
-                InventoryItem article = _repository.GetInventoryByArticleId(item.ArticleId) ?? 
+                InventoryItem article = _repository.GetInventoryById(item.ArticleId) ?? 
                     throw new ArgumentNullException(string.Format(NotFoundLogFrmat, item.ArticleId));
 
                 InventoryMovement movement = new()

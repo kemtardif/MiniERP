@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using MediatR;
-using MiniERP.InventoryService.Data;
 
 namespace MiniERP.InventoryService.Handlers
 {
@@ -9,11 +8,9 @@ namespace MiniERP.InventoryService.Handlers
     {
         private const string NotFoundMessage = "Item not found : ID = {0}";
 
-        protected readonly IRepository _repository;
         protected readonly IMapper _mapper;
-        public HandlerBase(IRepository repository, IMapper mapper)
+        public HandlerBase(IMapper mapper)
         {
-            _repository = repository;
             _mapper = mapper;
         }
 

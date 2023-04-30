@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using MiniERP.InventoryService.Data;
 using MiniERP.InventoryService.Extensions;
-using MiniERP.InventoryService.Models;
+using MiniERP.InventoryService.Models.Views;
 
 namespace MiniERP.InventoryService.Caching
 {

@@ -1,8 +1,9 @@
-﻿using System.Text.Json.Serialization;
+﻿using MediatR;
+using System.Text.Json.Serialization;
 
 namespace MiniERP.PurchaseOrderService.MessageBus.Messages
 {
-    public class MessageBase
+    public class MessageBase : IRequest
     {
         [JsonIgnore]
         public Dictionary<string, string> Headers { get; set; } = new();

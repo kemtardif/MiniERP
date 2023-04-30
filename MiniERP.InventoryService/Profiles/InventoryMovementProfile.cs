@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using MiniERP.InventoryService.Models;
+using MiniERP.InventoryService.Models.Views;
 using MiniERP.InventoryService.Protos;
 
 namespace MiniERP.InventoryService.Profiles

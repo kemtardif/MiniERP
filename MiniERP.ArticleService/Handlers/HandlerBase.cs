@@ -10,7 +10,6 @@ namespace MiniERP.ArticleService.Handlers
     {
         protected readonly IRepository _repository;
         protected readonly IMapper _mapper;
-
         protected HandlerBase(IRepository repository,
                              IMapper mapper)
         {

@@ -8,7 +8,11 @@ namespace MiniERP.InventoryService.Handlers
 {
     public class GetAllInventoryHandler : HandlerBase<GetAllInventoryQuery, Result<IEnumerable<InventoryReadDTO>>>
     {
-        public GetAllInventoryHandler(IRepository repository, IMapper mapper) : base(repository, mapper) { }
+        private readonly IInventoryRepository _repository;
+        public GetAllInventoryHandler(IInventoryRepository repository, IMapper mapper) : base(mapper)
+        {
+            _repository = repository;
+        }
         public override Task<Result<IEnumerable<InventoryReadDTO>>> Handle(GetAllInventoryQuery request, CancellationToken cancellationToken)
         {
             var models = _repository.GetAllItems();

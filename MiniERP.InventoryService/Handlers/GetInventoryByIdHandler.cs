@@ -8,11 +8,15 @@ namespace MiniERP.InventoryService.Handlers
 {
     public class GetInventoryByIdHandler : HandlerBase<GetInventoryByIdQuery, Result<InventoryReadDTO>>
     {
-        public GetInventoryByIdHandler(IRepository repository, IMapper mapper) : base(repository, mapper) { }
+        private readonly IInventoryRepository _repository;
+        public GetInventoryByIdHandler(IInventoryRepository repository, IMapper mapper) : base(mapper) 
+        {
+            _repository = repository;
+        }
 
         public override Task<Result<InventoryReadDTO>> Handle(GetInventoryByIdQuery request, CancellationToken cancellationToken)
         {
-            var model = _repository.GetInventoryByArticleId(request.Id);
+            var model = _repository.GetInventoryById(request.Id);
 
             if (model is null)
             {

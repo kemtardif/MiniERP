@@ -2,17 +2,18 @@
 using Microsoft.EntityFrameworkCore;
 using MiniERP.InventoryService.Commands;
 using MiniERP.InventoryService.Models;
+using MiniERP.InventoryService.Models.Views;
 
 namespace MiniERP.InventoryService.Data
 {
 
-    public class ConcreteRepository : IRepository
+    public class InventoryRepository : IInventoryRepository
     {
         private readonly AppDbContext _context;
         private readonly IMediator _mediator;
 
         private readonly HashSet<int> _invalidates = new();
-        public ConcreteRepository(AppDbContext context,
+        public InventoryRepository(AppDbContext context,
                                   IMediator mediator)
         {
             _context = context;
@@ -44,7 +45,7 @@ namespace MiniERP.InventoryService.Data
             return _context.InventoryItems;
         }
 
-        public InventoryItem? GetInventoryByArticleId(int articleId)
+        public InventoryItem? GetInventoryById(int articleId)
         {   
             return _context.InventoryItems.FirstOrDefault(x => x.ArticleId == articleId);
         }
@@ -85,8 +86,7 @@ namespace MiniERP.InventoryService.Data
         {
             return _context.StockMovements
                     .Include(x => x.InventoryItem)
-                    .Where(x => x.RelatedOrderType == orderType 
-                                                    && x.RelatedOrderId == orderId);
+                    .Where(x => x.RelatedOrderType == orderType && x.RelatedOrderId == orderId);
         }
 
         public void Update(InventoryItem item)
@@ -111,6 +111,36 @@ namespace MiniERP.InventoryService.Data
             _context.StockMovements.Update(item);
 
             _invalidates.Add(item.ArticleId);
+        }
+
+        public void CloseMovementByOrder(RelatedOrderType orderType, int orderId)
+        {
+            var items = _context.StockMovements
+                                .Include(x => x.InventoryItem)
+                                .Where(x => x.RelatedOrderType == orderType && x.RelatedOrderId == orderId)
+                                .ToList();
+
+            foreach (var item in items)
+            {
+                item.MovementStatus = MovementStatus.Closed;
+                _invalidates.Add(item.ArticleId);
+            }
+            _context.StockMovements.UpdateRange(items);
+        }
+
+        public void CancelMovementByOrder(RelatedOrderType orderType, int orderId)
+        {
+            var items = _context.StockMovements
+                                .Include(x => x.InventoryItem)
+                                .Where(x => x.RelatedOrderType == orderType && x.RelatedOrderId == orderId)
+                                .ToList();
+
+            foreach (var item in items)
+            {
+                item.MovementStatus = MovementStatus.Cancelled;
+                _invalidates.Add(item.ArticleId);
+            }
+            _context.StockMovements.UpdateRange(items);
         }
     }
 }
