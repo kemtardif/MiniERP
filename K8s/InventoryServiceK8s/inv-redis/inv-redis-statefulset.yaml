@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: inv-redis
+spec:
+  selector:
+    matchLabels:
+      app: inv-redis
+  serviceName: inv-redis-srv
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: inv-redis
+    spec:
+      initContainers:
+      - name: init-redis
+        image: redis:latest
+        command:
+        - bash
+        - "-c"
+        - |
+          set -ex
+          cp /mnt/inv-redis.conf /etc/inv-redis.conf        
+        volumeMounts:
+        - name: redis-claim
+          mountPath: /etc
+        - name: config-map
+          mountPath: /mnt/
+      containers:
+      - name: inv-redis
+        image: redis:latest
+        ports:
+        - containerPort: 6379
+          name: redis-ss
+        command:
+          - redis-server
+          - "/etc/inv-redis.conf"
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+        - name: redis-claim
+          mountPath: /etc
+      volumes:
+        - name: config-map
+          configMap:
+            name: inv-redis-config 
+  volumeClaimTemplates:
+  - metadata:
+      name: redis-claim
+    spec:
+      storageClassName: inv-redis-local-storage
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 150Mi
+  - metadata:
+      name: redis-data
+    spec:
+      storageClassName: inv-redis-local-storage
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 150Mi
+
+

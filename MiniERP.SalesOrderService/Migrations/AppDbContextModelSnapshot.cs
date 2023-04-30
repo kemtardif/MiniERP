@@ -33,9 +33,6 @@ namespace MiniERP.SalesOrderService.Migrations
                     b.Property<DateTime>("ConfirmDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("CustAddress")
                         .IsRequired()
                         .HasColumnType("text");
@@ -52,9 +49,6 @@ namespace MiniERP.SalesOrderService.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -78,9 +72,6 @@ namespace MiniERP.SalesOrderService.Migrations
                     b.Property<int>("ArticleId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<double>("Quantity")
                         .HasColumnType("double precision");
 
@@ -95,9 +86,6 @@ namespace MiniERP.SalesOrderService.Migrations
 
                     b.Property<int>("UnitId")
                         .HasColumnType("integer");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 

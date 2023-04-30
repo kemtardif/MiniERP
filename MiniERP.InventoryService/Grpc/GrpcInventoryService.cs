@@ -1,77 +1,91 @@
 ﻿using AutoMapper;
 using Grpc.Core;
+using Microsoft.Extensions.Caching.Distributed;
 using MiniERP.InventoryService.Data;
-using MiniERP.InventoryService.MessageBus.Sender;
+using MiniERP.InventoryService.Extensions;
 using MiniERP.InventoryService.Models;
 using MiniERP.InventoryService.Protos;
+using Polly;
+using StackExchange.Redis;
 
 namespace MiniERP.InventoryService.Grpc
 {
-    public class GrpcInventoryService : GrpcInventory.GrpcInventoryBase
+    public class GrpcInventoryService : Protos.GrpcInventoryService.GrpcInventoryServiceBase
     {
-        private readonly IInventoryRepository _repository;
+        private const string CallLogFormat = "GRPC  {method} : {id} : {date}";
+        private const string ExceptionLogFormat = "GRPC error {method} : {date}";
+        private const string TimeoutExceptionLogFormat = "---> GRPC Cache Timeout for ID={id}";
+
+        private readonly ILogger<GrpcInventoryService> _logger;
         private readonly IMapper _mapper;
-        private readonly IMessageBusSender _sender;
+        private readonly IDistributedCache _cache;
+        private readonly IStockSourcing _source;
+        private readonly ISyncPolicy _cachePolicy;
 
-        public GrpcInventoryService(IInventoryRepository repository,
+        public GrpcInventoryService(ILogger<GrpcInventoryService> logger,
                                     IMapper mapper,
-                                    IMessageBusSender sender)
+                                    IDistributedCache cache,
+                                    IStockSourcing source,
+                                    ISyncPolicy cachePolicy)
         {
-            _repository = repository;
+            _logger = logger;
             _mapper = mapper;
-            _sender = sender;
-        }
-        public override Task<StockResponse> GetStockByArticleId(StockRequest request, ServerCallContext context)
-        {
-            var response = new StockResponse();
-
-            InventoryItem? item = _repository.GetItemByArticleId(request.Id);
-
-            if(item is not null)
-            {
-                response.IsFound = true;
-                response.Item = _mapper.Map<StockModel>(item);
-            }
-
-            return Task.FromResult(response);
+            _cache = cache;
+            _source = source;
+            _cachePolicy = cachePolicy;
         }
 
-        public override Task<StockChangedResponse> StockChanged(StockChangedRequest request, ServerCallContext context)
+        public override Task<StockResponse> GetInventory(StockRequest request, ServerCallContext context)
         {
-            var response = new StockChangedResponse();
-
-            foreach(var item in request.Items)
+            try
             {
-                InventoryItem? invItem = _repository.GetItemByArticleId(item.Id);
+                //Get from inventory => This ia a backup service
+                Stock? stock = _source.GetMinForecastById(request.ArticleId);
 
-                if(invItem is null)
+                if (stock is null)
                 {
-                    continue;
+                    return Task.FromResult(NotFoundResponse(request.ArticleId));
                 }
 
-                switch (item.ChangeType)
-                {
-                    case 1:
-                        invItem.Stock.Quantity += item.Value;
-                        break;
-                    case 2:
-                        invItem.Stock.Quantity -= item.Value;
-                        break;
-                    default:
-                        continue;
-                }
+                SetCache(stock);
 
-                response.Items.Add(_mapper.Map<StockModel>(invItem));
+                StockModel sm = _mapper.Map<StockModel>(stock);
+
+                _logger.LogInformation(CallLogFormat,
+                                    nameof(GetInventory),
+                                    sm.Id,
+                                    DateTime.UtcNow);
+
+                return Task.FromResult(new StockResponse() { ArticleId = request.ArticleId, IsFound = true, Item = sm });
             }
-            _repository.SaveChanges();
-
-            if(response.Items.Count > 0)
+            catch (Exception ex)
             {
-                _sender.RequestForPublish<StockModel>(RequestType.StockUpdated, response.Items);
+                _logger.LogError(ex, ExceptionLogFormat,
+                                    nameof(GetInventory),
+                                    DateTime.UtcNow);
+                return Task.FromResult(NotFoundResponse(request.ArticleId));
             }
-
-            return Task.FromResult(response);
         }
 
+        private void SetCache(Stock stock)
+        {
+            //Catch timeout error if cache is down. We don't want to stop Service.
+            try
+            {
+                var pollyContext = new Context().WithLogger<ILogger<GrpcInventoryService>>(_logger);
+
+                _cachePolicy.Execute((cntx) =>
+                   _cache.SetRecord(stock.ArticleId.ToString(), stock), pollyContext);
+            }
+            catch (RedisTimeoutException timeoutEx)
+            {
+                _logger.LogError(timeoutEx, TimeoutExceptionLogFormat, stock.ArticleId);
+            }
+        }
+
+        private StockResponse NotFoundResponse(int id)
+        {
+            return new StockResponse() { ArticleId = id, IsFound = false };
+        }
     }
 }

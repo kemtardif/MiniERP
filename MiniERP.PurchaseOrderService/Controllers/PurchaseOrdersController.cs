@@ -1,10 +1,11 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MiniERP.PurchaseOrderService.Dtos;
+using MiniERP.PurchaseOrderService.Commands;
+using MiniERP.PurchaseOrderService.DTOs;
 using MiniERP.PurchaseOrderService.Exceptions;
 using MiniERP.PurchaseOrderService.Models;
-using MiniERP.PurchaseOrderService.Services;
-
+using MiniERP.PurchaseOrderService.Queries;
 
 namespace MiniERP.PurchaseOrderService.Controllers
 {
@@ -13,39 +14,41 @@ namespace MiniERP.PurchaseOrderService.Controllers
     [Route("api/po-srv/[controller]")]
     public class PurchaseOrdersController : ControllerBase
     {
-        private readonly ILogger<PurchaseOrdersController> _logger;
-        private readonly IPOService _service;
+        private const string GetAllMessage = "An error occured while getting all Purchase Orders";
+        private const string GetByIdMessage = "An error occured while getting Purchase Order : ID={0}";
+        private const string CreateMessage = "An error occured while creating Purchase Order";
+        private const string CloseMessage = "An error occured while closing Purchase Order";
+        private const string CancelMessage = "An error occured while cancelling Purchase Order";
 
-        public PurchaseOrdersController(ILogger<PurchaseOrdersController> logger,
-                                        IPOService service)
+        private readonly IMediator _mediator;
+        public PurchaseOrdersController(IMediator mediator)
         {
-            _logger = logger;
-            _service = service;
+            _mediator = mediator;
         }
 
         [HttpGet]
-        public ActionResult GetAllPurchaseOrders()
-        {            
+        public async Task<ActionResult> GetAllPurchaseOrders()
+        {
             try
             {
-                Result<IEnumerable<POReadDto>> result = _service.GetAllPurchaseOrders();
+                var result = await _mediator.Send(new GetAllQuery());
 
                 return Ok(result.Value);
             }
             catch (Exception ex)
             {
-                throw new HttpFriendlyException($"An error occured while getting all Purchase Orders", ex);
+                throw new HttpFriendlyException(GetAllMessage, ex);
             }
         }
 
         [HttpGet("{id}", Name = nameof(GetPOByOId))]
-        public ActionResult GetPOByOId(int id)
+        public async Task<ActionResult> GetPOByOId(int id)
         {
             try
             {
-                Result<POReadDto> result = _service.GetPOById(id);
+                var result = await _mediator.Send(new GetByIdQuery(id));
 
-                if(!result.IsSuccess)
+                if (!result.IsSuccess)
                 {
                     return NotFound(result.Errors);
                 }
@@ -54,27 +57,75 @@ namespace MiniERP.PurchaseOrderService.Controllers
             }
             catch (Exception ex)
             {
-                throw new HttpFriendlyException($"An error occured while getting Purchase Order : ID={id}", ex);
+                throw new HttpFriendlyException(string.Format(GetByIdMessage, id), ex);
             }
         }
 
         [HttpPost]
-        public ActionResult CreatePurchaseOrder(POCreateDto dto)
+        public async Task<ActionResult> CreatePurchaseOrder(POCreateDTO dto)
         {
             try
             {
-                Result<POReadDto> result = _service.CreatePurchaseOrder(dto);
+                var result = await _mediator.Send(new CreateCommand(dto));
 
-                if(!result.IsSuccess)
+                if (!result.IsSuccess)
                 {
                     return UnprocessableEntity(result.Errors);
                 }
 
-                return CreatedAtRoute(nameof(GetPOByOId), new { id = result.Value.Id}, result.Value);
-            } 
-            catch(Exception ex)
+                return CreatedAtRoute(nameof(GetPOByOId), new { id = result.Value.Id }, result.Value);
+            }
+            catch (Exception ex)
             {
-                throw new HttpFriendlyException($"An error occured while creating Purchase Order", ex);
+                throw new HttpFriendlyException(CreateMessage, ex);
+            }
+        }
+
+        [HttpPost("{id}/close")]
+        public async Task<ActionResult> ClosePurchaseOrder(int id)
+        {
+            try
+            {
+                var result = await _mediator.Send(new CloseCommand(id));
+
+                if (!result.IsSuccess)
+                {
+                    if(result.Errors.ContainsKey(nameof(PurchaseOrder)))
+                    {
+                        return NotFound();
+                    }
+                    return UnprocessableEntity(result.Errors);
+                }
+
+                return Ok(result.Value);
+            }
+            catch (Exception ex)
+            {
+                throw new HttpFriendlyException(CloseMessage, ex);
+            }
+        }
+
+        [HttpPost("{id}/cancel")]
+        public async Task<ActionResult> CancelPurchaseOrder(int id)
+        {
+            try
+            {
+                var result = await _mediator.Send(new CancelCommand(id));
+
+                if (!result.IsSuccess)
+                {
+                    if (result.Errors.ContainsKey(nameof(PurchaseOrder)))
+                    {
+                        return NotFound();
+                    }
+                    return UnprocessableEntity(result.Errors);
+                }
+
+                return Ok(result.Value);
+            }
+            catch (Exception ex)
+            {
+                throw new HttpFriendlyException(CancelMessage, ex);
             }
         }
     }

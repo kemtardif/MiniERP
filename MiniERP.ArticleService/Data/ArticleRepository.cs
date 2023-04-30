@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using MiniERP.ArticleService.Dtos;
+using MiniERP.ArticleService.DTOs;
 using MiniERP.ArticleService.Models;
 
 namespace MiniERP.ArticleService.Data
 {
-    public class ArticleRepository : IArticleRepository
+    public class ArticleRepository : IRepository
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
@@ -22,9 +21,6 @@ namespace MiniERP.ArticleService.Data
             {
                 throw new ArgumentNullException(nameof(item));
             }
-
-            item.SetCreatedAdToCurrentTime();
-            item.SetUpdatedAtToCurrentTime();
 
             _context.Articles.Add(item);
         }
@@ -45,19 +41,14 @@ namespace MiniERP.ArticleService.Data
             {
                 throw new ArgumentNullException(nameof(item));
             }
-            item.SetUpdatedAtToCurrentTime();
-            item.CloseArticle();
+            item.Status = ArticleStatus.Closed;
         }
 
         public bool SaveChanges()
         {
             return  _context.SaveChanges() >= 0;
         }
-        public bool HasValidUnits(int id)
-        {
-            return _context.Units.Any(x => x.Id == id);
-        }
-        public Article UpdateArticle(Article item, JsonPatchDocument<ArticleUpdateDto> json)
+        public Article UpdateArticle(Article item, JsonPatchDocument<UpdateDTO> json)
         {
             if(item is null)
             {
@@ -67,48 +58,13 @@ namespace MiniERP.ArticleService.Data
             {
                 throw new ArgumentNullException(nameof(json));
             }
-            var articleToWrite = _mapper.Map<ArticleUpdateDto>(item);
+            var articleToWrite = _mapper.Map<UpdateDTO>(item);
+
             json.ApplyTo(articleToWrite);
 
             _mapper.Map(articleToWrite, item);
 
-            item.SetUpdatedAtToCurrentTime();
             return item;
-        }
-        public ChangeType TrackChanges(Article item)
-        {
-            if (item is null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
-            EntityEntry<Article>? entity = _context.ChangeTracker
-                                            .Entries<Article>()
-                                            .FirstOrDefault(x => x.Entity.Id == item.Id);
-            ChangeType type = ChangeType.None;
-
-            if (entity is null
-                || entity.OriginalValues.ToObject() is not Article oldArticle
-                || entity.CurrentValues.ToObject() is not Article newArticle)
-            {
-                return type;
-            }
-            type |= TrackChangesForInventory(oldArticle, newArticle);
-            return type;
-
-            
-        }
-        private ChangeType TrackChangesForInventory(Article oldArticle, Article newArticle)
-        {
-            ChangeType invType = ChangeType.None;
-
-            InventoryRecord oldRecord = new(oldArticle);
-            InventoryRecord newRecord = new(newArticle);
-
-            if(oldRecord != newRecord)
-            {
-                invType |= ChangeType.Inventory;
-            }
-            return invType;
         }
     }
 }

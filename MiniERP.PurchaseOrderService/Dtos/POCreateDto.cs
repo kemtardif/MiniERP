@@ -1,8 +1,8 @@
 ﻿using MiniERP.PurchaseOrderService.Models;
 
-namespace MiniERP.PurchaseOrderService.Dtos
+namespace MiniERP.PurchaseOrderService.DTOs
 {
-    public class POCreateDto
+    public class POCreateDTO
     {
         public int SupplierID { get; set; }
         public int Responsible { get; set; }
@@ -10,7 +10,7 @@ namespace MiniERP.PurchaseOrderService.Dtos
         public PurchaseOrderStatus Status { get; set; }
         public DateTime OrderDate { get; set; }
         public DateTime DeliveryDate { get; set; }
-        public decimal TotalAmount { get; set; }
-        public IEnumerable<PODetailCreateDto> Details { get; set; } = new List<PODetailCreateDto>();
+        public double TotalAmount { get; set; }
+        public IEnumerable<PODetailCreateDTO> Details { get; set; } = new List<PODetailCreateDTO>();
     }
 }

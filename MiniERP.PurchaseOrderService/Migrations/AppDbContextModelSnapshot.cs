@@ -43,11 +43,11 @@ namespace MiniERP.PurchaseOrderService.Migrations
                     b.Property<int>("Productd")
                         .HasColumnType("integer");
 
-                    b.Property<decimal>("Quantity")
-                        .HasColumnType("numeric");
+                    b.Property<double>("Quantity")
+                        .HasColumnType("double precision");
 
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("numeric");
+                    b.Property<double>("UnitPrice")
+                        .HasColumnType("double precision");
 
                     b.HasKey("Id");
 
@@ -84,8 +84,8 @@ namespace MiniERP.PurchaseOrderService.Migrations
                     b.Property<int>("SupplierID")
                         .HasColumnType("integer");
 
-                    b.Property<decimal>("TotalAmount")
-                        .HasColumnType("numeric");
+                    b.Property<double>("TotalAmount")
+                        .HasColumnType("double precision");
 
                     b.HasKey("Id");
 

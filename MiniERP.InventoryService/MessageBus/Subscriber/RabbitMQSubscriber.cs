@@ -1,89 +1,63 @@
-﻿using RabbitMQ.Client.Events;
-using RabbitMQ.Client.Exceptions;
-using RabbitMQ.Client;
-using System.Text;
+﻿using RabbitMQ.Client;
+using MiniERP.InventoryService.MessageBus.Subscriber.Consumer;
 
 namespace MiniERP.InventoryService.MessageBus.Subscriber
 {
     public class RabbitMQSubscriber : BackgroundService
     {
+        private const string COnnectedLogFormat = "---> Connected to RabbitMQ Message Bus : {date}";
+        private const string Article_EXCHANGE = "article";
+        private const string INVENTORY_EXCHANGE = "inventory";
+
         private readonly ILogger<RabbitMQSubscriber> _logger;
-        private readonly IMessageProcessor _processor;
-        private IConnection? _connection;
-        private IModel? _channel;
-        private string _queueName = string.Empty;
+        private readonly IConsumerFactory _consumerFactory;
+        private readonly IConnection _connection;
+        private readonly IModel _channel;     
         public RabbitMQSubscriber(IConfiguration configuration,
                                   ILogger<RabbitMQSubscriber> logger,
-                                  IMessageProcessor processor)
+                                  IConsumerFactory consumerFactory)
         {
             _logger = logger;
-            _processor = processor;
-            var factory = new ConnectionFactory()
-            {
-                HostName = configuration["RabbitMQHost"],
-                Port = int.Parse(configuration["RabbitMQPort"]!),
-                UserName = configuration["RabbitMQUser"],
-                Password = configuration["RabbitMQPassword"],
-                VirtualHost = "/"
+            _consumerFactory = consumerFactory;
 
-            };
-            try
-            {
-                _connection = factory.CreateConnection();
-            }
-            catch (BrokerUnreachableException ex)
-            {
-                _logger.LogCritical("---> RabbitMQ Exception: {name} : {ex} : {date}", nameof(BrokerUnreachableException),
-                                                                              ex.Message, DateTime.UtcNow);
-                return;
-            }
+            ConnectionFactory factory = GetConfiguredFactory(configuration);
 
+            _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
 
-            _channel.ExchangeDeclare(exchange: "article", type: ExchangeType.Direct);
-            _queueName = _channel.QueueDeclare().QueueName;
-            _channel.QueueBind(queue: _queueName,
-                               exchange: "article",
-                               routingKey: "inventory");
-
-            _logger.LogInformation("---> Connected to RabbitMQ Message Bus : {date}", DateTime.UtcNow);
+            _logger.LogInformation(COnnectedLogFormat, DateTime.UtcNow);
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             stoppingToken.ThrowIfCancellationRequested();
 
-            var consumer = new EventingBasicConsumer(_channel);
+            string articleQueue = BindQueue(Article_EXCHANGE, string.Empty);
+            ConsumeQueue(articleQueue);
 
-            consumer.Received += ReceivedHandler;
+            string inventoryQueue = BindQueue(INVENTORY_EXCHANGE, string.Empty);
+            ConsumeQueue(inventoryQueue);
 
-            _channel?.BasicConsume(queue: _queueName, autoAck: false, consumer: consumer);
             return Task.CompletedTask;
         }
-        private void ReceivedHandler(object? consumer, BasicDeliverEventArgs args)
+      
+
+        private string BindQueue(string exchange, string routingKey)
         {
-            _logger.LogInformation("----> RabbitMQ : Message Received : {key} : {tag} :{date}",
-                                        args.RoutingKey,
-                                        args.DeliveryTag,
-                                        DateTime.UtcNow);
+            _channel.ExchangeDeclare(exchange: exchange, type: ExchangeType.Direct);
 
-            //Decoderfallback shouldn't happen since we use UTF8 always
-            string data = Encoding.UTF8.GetString(args.Body.ToArray());
+            string queueName = _channel.QueueDeclare().QueueName;
 
-            if (string.IsNullOrEmpty(data))
-            {
-                _logger.LogInformation("---> RabbitMQ : No received data : {tag} : {date}",
-                                        args.DeliveryTag,
-                                        DateTime.UtcNow);
-                _channel?.BasicAck(args.DeliveryTag, false);
-                return;
-            }
-           _processor.ProcessMessage(data);
+            _channel.QueueBind(queue: queueName,
+                               exchange: exchange,
+                               routingKey: routingKey);
+            return queueName;
 
-            _channel?.BasicAck(args.DeliveryTag, false);
-            _logger.LogInformation("---> RabbitMQ : MEssage Processed : {tag} : {date}",
-                                        args.DeliveryTag,
-                                        DateTime.UtcNow);
+        }
+
+        private void ConsumeQueue(string queueName)
+        {
+            _channel.BasicConsume(queueName, autoAck: true, consumer: _consumerFactory.Create(_channel));
         }
 
         public override void Dispose()
@@ -92,6 +66,19 @@ namespace MiniERP.InventoryService.MessageBus.Subscriber
             _connection?.Close();
 
             base.Dispose();
+        }
+
+        private ConnectionFactory GetConfiguredFactory(IConfiguration configuration)
+        {
+            return new ConnectionFactory()
+            {
+                HostName = configuration["RabbitMQHost"],
+                Port = int.Parse(configuration["RabbitMQPort"]!),
+                UserName = configuration["RabbitMQUser"],
+                Password = configuration["RabbitMQPassword"],
+                VirtualHost = "/",
+                AutomaticRecoveryEnabled = true
+            };
         }
     }
 }

@@ -1,96 +1,71 @@
-﻿using MiniERP.InventoryService.MessageBus.Events;
-using RabbitMQ.Client.Exceptions;
+﻿using MiniERP.InventoryService.MessageBus.Messages;
+using MiniERP.InventoryService.MessageBus.Sender.Contracts;
 using RabbitMQ.Client;
-using System.Text.Json;
+using RabbitMQ.Client.Exceptions;
 using System.Text;
+using System.Text.Json;
 
 namespace MiniERP.InventoryService.MessageBus.Sender
 {
-    public class RabbitMQClient : IMessageBusClient, IDisposable
-    {    
-        private readonly IConnection _connection;
+    public class RabbitMQClient : IRabbitMQClient, IDisposable
+    {
+        private const string PublishedLogFormat = "RabbitMQ : Purchase Order Message Published : {type} {date}";
+        private const string PO_EXCHANGE = "purchaseorder";
+
         private readonly IModel _channel;
         private readonly ILogger<RabbitMQClient> _logger;
-
-        public RabbitMQClient(IConfiguration configuration, ILogger<RabbitMQClient> logger)
+        public RabbitMQClient(IRabbitMQConnection rabbitMQConnection,
+                              ILogger<RabbitMQClient> logger)
         {
+            if(!rabbitMQConnection.Connection.IsOpen)
+            {
+                throw new BrokerUnreachableException(new ArgumentNullException(nameof(rabbitMQConnection)));
+            }
+
+            _channel = rabbitMQConnection.Connection.CreateModel();
             _logger = logger;
 
-            var factory = new ConnectionFactory()
+            _channel.ExchangeDeclare(exchange: PO_EXCHANGE, type: ExchangeType.Direct);
+        }
+        public void Publish(MessageBase message)
+        {
+            if(message is null)
             {
-                HostName = configuration["RabbitMQHost"],
-                Port = int.Parse(configuration["RabbitMQPort"]!),
-                UserName = configuration["RabbitMQUser"],
-                Password = configuration["RabbitMQPassword"],
-                VirtualHost = "/",
-
-            };
-
-            try
-            {
-                _connection = factory.CreateConnection();
-
-                _channel = _connection.CreateModel();
-
-                _channel.ExchangeDeclare(exchange: "inventory", type: ExchangeType.Direct);
+                throw new ArgumentNullException(nameof(message));
             }
-            catch (BrokerUnreachableException ex)
+
+            string messageString = JsonSerializer.Serialize(message, message.GetType());
+
+            byte[] messageByte = Encoding.UTF8.GetBytes(messageString);
+
+            IBasicProperties properties = GetBasicProperties(message);
+
+            _channel.BasicPublish(exchange: PO_EXCHANGE,
+                                  routingKey: string.Empty,
+                                  basicProperties: properties,
+                                  body: messageByte);
+
+            _logger.LogInformation(PublishedLogFormat,
+                                    message.GetType(),
+                                    DateTime.UtcNow);
+        }
+
+        private IBasicProperties GetBasicProperties(MessageBase message)
+        {
+            IBasicProperties properties = _channel.CreateBasicProperties();
+            properties.Headers = new Dictionary<string, object>();
+
+            foreach(var kvp in message.Headers)
             {
-                _logger.LogCritical("---> RabbitMQ : {name} : {ex} : {date}", nameof(BrokerUnreachableException),
-                                                                              ex.Message, DateTime.UtcNow);
-                throw new ArgumentException(nameof(_connection));
+                properties.Headers.Add(kvp.Key, kvp.Value);
             }
+
+            return properties;
         }
 
         public void Dispose()
         {
             _channel.Close();
-            try
-            {
-                _connection.Close();
-            }
-            catch (IOException ex)
-            {
-                _logger.LogError("----> RabbitMQ Exception: {name} : {exName} : {ex} : {date}",
-                                    nameof(Dispose),
-                                    nameof(IOException),
-                                    ex.Message,
-                                    DateTime.UtcNow);
-            }
-        }
-
-        public void Publish(GenericEvent dto)
-        {
-            if (dto is null)
-            {
-                throw new ArgumentNullException(nameof(dto));
-            }
-
-            if (!_connection.IsOpen)
-            {
-                _logger.LogWarning("----> RabbitMQ :  Publish : Connection is closed  : {date}", DateTime.UtcNow);
-                return;
-            }
-
-            string message = JsonSerializer.Serialize(dto);
-
-            PublishMessage(message, dto.EventName, dto.RoutingKey);
-
-        }
-        private void PublishMessage(string message, string eventName, string routingKey)
-        {
-            byte[] body = Encoding.UTF8.GetBytes(message);
-
-            _channel.BasicPublish(exchange: "inventory",
-                            routingKey: routingKey,
-                            basicProperties: null,
-                            body: body);
-
-            _logger.LogInformation("RabbitMQ : {method} : Message Published :  {event} : {key} : {date}",
-                                    nameof(PublishMessage),
-                                    eventName,
-                                    routingKey,
-                                    DateTime.UtcNow);
         }
     }
 }

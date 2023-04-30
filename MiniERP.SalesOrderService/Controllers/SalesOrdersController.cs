@@ -1,10 +1,11 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using MiniERP.SalesOrderService.Dtos;
+using MiniERP.SalesOrderService.Commands;
+using MiniERP.SalesOrderService.DTOs;
 using MiniERP.SalesOrderService.Exceptions;
 using MiniERP.SalesOrderService.Models;
-using MiniERP.SalesOrderService.Services;
+using MiniERP.SalesOrderService.Queries;
 
 namespace MiniERP.SalesOrderService.Controllers
 {
@@ -13,37 +14,38 @@ namespace MiniERP.SalesOrderService.Controllers
     [Route("api/so-srv/[controller]")]
     public class SalesOrdersController : ControllerBase
     {
+        private const string GetAllMessage = "An error occured while getting all Sales Orders";
+        private const string GetByIdMessage = "An error occured while getting Sales Order : ID={0}";
+        private const string CreateMessage = "An error occured while creating Sales Order";
+        private const string CloseMessage = "An error occured while closing Sales Order";
+        private const string CancelMessage = "An error occured while cancelling Sales Order";
 
-        private readonly ILogger<SalesOrdersController> _logger;
-        private readonly ISalesOrderService _service;
-
-        public SalesOrdersController(ILogger<SalesOrdersController> logger,
-                                     ISalesOrderService service)
+        private readonly IMediator _mediator;
+        public SalesOrdersController(IMediator mediator)
         {
-            _logger = logger;
-            _service = service;
+            _mediator = mediator;
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<SalesOrderReadDto>> GetAllSalesOrder()
+        public async Task<ActionResult<IEnumerable<SOReadDTO>>> GetAllSalesOrder()
         {
             try
             {
-                var result = _service.GetAllSalesOrders();
+                Result<IEnumerable<SOReadDTO>> result = await _mediator.Send(new GetAllQuery());
 
                 return Ok(result.Value);
             }
             catch (Exception ex)
             {
-                throw new HttpFriendlyException($"An error occured while getting all Sales Orders", ex);
+                throw new HttpFriendlyException(GetAllMessage, ex);
             }
         }
         [HttpGet("{id}", Name = nameof(GetSalesOrderById))]
-        public ActionResult<SalesOrderReadDto> GetSalesOrderById(int id)
+        public async Task<ActionResult<SOReadDTO>> GetSalesOrderById(int id)
         {
             try
             {
-                var result = _service.GetSalesOrderById(id);
+                Result<SOReadDTO> result = await _mediator.Send(new GetByIdQuery(id));
 
                 if (!result.IsSuccess)
                 {
@@ -54,16 +56,16 @@ namespace MiniERP.SalesOrderService.Controllers
             }
             catch (Exception ex)
             {
-                throw new HttpFriendlyException($"An error occured while getting Sales Order : ID={id}", ex);
+                throw new HttpFriendlyException(string.Format(GetByIdMessage, id), ex);
             }
         }
 
         [HttpPost]
-        public async Task<ActionResult<SalesOrderReadDto>> CreateSalesOrder(SalesOrderCreateDto dto)
+        public async Task<ActionResult<SOReadDTO>> CreateSalesOrder(SOCreateDTO dto)
         {
             try
             {
-                var result = await _service.AddSalesOrder(dto);
+                Result<SOReadDTO> result = await _mediator.Send(new CreateCommand(dto) );
 
                 if (!result.IsSuccess)
                 {
@@ -74,54 +76,57 @@ namespace MiniERP.SalesOrderService.Controllers
             }
             catch (Exception ex)
             {
-                throw new HttpFriendlyException("An error occured while creating Sales Order", ex);
+                throw new HttpFriendlyException(CreateMessage, ex);
             }
         }
 
-        [HttpDelete("{id}")]
-        public ActionResult DeleteSalesOrder(int id)
+        [HttpPost("{id}/close")]
+        public async Task<ActionResult> CloseSalesOrder(int id)
         {
             try
             {
-                Result result = _service.RemoveSalesOrderById(id);
-
-                if(!result.IsSuccess)
-                {
-                    return NotFound();
-                }
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                throw new HttpFriendlyException("An error occured while deleting Sales Order : ID={id}", ex);
-            }
-        }
-
-        [HttpPatch("{id}")]
-        public async Task<ActionResult<SalesOrderReadDto>> PatchSalesOder(int id, JsonPatchDocument<SalesOrderUpdateDto> document)
-        {
-            try
-            {
-                Result<SalesOrderReadDto> result = await _service.UpdateSalesOrder(id, document);
+                var result = await _mediator.Send(new CloseCommand(id));
 
                 if (!result.IsSuccess)
                 {
-                    if(result.Errors.TryGetValue(nameof(SalesOrder), out string[]? errors)
-                        && errors is not null)
+                    if (result.Errors.ContainsKey(nameof(SalesOrder)))
                     {
                         return NotFound();
                     }
-                    else
-                    {
-                        return UnprocessableEntity(result.Errors);
-                    }
+                    return UnprocessableEntity(result.Errors);
                 }
+
                 return Ok(result.Value);
             }
             catch (Exception ex)
             {
-                throw new HttpFriendlyException($"An error occured while updating Sales Order : ID={id}", ex);
+                throw new HttpFriendlyException(CloseMessage, ex);
             }
         }
+
+        [HttpPost("{id}/cancel")]
+        public async Task<ActionResult> CancelSalesOrder(int id)
+        {
+            try
+            {
+                var result = await _mediator.Send(new CancelCommand(id));
+
+                if (!result.IsSuccess)
+                {
+                    if (result.Errors.ContainsKey(nameof(SalesOrder)))
+                    {
+                        return NotFound();
+                    }
+                    return UnprocessableEntity(result.Errors);
+                }
+
+                return Ok(result.Value);
+            }
+            catch (Exception ex)
+            {
+                throw new HttpFriendlyException(CancelMessage, ex);
+            }
+        }
+
     }
 }
