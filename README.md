@@ -1,1 +1,3 @@
 # MiniERP
+
+![Screenshot](Diagram.png)
