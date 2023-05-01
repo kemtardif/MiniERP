@@ -8,7 +8,7 @@
 
 ## Project Description
 
-MiniERP is an ever-evolving back-end for a fictional ERP system. It stems from an attempt to reconcile my current job as an ERP integration developper with a desire to explore Software Architecture and Distributed Systems. Having been in contact with how ERPs can be complicated, with multiple related components, I felt that it was the perfect canvas to try new technologies. Just add new components! 
+MiniERP is an ever-evolving back-end for a fictional ERP system. It stems from an attempt to reconcile my current job as an ERP integration developper with a desire to explore Software Architecture and Distributed Systems. Having been in contact with how massive ERPs can be, with lots of related components, I felt that it was the perfect canvas to try new technologies. Just add new components! 
 
 The base is composed of 4 modules : 
 * Product Service
