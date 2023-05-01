@@ -27,28 +27,25 @@ namespace MiniERP.PurchaseOrderService.Caching
         }
         public InventoryItem? GetInventoryById(int id)
         {
-            InventoryItem? item = null;
             try
             {
-                var context = new Context().WithLogger<ILogger<RedisCacheService>>(_logger);
+                var cached = _redisPolicy.Execute(
+                    context => _database.GetRecord<InventoryItemCache>(id.ToString()),
+                    new Context().WithLogger<ILogger<RedisCacheService>>(_logger));
 
-                InventoryItemCache? cached = _redisPolicy.Execute((cntx) =>
-                    _database.GetRecord<InventoryItemCache>(id.ToString()), context);
-
-                if (cached is not null)
+                if (cached != null)
                 {
-                    item = _mapper.Map<InventoryItem>(cached);
+                    _logger.LogInformation(CacheHitLogFormat, "HIT", id);
+                    return _mapper.Map<InventoryItem>(cached);
                 }
             }
-            catch (RedisTimeoutException timeoutEx)
+            catch (RedisTimeoutException ex)
             {
-                _logger.LogError(timeoutEx, TimeoutExceptionLogFormat, id);
+                _logger.LogError(ex, TimeoutExceptionLogFormat, id);
             }
 
-            _logger.LogInformation(CacheHitLogFormat,
-                            item is null ? "MISS" : "HIT",
-                            id);
-            return item;
+            _logger.LogInformation(CacheHitLogFormat, "MISS", id);
+            return null;
         }
     }
 }
