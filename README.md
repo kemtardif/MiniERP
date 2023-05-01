@@ -38,7 +38,7 @@ In order to provide fast access to inventory data, a Redis cache is used. The In
 
 To ensure loose coupling between the services, a RabbitMQ message bus is used for inter-service communication. The Inventory Service subscribes to order-related messages and updates inventory levels accordingly. This architecture allows each module to be autonomous while still being interdependent, enabling easier maintenance and scalability.
 
-Finally, to handle requests and validation within each service, the CQRS pattern is used with MediatR, and FluentValidation is used for validating input items. Retry strategies are also implemented using Polly, to provide resilience in the case of cache or gRPC failures.
+Finally, to handle requests and validation within each service, the CQRS pattern is used with MediatR, and FluentValidation is used for validating input items. Retry strategies are also implemented using Polly, to provide resilience in the case of cache or gRPC failures. Quartz.NET is used for auto-ordering CRON jobs.
 
 ## Technologies
 
